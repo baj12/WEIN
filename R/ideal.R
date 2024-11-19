@@ -2206,7 +2206,7 @@ idealImmunoTP<- function(dds_obj = NULL,
         if (!is.null(readMetadata()))
           values$expdesign <- readMetadata()
         comSamples <- intersect(colnames(values$countmatrix), rownames(values$expdesign))
-        if(length(expdesign)==0){
+        if(length(comSamples)==0){
           showNotification("count and meta data don't have any samples in common. Please reload data.", type = "error")
         }
         metaData <- readMetadata()
