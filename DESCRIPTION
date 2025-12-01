@@ -26,6 +26,7 @@ Imports:
     ggplot2 (>= 2.0.0), 
     pcaExplorer, 
     IHW, 
+    markdown,
     gplots, 
     UpSetR, 
     heatmaply,
