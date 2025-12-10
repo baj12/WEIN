@@ -3,56 +3,10 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
     
     ns <- session$ns
     
-    # Helper function to create gene list reactive and observer
-    create_gene_list_handler <- function(list_num) {
-      gl_name <- paste0("gl", list_num)
-      genelist_name <- paste0("genelist", list_num)
-      
-      # Create reactive
-      gl_reactive <- reactive({
-        if (is.null(input[[gl_name]])) {
-          return(data.frame())
-        } else {
-          gl <- read1stCol(input[[gl_name]]$datapath, values$dds_obj)
-          shiny::validate(
-            need(!is.null(gl),
-                 "Failed to read gene list file")
-          )
-          return(gl)
-        }
-      })
-      
-      # Create observer
-      observeEvent(input[[gl_name]], {
-        gl <- gl_reactive()
-        if(is.null(gl) || nrow(gl) < 1) {
-          values[[genelist_name]] <- data.frame()
-          return(NULL)
-        }
-        mydf <- as.data.frame(gl, stringsAsFactors = FALSE)
-        names(mydf) <- "Gene Symbol"
-        values[[genelist_name]] <- mydf
-      })
-      
-      return(gl_reactive)
-    }
     
-    # Create all gene list handlers
-    gl_reactives <- lapply(1:4, create_gene_list_handler)
+    gl_reactives <- lapply(1:4, function(x) create_gene_list_handler(x, input, values, ns, read1stCol))
     names(gl_reactives) <- paste0("gl", 1:4)
     
-    # Helper function to get gene list
-    get_gene_list <- function(list_name) {
-      switch(list_name,
-             "UP" = values$genelistUP(),
-             "DOWN" = values$genelistDOWN(),
-             "UPDOWN" = values$genelistUPDOWN(),
-             "LIST1" = as.character(values$genelist1$`Gene Symbol`),
-             "LIST2" = as.character(values$genelist2$`Gene Symbol`),
-             "LIST3" = as.character(values$genelist3$`Gene Symbol`),
-             "LIST4" = as.character(values$genelist4$`Gene Symbol`)
-      )
-    }
     
     # Generic enrichment function
     perform_enrichment <- function(list_name, method = "goana") {
@@ -62,7 +16,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
         return(NULL)
       }
       
-      genelist <- get_gene_list(list_name)
+      genelist <- get_gene_list(list_name, values)
       if (is.null(genelist) || length(genelist) < 1) {
         showNotification(paste("The", list_name, "gene list is empty"), type = "warning")
         return(NULL)
@@ -231,38 +185,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
       }
     }
     
-    # Generic function to create UI output
-    create_ui_output <- function(ns, value_name, title, output_name) {
-      renderUI({
-      shiny::validate(
-        need(!is.null(values[[value_name]]),
-             paste("Value", value_name, "is not available"))
-      )
-        tagList(
-          h4(title),
-          DT::dataTableOutput(ns(output_name))
-        )
-      })
-    }
     
-    # Generic function to create DataTable output
-    create_dt_output <- function(ns, value_name, link_column = "rownames", column_type = "GO") {
-      DT::renderDataTable({
-      shiny::validate(
-        need(!is.null(values[[value_name]]),
-             paste("Value", value_name, "is not available"))
-      )
-        mytbl <- values[[value_name]]
-        
-        if (link_column == "rownames") {
-          rownames(mytbl) <- createLinkGO(rownames(mytbl))
-        } else {
-          mytbl[[link_column]] <- createLinkGO(mytbl[[link_column]])
-        }
-        
-        mytbl
-      }, escape = FALSE, options = list(scrollX = TRUE))
-    }
     
     # Generate all UI and DataTable outputs
     for (list_type in list_types) {
@@ -296,8 +219,8 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
           ttl <- title
           lc <- link_col
           
-          output[[uin]] <- create_ui_output(ns, vn, ttl, dtn)
-          output[[dtn]] <- create_dt_output(ns, vn, lc)
+          output[[uin]] <- create_ui_output(ns, values, vn, ttl, dtn)
+          output[[dtn]] <- create_dt_output(ns, values, vn, lc)
         })
       }
     }
@@ -346,41 +269,6 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
       gll_final <- gll_nonempty[match(lists_tokeep,names(gll_nonempty))]
       return(gll_final) 
     })
-    # Helper function to create GO term heatmap
-    create_goterm_heatmap <- function(topgo_data, selected_row, values, annoSpecies_df) {
-      if(length(selected_row) == 0) return(NULL)
-      
-      # Extract genes and term (take first row if multiple selected)
-      mygenes <- topgo_data[selected_row, ]$genes[1]
-      myterm <- paste0(
-        topgo_data[selected_row, ]$`GO.ID`, " - ",
-        topgo_data[selected_row, ]$Term
-      )
-      
-      # Convert gene symbols to IDs
-      genevec <- unlist(strsplit(mygenes, split = ","))
-      annopkg <- annoSpecies_df$pkg[annoSpecies_df$species == values$cur_species]
-      genevec_ids <- as.character(mapIds(
-        eval(parse(text = annopkg)), 
-        genevec, 
-        values$cur_type, 
-        "SYMBOL", 
-        multiVals = "first"
-      ))
-      
-      # Get log2 transformed values
-      log2things <- assay(normTransform(values$dds_obj))
-      selectedLogvalues <- log2things[genevec_ids, ]
-      
-      # Determine row labels
-      rowlabs <- if(length(genevec_ids) == length(genevec)) {
-        genevec
-      } else {
-        genevec_ids
-      }
-      
-      heatmaply(selectedLogvalues, scale = "row", labels_row = rowlabs, main = myterm)
-    }
     
     # Generate all heatmap outputs in a loop
     heatmap_types <- list(

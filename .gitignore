@@ -41,6 +41,10 @@ idealState_*.RData
 idealState_20231118_123859.RData
 shiny_bookmarks/*/*.rds
 
+# Additional large files found
+test.Rdata
+idealState_*_*.RData
+
 # JAR files
 *.jar
 bfg-1.14.0.jar

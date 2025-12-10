@@ -85,12 +85,6 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
       rownames(toplot) <- values$annotation_obj$gene_name[match(rownames(toplot),rownames(values$annotation_obj))]
       
       if(input$pseudocounts) toplot <- log2(1+toplot)
-      mat_rowscale <- function(x)
-      {
-        m <- apply(x, 1, mean, na.rm = TRUE)
-        s <- apply(x, 1, sd, na.rm = TRUE)
-        return((x - m)/s)
-      }
       if(input$rowscale) toplot <- mat_rowscale(toplot)
       heatmaply::heatmaply(toplot,cluster_cols = as.logical(input$heatmap_colv))
     })
@@ -108,12 +102,6 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
       rownames(toplot) <- values$annotation_obj$gene_name[match(rownames(toplot),rownames(values$annotation_obj))]
       mycolss <- c("#313695","#4575b4","#74add1","#abd9e9","#e0f3f8","#fee090","#fdae61","#f46d43","#d73027","#a50026") # to be consistent with red/blue usual coding
       if(input$pseudocounts) toplot <- log2(1+toplot)
-      mat_rowscale <- function (x)
-      {
-        m = apply(x, 1, mean, na.rm = TRUE)
-        s = apply(x, 1, sd, na.rm = TRUE)
-        return((x - m)/s)
-      }
       if(input$rowscale) toplot <- mat_rowscale(toplot)
       if(nrow(toplot) <1){
         cat(file = stderr(), "\ntoplot nrow <1\n")
@@ -289,13 +277,6 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
       rownames(toplot) <- values$annotation_obj$gene_name[match(rownames(toplot),rownames(values$annotation_obj))]
       
       if(input$pseudocounts) toplot <- log2(1+toplot)
-      
-      mat_rowscale <- function(x)
-      {
-        m <- apply(x, 1, mean, na.rm = TRUE)
-        s <- apply(x, 1, sd, na.rm = TRUE)
-        return((x - m)/s)
-      }
       
       if(input$rowscale) toplot <- mat_rowscale(toplot)
       
