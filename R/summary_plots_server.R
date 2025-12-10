@@ -14,7 +14,19 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
       p
     })
     
+    # Throttling for brush events to prevent excessive re-rendering
+    brush_throttle <- reactiveVal(0)
+    
+    observeEvent(input$ma_brush, {
+      # Throttle by 200ms
+      invalidateLater(200, session)
+      brush_throttle(isolate(brush_throttle()) + 1)
+    })
+    
     output$mazoom <- renderPlot({
+      # Use throttle to control frequency
+      brush_throttle()
+      
       if(is.null(input$ma_brush)) return(ggplot() + annotate("text",label="click and drag to zoom in",0,0) + theme_bw())
       
       if(!is.null(values$annotation_obj))
@@ -43,7 +55,19 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
     })
     
     
+    # Throttling for click events to prevent excessive re-rendering
+    click_throttle <- reactiveVal(0)
+    
+    observeEvent(input$mazoom_click, {
+      # Throttle by 300ms
+      invalidateLater(300, session)
+      click_throttle(isolate(click_throttle()) + 1)
+    })
+    
     curDataClick <- reactive({
+      # Use throttle to control frequency
+      click_throttle()
+      
       mama <- data.frame(mean=values$res_obj$baseMean,lfc=values$res_obj$log2FoldChange,padj = values$res_obj$padj,isDE= ifelse(is.na(values$res_obj$padj), FALSE, values$res_obj$padj < 0.10),ID=rownames(values$res_obj))
       mama$genename <- values$annotation_obj$gene_name[match(mama$ID,rownames(values$annotation_obj))]
       # mama$yesorno <- ifelse(mama$isDE,"yes","no")
@@ -86,6 +110,14 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
       
       if(input$pseudocounts) toplot <- log2(1+toplot)
       if(input$rowscale) toplot <- mat_rowscale(toplot)
+      
+      # Add early stopping for very large gene sets to prevent performance issues
+      if(nrow(toplot) > 1000) {
+        showNotification("Large gene set detected. Displaying first 1000 genes for performance.",
+                             type = "warning", duration = 10)
+        toplot <- toplot[1:min(1000, nrow(toplot)), , drop = FALSE]
+      }
+      
       heatmaply::heatmaply(toplot,cluster_cols = as.logical(input$heatmap_colv))
     })
     
@@ -107,6 +139,13 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
         cat(file = stderr(), "\ntoplot nrow <1\n")
         return(NULL)
       }
+      # Add early stopping for very large gene sets to prevent performance issues
+      if(nrow(toplot) > 1000) {
+        showNotification("Large gene set detected. Displaying first 1000 genes for performance.",
+                             type = "warning", duration = 10)
+        toplot <- toplot[1:min(1000, nrow(toplot)), , drop = FALSE]
+      }
+      
       heatmaply::heatmaply(toplot,Colv = as.logical(input$heatmap_colv),colors = mycolss, cexCol = 1)
     })
     
@@ -185,8 +224,7 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
                                selectedGene, "ENTREZID", values$cur_type)
       fullinfo <- geneinfo(selgene_entrez)
       
-      ## TODO: build up link manually to paste under the info!
-      #
+      # Build up link manually to paste under the info
       link_pubmed <- paste0('<a href="http://www.ncbi.nlm.nih.gov/gene/?term=',
                             selgene_entrez,
                             '" target="_blank" >Click here to see more at NCBI</a>')

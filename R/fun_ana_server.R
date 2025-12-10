@@ -242,6 +242,11 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
       txt
     })
     
+    # Cached annotation mappings to avoid repeated computation
+    annotation_cache <- reactiveValues(
+      mapIds_cache = list()
+    )
+    
     ## list of gene lists
     gll <- reactive({
       # browser()
@@ -267,7 +272,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
                                             input$toggle_list3,
                                             input$toggle_list4))]
       gll_final <- gll_nonempty[match(lists_tokeep,names(gll_nonempty))]
-      return(gll_final) 
+      return(gll_final)
     })
     
     # Generate all heatmap outputs in a loop
@@ -352,7 +357,22 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
       return(paste(rownames(upGll)[input$debugTable_rows_all], collapse = " "))
     })
     
+    # Add debounce to prevent excessive recomputation
+    venn_debouncer <- reactiveVal(0)
+    
+    observeEvent({
+      list(c(input$toggle_up, input$toggle_down, input$toggle_updown,
+              input$toggle_list1, input$toggle_list2, input$toggle_list3, input$toggle_list4))
+    }, {
+      # Debounce by 500ms
+      invalidateLater(500, session)
+      venn_debouncer(isolate(venn_debouncer()) + 1)
+    })
+    
     output$vennlists <- renderPlot({
+      # Use debouncer to control frequency
+      venn_debouncer()
+      
       shiny::validate(
         need(all(sapply(gll(),function(arg) !is.null(arg))),
              message = "Some lists are empty - make sure you extracted the results using the annotation object")
@@ -362,7 +382,22 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
       gplots::venn(gll())
     })
     
+    # Add debounce to prevent excessive recomputation
+    upset_debouncer <- reactiveVal(0)
+    
+    observeEvent({
+      list(c(input$toggle_up, input$toggle_down, input$toggle_updown,
+              input$toggle_list1, input$toggle_list2, input$toggle_list3, input$toggle_list4))
+    }, {
+      # Debounce by 500ms
+      invalidateLater(500, session)
+      upset_debouncer(isolate(upset_debouncer()) + 1)
+    })
+    
     output$upsetLists <- renderPlot({
+      # Use debouncer to control frequency
+      upset_debouncer()
+      
       shiny::validate(
         need(sum(sapply(gll(),function(arg) length(arg)>0)) > 1,
              message = "Make sure you provide at least two sets")
@@ -469,5 +504,16 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
     )
     
     
+    # Periodic cache cleanup
+    observe({
+      # Clear cache periodically to prevent memory buildup
+      invalidateLater(600000, session)  # 10 minutes
+      isolate({
+        # Clear annotation cache
+        annotation_cache$mapIds_cache <- list()
+        # Run garbage collection
+        gc()
+      })
+    })
   })
 }

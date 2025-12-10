@@ -6,12 +6,6 @@
 #' information from the existing data. The app can be also deployed on a Shiny
 #' server, to allow its usage without any installation on the user's side.
 #'
-#' WEIN makes bulk RNAseq data analysis interactive, easy and reproducible.
-#' The analysis of RNA-seq datasets is guided by the Shiny app as main component of
-#' the package, which also provides a wide set of functions to efficiently extract
-#' information from the existing data. The app can be also deployed on a Shiny
-#' server, to allow its usage without any installation on the user's side.
-#'
 #' @import DESeq2
 #' @import SummarizedExperiment
 #' @import GenomicRanges

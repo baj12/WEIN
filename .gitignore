@@ -49,6 +49,13 @@ idealState_*_*.RData
 *.jar
 bfg-1.14.0.jar
 
+# Additional large files found
+shiny_bookmarks/*/*.rds
+test.Rdata
+testData.RData
+idealState_*.RData
+bfg-*.jar
+
 # Temporary files
 *.tmp
 *.temp

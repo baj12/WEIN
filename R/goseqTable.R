@@ -62,10 +62,9 @@ goseqTable <- function(de.genes,                  # Differentially expressed gen
                        # writeOutput=FALSE,
                        addGeneToTerms=TRUE # ,
                        # outputFiles_goseq="",outputFiles_goseq_kegg=""
-                       ## TODO TODO: bring back in action the function
-                       ## add genes annotated to each term
-                       ## do it by default only for bp?
-                       ## tests at the beginning to see if the whole thing is feasible?
+                       # Future enhancement: Add functionality to export annotated genes for each term
+                       # Consider doing this by default only for biological process (BP) terms
+                       # Feasibility tests needed before implementation
 )
 {
   #  library(goseq)
@@ -125,17 +124,28 @@ goseqTable <- function(de.genes,                  # Differentially expressed gen
     # one list per GO term
     goseq_out$genes <- sapply(goseq_out$category, function(x) cat2gene[[x]])
     
-    # TODO: replace identifiers/annotaions!!!
-    ## and also TODO: do this only if genes are not already symbols
-    goseq_out$genesymbols <- sapply(goseq_out$genes, function(x) sort(AnnotationDbi::mapIds(get(orgDbPkg),keys=x,keytype = "ENSEMBL",column = "SYMBOL",multiVals = "first")))
+    # Replace identifiers/annotations if needed
+    # Only process if genes are not already symbols
+    if (id != "SYMBOL") {
+      goseq_out$genesymbols <- sapply(goseq_out$genes, function(x) sort(AnnotationDbi::mapIds(get(orgDbPkg),keys=x,keytype = "ENSEMBL",column = "SYMBOL",multiVals = "first")))
+      # coerce to char
+      goseq_out$genesymbols <- unlist(lapply(goseq_out$genesymbols,function(arg) paste(arg,collapse=",")))
+    } else {
+      # If genes are already symbols, use them directly
+      goseq_out$genesymbols <- sapply(goseq_out$genes, function(x) paste(x, collapse=","))
+    }
     # coerce to char
     goseq_out$genes <- unlist(lapply(goseq_out$genes,function(arg) paste(arg,collapse=",")))
-    # coerce to char
-    goseq_out$genesymbols <- unlist(lapply(goseq_out$genesymbols,function(arg) paste(arg,collapse=",")))
     
     }
   goseq_out
    }, error =function(e){return(NULL)})
+  
+  # Clear any large objects from memory
+  if (exists("gene2cat")) rm(gene2cat)
+  if (exists("cat2gene")) rm(cat2gene)
+  if (exists("reversemap")) rm(reversemap)
+  
   return(goseq_out)
 }
 

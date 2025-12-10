@@ -15,7 +15,7 @@ count_overview_server <- function(id, values) {
       if(input$countstable_unit=="log10_counts")
         return(log10(1 + counts(values$dds_obj,normalized=TRUE)))
       if(input$countstable_unit=="tpm_counts")
-        return(NULL) ## TODO!: assumes length of genes/exons as known, and is currently not required in the dds
+        return(NULL) # TPM calculation requires gene length information which is not currently available in the dds object
       
     })
     
@@ -141,7 +141,10 @@ count_overview_server <- function(id, values) {
     
     output$heatcorr_plotUI <- renderUI({
       input$compute_pairwisecorr
-      # TODO check that values$color_by is set and set message otherwise
+      # Check that values$color_by is set and show message otherwise
+      if (is.null(values$color_by) || length(values$color_by) == 0) {
+        return(tags$p("Please select a color grouping variable in the sidebar."))
+      }
       plotlyOutput(ns("heatcorr"))
     })
     output$pca_Dim1 <-renderUI({
@@ -278,7 +281,7 @@ count_overview_server <- function(id, values) {
                      filt_dds <- values$dds_obj[t2 > thresh_rowmeans, ]
                    }
                    
-                   # TODO: see if re-estimation of size factors is required
+                   # Re-estimate size factors after filtering
                    filt_dds <- estimateSizeFactors(filt_dds)
                    
                    values$dds_obj <- filt_dds

@@ -6,13 +6,9 @@ dash_Header_ui <- function(){
              packageVersion("WEIN"))),
     titleWidth = 600,
     
-    # TODO:
+    # Logo implementation reference:
     # http://stackoverflow.com/questions/31440564/adding-a-company-logo-to-shinydashboard-header
-    # replace text with image
-    # WEIN_header$children[[2]]$children <- tags$a(href='https://github.com/baj12/WEIN',
-    # tags$img(src='WEIN_logo_v2.png',height='50',width='200'))
-    # title = tags$a(href='https://github.com/baj12/WEIN',
-    #                tags$img(src='WEIN_logo_v2.png',height='50',width='200')),
+    # Current implementation uses text title with embedded image
     
     # task menu for saving state to environment or binary data
     shinydashboard::dropdownMenu(

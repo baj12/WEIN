@@ -19,10 +19,20 @@
 #'
 read_countmatrix <- function(filepath, sepguesser_function = sepguesser) {
   guessed_sep <- sepguesser_function(filepath)
-  cm <- utils::read.delim(filepath, header = TRUE,
-                          as.is = TRUE, sep = guessed_sep, quote = "",
-                          row.names = 1,
-                          check.names = FALSE)
+  
+  # Use data.table::fread for better performance when available
+  if (requireNamespace("data.table", quietly = TRUE)) {
+    cm <- data.table::fread(filepath, sep = guessed_sep, header = TRUE,
+                              check.names = FALSE, data.table = FALSE)
+    # Set first column as row names and remove it
+    rownames(cm) <- cm[,1]
+    cm[,1] <- NULL
+  } else {
+    cm <- utils::read.delim(filepath, header = TRUE,
+                              as.is = TRUE, sep = guessed_sep, quote = "",
+                              row.names = 1,
+                              check.names = FALSE)
+  }
   cm[is.na(cm)] <- 0
   return(cm)
 }
@@ -39,9 +49,16 @@ read_countmatrix <- function(filepath, sepguesser_function = sepguesser) {
 #'
 read_metadata <- function(filepath, sepguesser_function = sepguesser) {
   guessed_sep <- sepguesser_function(filepath)
-  expdesign <- utils::read.delim(filepath, header = TRUE,
-                                 sep = guessed_sep, quote = "",
-                                 check.names = FALSE, stringsAsFactors = TRUE)
+  
+  # Use data.table::fread for better performance when available
+  if (requireNamespace("data.table", quietly = TRUE)) {
+    expdesign <- data.table::fread(filepath, sep = guessed_sep, header = TRUE,
+                                    check.names = FALSE, data.table = FALSE)
+  } else {
+    expdesign <- utils::read.delim(filepath, header = TRUE,
+                                   sep = guessed_sep, quote = "",
+                                   check.names = FALSE, stringsAsFactors = TRUE)
+  }
   if (colnames(expdesign)[1] == "") {
     rownames(expdesign) <- expdesign[,1]
     expdesign <- expdesign[,-1]

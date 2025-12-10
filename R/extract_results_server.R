@@ -126,12 +126,18 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
       if(is.null(values$res_obj))
         return(NULL)
       mydf <- as.data.frame(values$res_obj[order(values$res_obj$padj),])#[1:500,]
-      rownames(mydf) <- createLinkENS(rownames(mydf),species = annoSpecies_df$ensembl_db[match(values$cur_species,annoSpecies_df$species)]) ## TODO: check what are the species from ensembl and
-      ## TODO: add a check to see if wanted?
+      # Check if species is selected and available in Ensembl
+      if (!is.null(values$cur_species) && values$cur_species %in% annoSpecies_df$species) {
+        ensembl_species <- annoSpecies_df$ensembl_db[match(values$cur_species, annoSpecies_df$species)]
+        if (!is.na(ensembl_species) && ensembl_species != "") {
+          rownames(mydf) <- createLinkENS(rownames(mydf), species = ensembl_species)
+        }
+      }
       mydf$symbol <- createLinkGeneSymbol(mydf$symbol)
       # browser()
-      datatable(mydf, extensions = 'Buttons', 
-                options = list(dom = 'lfrtipB', buttons = c('csv')),
+      datatable(mydf, extensions = 'Buttons',
+                options = list(dom = 'lfrtipB', buttons = c('csv'),
+                              pageLength = 50, deferRender = TRUE),
                 escape = FALSE, filter = list(position = 'top', clear = FALSE))%>%
         formatRound(columns=c('baseMean', 'log2FoldChange', 'lfcSE', 'stat', 'pvalue', 'padj'), digits=3)
     })

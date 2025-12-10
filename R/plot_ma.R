@@ -4,7 +4,7 @@
 #' additional support to annotate genes if provided.
 #'
 #' The genes of interest are to be provided as gene symbols if a \code{symbol}
-#' column is provided in \code{res_obj}, or else b< using  the identifiers specified
+#' column is provided in \code{res_obj}, or else by using the identifiers specified
 #' in the row names
 #'
 #' @param res_obj A \code{\link{DESeqResults}} object
@@ -65,7 +65,7 @@ plot_ma <- function(res_obj,
                     FDR = 0.05,
                     point_alpha = 0.2,
                     sig_color = 'red',
-                    annotation_obj = NULL, # TODO: add a check, if not available skip this part
+                    annotation_obj = NULL, # Skip annotation if not available
                     hlines = NULL,
                     title = NULL,
                     xlab = "mean of normalized counts - log10 scale",

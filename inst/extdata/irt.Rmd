@@ -182,8 +182,13 @@ if(!is.null(values$res_obj)) {
   print(p4)
 
   mydf <- as.data.frame(values$res_obj[order(values$res_obj$padj),])#[1:500,]
-  rownames(mydf) <- createLinkENS(rownames(mydf),species = annoSpecies_df$ensembl_db[match(input$speciesSelect,annoSpecies_df$species)]) ## TODO: check what are the species from ensembl and
-      ## TODO: add a check to see if wanted?
+  # Check if species is selected and available in Ensembl
+  if (!is.null(input$speciesSelect) && input$speciesSelect %in% annoSpecies_df$species) {
+    ensembl_species <- annoSpecies_df$ensembl_db[match(input$speciesSelect, annoSpecies_df$species)]
+    if (!is.na(ensembl_species) && ensembl_species != "") {
+      rownames(mydf) <- createLinkENS(rownames(mydf), species = ensembl_species)
+    }
+  }
   mydf$symbol <- createLinkGeneSymbol(mydf$symbol)
   datatable(mydf, escape = FALSE)                       
 }

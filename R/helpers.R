@@ -35,16 +35,39 @@ footer <- function(){
 
 ############################# helper funcs #################################
 
+#' Read the first column from a file
+#'
+#' Reads the first column from a file, guessing the separator automatically and
+#' filtering rows based on a DESeqDataSet object.
+#'
+#' @param fileName Path to the file to read
+#' @param dds_obj A DESeqDataSet object used for filtering rows
+#'
+#' @return A data frame with the first column, filtered based on the dds_obj
+#'
+
 
 read1stCol <- function (fileName,dds_obj){
   guessed_sep <- sepguesser(fileName)
   
-  cm <- tryCatch({utils::read.delim(fileName, header = TRUE,
-                                    as.is = TRUE, sep = guessed_sep, 
-                                    # row.names = 1, # https://github.com/federicomarini/pcaExplorer/issues/1
-                                    ## TODO: tell the user to use tsv, or use heuristics
-                                    ## to check what is most frequently occurring separation character? -> see sepGuesser.R
-                                    check.names = FALSE)
+  # Use data.table::fread for faster reading of large files when available
+  cm <- tryCatch({
+    if (requireNamespace("data.table", quietly = TRUE)) {
+      # Use fread for better performance
+      dt <- data.table::fread(fileName, sep = guessed_sep, header = TRUE,
+                              check.names = FALSE, data.table = FALSE)
+      # Convert to data frame with proper row names
+      rownames(dt) <- dt[,1]
+      dt[,1] <- NULL
+      dt
+    } else {
+      # Fallback to read.delim
+      utils::read.delim(fileName, header = TRUE,
+                        as.is = TRUE, sep = guessed_sep,
+                        # row.names = 1, # https://github.com/federicomarini/pcaExplorer/issues/1
+                        # Check separator and inform user if needed
+                        check.names = FALSE)
+    }
   }, error=function(e){
     cat(file = stderr(), paste(e,"\n"))
     return(NULL)
@@ -93,6 +116,18 @@ sepguesser <- function(file, sep_list = c(",", "\t", ";"," ")) {
   sep
 }
 
+#' Alternative separator guesser function
+#'
+#' This function tries to guess which separator was used in a text delimited file
+#' using a different approach than sepguesser.
+#'
+#' @param file The name of the file which the data are to be read from
+#' @param sep_list A vector containing the candidates for being identified as
+#' separators. Defaults to \code{c(",", "\t", ";"," ")}
+#'
+#' @return A character value, corresponding to the guessed separator. One of ","
+#' (comma), "\\t" (tab), ";" (semicolon)," " (whitespace)
+#'
 sepguesser2 <- function(file, sep_list = c(",", "\t", ";"," ")) {
   separators_list = sep_list
   rl = readLines(file, warn = FALSE)

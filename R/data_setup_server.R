@@ -311,7 +311,11 @@ data_setup_server <- function(id, values, annoSpecies_df) {
                                   #   bp = bpparam()
                                   # } else {
                                   pa = FALSE
-                                  bp = MulticoreParam(workers = 8)
+                                  # Dynamically determine number of workers based on system
+                                  workers <- parallel::detectCores() - 1
+                                  # Ensure at least 1 worker
+                                  workers <- max(1, workers)
+                                  bp = MulticoreParam(workers = workers)
                                   # }
                                   # leave open option for computing in parallel?
                                   values$dds_obj <- tryCatch({

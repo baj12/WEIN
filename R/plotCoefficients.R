@@ -1,7 +1,7 @@
-#' plot coefficients of a gene given a DESeqDataSet (DESeq2 > v1.16) 
-#' 
-#' 
-#' \code{plotCoeficients} plot coefficients of a gene given a DESeqDataSet (DESeq2 > v1.16) 
+#' Plot coefficients of a gene given a DESeqDataSet (DESeq2 > v1.16)
+#'
+#'
+#' Plots coefficients of a gene given a DESeqDataSet (DESeq2 > v1.16)
 #' 
 #' @param dds DESeq2 object (DESeqDataSet) 
 #' @param geneName name of the gene to be plotted, needs to be in the rownames of dds

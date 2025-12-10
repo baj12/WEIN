@@ -1,6 +1,7 @@
 #' Generate a tidy table with the results of DESeq
 #'
-#' Generate a tidy table with the results of DESeq
+#' Generate a tidy table with the results of DESeq, converting the DESeqResults object
+#' into a data frame with gene identifiers as a separate column and arranging by adjusted p-value.
 #'
 #' @param deseqresult A \code{\link{DESeqResults}} object
 #'
@@ -33,7 +34,8 @@ deseqresult2tbl <- function(deseqresult) {
 
 #' Generate a tidy table with the DE genes from the results of DESeq
 #'
-#' Generate a tidy table with the DE genes from the results of DESeq
+#' Generate a tidy table with the differentially expressed (DE) genes from the results of DESeq,
+#' filtering genes based on the specified False Discovery Rate (FDR) threshold and arranging by adjusted p-value.
 #'
 #' @param deseqresult A \code{\link{DESeqResults}} object
 #' @param FDR Numeric value, the significance level for thresholding adjusted p-values

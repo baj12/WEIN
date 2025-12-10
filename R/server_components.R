@@ -429,6 +429,20 @@ WEIN_server <- function(
     
     
     
-   
-  }
-}
+    
+    # Periodic memory cleanup
+    observe({
+      # Run garbage collection every 5 minutes
+      invalidateLater(300000, session)  # 5 minutes in milliseconds
+      gc()
+    })
+    
+    # Cleanup temporary files when session ends
+    session$onSessionEnded(function() {
+      # Clean up any temporary files created during the session
+      if (exists("userdir") && dir.exists(userdir)) {
+        unlink(userdir, recursive = TRUE)
+      }
+    })
+   }
+ }

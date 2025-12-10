@@ -19,9 +19,26 @@
 #' unlink(tmp_gmt)  # clean up
 #' # see how the gene identifiers are encoded as ENTREZ id
 read_gmt <- function(gmtfile){
-  # TODO: some checks on the gmt file format?
+  # Check if file exists
+  if (!file.exists(gmtfile)) {
+    stop("GMT file does not exist: ", gmtfile)
+  }
   
-  input_lines <- strsplit(readLines(gmtfile), "\t")
+  # Read file and check if it's empty
+  file_lines <- readLines(gmtfile)
+  if (length(file_lines) == 0) {
+    warning("GMT file is empty: ", gmtfile)
+    return(list())
+  }
+  
+  input_lines <- strsplit(file_lines, "\t")
+  
+  # Check if all lines have at least 3 elements (name, source, and at least one gene)
+  line_lengths <- sapply(input_lines, length)
+  if (any(line_lengths < 3)) {
+    warning("Some lines in the GMT file have fewer than 3 elements")
+  }
+  
   # the two first elements in each signature would be the id and e.g. its source
   pathways <- lapply(input_lines, tail, -2)
   # pick the name from the provided info in the gmt file
