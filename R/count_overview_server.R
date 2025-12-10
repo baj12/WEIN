@@ -144,7 +144,7 @@ count_overview_server <- function(id, values) {
       
     })
     output$pairwise_plotUI <- renderUI({
-      if(!input$compute_pairwisecorr) return()
+      req(input$compute_pairwisecorr)
       
       plotOutput(ns("corrplot"), height = "1000px")
       # )
@@ -157,33 +157,33 @@ count_overview_server <- function(id, values) {
       plotlyOutput(ns("heatcorr"))
     })
     output$pca_Dim1 <-renderUI({
-      if(!input$compute_pairwisecorr) return()
+      req(input$compute_pairwisecorr)
       selectizeInput(ns("pcaDim1"), label = "Which PCA on X",
                      choices = c(1:20), selected = 1, multiple = F)
     })
     output$pca_Dim2 <-renderUI({
-      if(!input$compute_pairwisecorr) return()
+      req(input$compute_pairwisecorr)
       selectizeInput(ns("pcaDim2"), label = "Which PCA on Y",
                      choices = c(1:20), selected = 2, multiple = F)
     })
     output$pca_plotUI <- renderUI({
-      if(!input$compute_pairwisecorr) return()
+      req(input$compute_pairwisecorr)
       plotlyOutput(ns("pcaPlot"))
     })
     output$pcaEV_plotUI <- renderUI({
-      if(!input$compute_pairwisecorr) return()
+      req(input$compute_pairwisecorr)
       plotlyOutput(ns("pcaEVPlot"))
     })
     output$pca_plotUI34 <- renderUI({
-      if(!input$compute_pairwisecorr) return()
+      req(input$compute_pairwisecorr)
       plotlyOutput(ns("pcaPlot34"))
     })
     output$pca_plotUI56 <- renderUI({
-      if(!input$compute_pairwisecorr) return()
+      req(input$compute_pairwisecorr)
       plotlyOutput(ns("pcaPlot56"))
     })
     output$sizeFactors_plotUI    <- renderUI({
-      if(!input$compute_pairwisecorr) return()
+      req(input$compute_pairwisecorr)
       plotOutput(ns("sizeFactorsPlot"))
     }) 
     output$geneHeatmap_plotUI <- renderUI({
@@ -212,8 +212,8 @@ count_overview_server <- function(id, values) {
       
       # and extract the count data from the DESeq2 object.
       heatmapcounts <- assay(nt)[select, ]
-      # save(file = "~/scShinyHubDebug/idealImmunoTP.RData", list = c(ls(), ls(envir = globalenv())))
-      # load(file="~/scShinyHubDebug/idealImmunoTP.RData")
+      # save(file = "~/scShinyHubDebug/WEIN.RData", list = c(ls(), ls(envir = globalenv())))
+      # load(file="~/scShinyHubDebug/WEIN.RData")
       # if("symbol" %in% names(dds_obj)) {
       #   p <- plot_ma(values$res_obj,
       #                intgenes = values$genelist_ma$`Gene Symbol`,annotation_obj = values$annotation_obj,FDR = input$FDR)
