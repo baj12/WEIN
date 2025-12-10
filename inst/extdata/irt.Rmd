@@ -426,7 +426,7 @@ at the University Medical Center of the Johannes Gutenberg University Mainz.
 
 ## Code availability
 
-`WEIN` is available on <a href="https://github.com/baj12/idealImmunoTP" target="_blank">GitHub</a>.
+`WEIN` is available on <a href="https://github.com/baj12/WEIN" target="_blank">GitHub</a>.
 
 ## Citation info
 
@@ -453,11 +453,11 @@ footertemplate <- function(){
       list(
         hr(),
         "This report was generated with",
-        tags$a(href="https://github.com/baj12/idealImmunoTP", "WEIN"), br(),
+        tags$a(href="https://github.com/baj12/WEIN", "WEIN"), br(),
         "WEIN is a project developed by Bernd Jagla at the Institut Pasteur, based on the original ideal package by Federico Marini in the Bioinformatics division of the ",
         tags$a(href="http://www.unimedizin-mainz.de/imbei","IMBEI"),br(),
         "Development of the WEIN package is on ",
-        tags$a(href="https://github.com/baj12/idealImmunoTP", "GitHub")
+        tags$a(href="https://github.com/baj12/WEIN", "GitHub")
       )
     )
   )

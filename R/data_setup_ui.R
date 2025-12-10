@@ -13,7 +13,7 @@ data_setup_ui <- function(){
           id = "help_datasetup",open = NULL, 
           shinyBS::bsCollapsePanel(
             "Help",
-            includeMarkdown(system.file("extdata", "help_datasetup.md",package = "idealImmunoTP"))
+            includeMarkdown(system.file("extdata", "help_datasetup.md",package = "WEIN"))
           )
         )
       )
@@ -38,7 +38,7 @@ data_setup_ui <- function(){
                        style="color: #0092AC; background-color: #FFFFFF; border-color: #FFFFFF"),
           shinyBS::bsTooltip(
             "help_format", 
-            "How to provide your input data to idealImmunoTP",
+            "How to provide your input data to WEIN",
             "bottom", options = list(container = "body")
           )
         )

@@ -91,31 +91,9 @@ data_setup_server <- function(id, values, annoSpecies_df) {
         return(NULL)
       }
       dsgn <- as.formula(paste0("~", dsgString))
-      expanded_formula <- terms(dsgn, data = values$expdesign)
-      model_matrix <- model.matrix(expanded_formula, data =  values$expdesign)
-      longData<-reshape2::melt(model_matrix)
-      longData<-longData[longData$value!=0,]
       
-      p1 = ggplot(longData, aes(x = Var1, y = Var2)) + 
-        geom_raster(aes(fill=value)) + 
-        scale_fill_gradient(low="grey90", high="darkgrey") +
-        theme(axis.title.x = element_blank(),axis.title.y = element_blank(),
-              axis.text.y =  element_text(size=14),
-              legend.position = "none") 
-      
-      sample_counts <- as.data.frame(colSums(model_matrix != 0))
-      colnames(sample_counts) = "count"
-      sample_counts$names = rownames(sample_counts)
-      sample_counts$names = factor(sample_counts$names, levels = levels(longData$Var2))
-      all(levels(longData$Var2) %in% sample_counts$names)
-      sample_counts = sample_counts[levels(longData$Var2),]
-      p2 = ggplot(sample_counts, aes(x=names, y=count)) + 
-        geom_bar(stat = "identity") + coord_flip() + 
-        theme(axis.title.x = element_blank(),
-              axis.title.y = element_blank(),
-              axis.text.y = element_blank(),
-              axis.ticks.y = element_blank())
-      cowplot::plot_grid(p1, p2,rel_widths = c(4, 1) )
+      # Use the new utility function
+      generate_cooccurrence_plots(values$expdesign, dsgn)
     })
     
     observeEvent(input$geneFilter, {
@@ -151,8 +129,8 @@ data_setup_server <- function(id, values, annoSpecies_df) {
     
     observeEvent(input$help_format, {
       showModal(modalDialog(
-        title = "Format specifications for idealImmunoTP",
-        includeMarkdown(system.file("extdata", "datainput.md",package = "idealImmunoTP")),
+        title = "Format specifications for WEIN",
+        includeMarkdown(system.file("extdata", "datainput.md",package = "WEIN")),
         h4("Example:"),
         tags$img(
           src = base64enc::dataURI(file = system.file("www", "help_dataformats.png",package = "pcaExplorer"), mime = "image/png"),
@@ -554,28 +532,18 @@ data_setup_server <- function(id, values, annoSpecies_df) {
         )
       }
       
-      guessed_sep <- sepguesser(input$uploadcmfile$datapath[1])
-      cm <- utils::read.delim(input$uploadcmfile$datapath[1], header = TRUE,
-                              as.is = TRUE, sep = guessed_sep, quote = "",
-                              row.names = 1, # https://github.com/federicomarini/pcaExplorer/issues/1
-                              ## TODO: tell the user to use tsv, or use heuristics
-                              ## to check what is most frequently occurring separation character? -> see sepGuesser.R
-                              check.names = FALSE)
+      # Use the new utility function
+      cm <- read_countmatrix(input$uploadcmfile$datapath[1])
       if (nrow(input$uploadcmfile) > 1){
         for (r in 2:nrow(input$uploadcmfile)) {
-          cmt <- utils::read.delim(input$uploadcmfile$datapath[r], header = TRUE,
-                                   as.is = TRUE, sep = guessed_sep, quote = "",
-                                   row.names = 1, # https://github.com/federicomarini/pcaExplorer/issues/1
-                                   ## TODO: tell the user to use tsv, or use heuristics
-                                   ## to check what is most frequently occurring separation character? -> see sepGuesser.R
-                                   check.names = FALSE)
+          # Use the new utility function
+          cmt <- read_countmatrix(input$uploadcmfile$datapath[r])
           cm2 = base::merge(cm, cmt, by = 0,  all=T)
           rownames(cm2) = cm2$Row.names
           cm2$Row.names = NULL
           cm = cm2
         }
       }
-      cm[is.na(cm)] <- 0
       cat(file = stderr(), paste("read count data: rows:", nrow(cm), "ncol:", ncol(cm), "\n", "sample names:", colnames(cm), "\n"))
       # browser()
       return(cm)
@@ -586,21 +554,8 @@ data_setup_server <- function(id, values, annoSpecies_df) {
         return(NULL)
       # browser()
       
-      guessed_sep <- sepguesser(input$uploadmetadatafile$datapath)
-      expdesign <- utils::read.delim(input$uploadmetadatafile$datapath, header = TRUE,
-                                     sep = guessed_sep, quote = "",
-                                     check.names = FALSE, stringsAsFactors = TRUE)
-      if (colnames(expdesign)[1] == "") {
-        tryCatch({
-          rownames(expdesign) <- expdesign[,1]},
-          error = function(e) {
-            showNotification(paste("Error while load meta data:\n", e),
-                             type = "error")
-            return(NULL)
-          }
-        )
-        expdesign <- expdesign[,-1]
-      }
+      # Use the new utility function
+      expdesign <- read_metadata(input$uploadmetadatafile$datapath)
       cat(file = stderr(), paste("read metadata: rows:", nrow(expdesign), "colnames:", colnames(expdesign), "\n"))
       # browser()
       return(expdesign)
@@ -696,8 +651,8 @@ data_setup_server <- function(id, values, annoSpecies_df) {
       }
       locfunc <- stats::median
       counts <- values$countmatrix[, comSamples]
-      # save(file = "~/SCHNAPPsDebug/idealImmunoTP.RData", list = ls())
-      # cp = load("~/SCHNAPPsDebug/idealImmunoTP.RData")
+      # save(file = "~/SCHNAPPsDebug/WEIN.RData", list = ls())
+      # cp = load("~/SCHNAPPsDebug/WEIN.RData")
       if (nchar(filterExp)>0){
         counts <- counts[grep(filterExp, rownames(counts), invert = TRUE), ]
       }
@@ -711,28 +666,24 @@ data_setup_server <- function(id, values, annoSpecies_df) {
       c2= rownames(values$expdesign)
       design = dsgn
       # browser()
-      # save(file = "~/SCHNAPPsDebug/idealImmunoTPDDS.RData", list = c('counts', "colData", "design", "comSamples", "c1", "c2", "md", "rc"))
-      colData[, input$dds_design[1]] = relevel(colData[, input$dds_design[1]], ref = values$dds_intercept)
+      # save(file = "~/SCHNAPPsDebug/WEINDDS.RData", list = c('counts', "colData", "design", "comSamples", "c1", "c2", "md", "rc"))
+      
+      # Use the new utility function
       dds <- tryCatch(
         {
-          # add 1 if all rows contain at least one 0
-          # needed for estimateSizeFactors
-          # one call also estimateSizeFactors(dds, type = "iterate"). but that takes too long
-          if (all(rowSums(counts==0)>0)) {
-            counts = counts + 1
-          }
-          # reset if count data was supplied via GUI and not as parameter
-          dds <- DESeqDataSetFromMatrix(
-            countData = counts,
-            colData = colData,
-            design = design
+          dds <- create_dds(
+            countmatrix = counts,
+            expdesign = colData,
+            design_formula = design,
+            gene_filter = filterExp,
+            dds_intercept = values$dds_intercept,
+            design_factor = input$dds_design[1]
           )
-          dds <- estimateSizeFactors(dds)
         },
         error = function(e) {
           cat(file = stderr(), paste("error during creation of dds object:", e))
-          # save(file = "~/SCHNAPPsDebug/idealImmunoTPDDS.RData", list = c('counts', "colData", "design", "comSamples", "c1", "c2", "md", "rc"))
-          # cp =load("/Users/bernd/SCHNAPPsDebug/idealImmunoTPDDS.RData")
+          # save(file = "~/SCHNAPPsDebug/WEINDDS.RData", list = c('counts', "colData", "design", "comSamples", "c1", "c2", "md", "rc"))
+          # cp =load("/Users/bernd/SCHNAPPsDebug/WEINDDS.RData")
           showNotification(
             paste(
               "Error during creation of DDS object",

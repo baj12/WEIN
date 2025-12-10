@@ -1,14 +1,15 @@
 #' UI Components for WEIN
 #'
-#' Contains all UI-related functions for the idealImmunoTP Shiny application.
+#' Contains all UI-related functions for the WEIN Shiny application.
 #'
-#' @name idealImmunoTP-ui
+#' @name WEIN-ui
 #' @docType package
-NULL
+#' @keywords internal
+"_PACKAGE"
 
 #' Create the UI for WEIN
 #'
-#' Defines the complete UI structure for the idealImmunoTP Shiny application.
+#' Defines the complete UI structure for the WEIN Shiny application.
 #'
 #' @param req The Shiny request object
 #' @param values Reactive values containing application state

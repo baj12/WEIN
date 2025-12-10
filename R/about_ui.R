@@ -7,7 +7,7 @@ about_ui <- function(){
     fluidRow(
       column(
         width = 8,
-        includeMarkdown(system.file("extdata", "about.md",package = "idealImmunoTP")),
+        includeMarkdown(system.file("extdata", "about.md",package = "WEIN")),
         
         verbatimTextOutput("sessioninfo")
       )

@@ -1,15 +1,16 @@
 #' Server Components for WEIN
 #'
-#' Contains all server-related functions for the idealImmunoTP Shiny application.
+#' Contains all server-related functions for the WEIN Shiny application.
 #'
-#' @name idealImmunoTP-server
+#' @name WEIN-server
 #' @docType package
-NULL
+#' @keywords internal
+"_PACKAGE"
 
 
 #' Create the server for WEIN
 #'
-#' Defines the complete server logic for the idealImmunoTP Shiny application.
+#' Defines the complete server logic for the WEIN Shiny application.
 #'
 #' @param input Shiny input object
 #' @param output Shiny output object
@@ -85,11 +86,11 @@ WEIN_server <- function(
     require(BiocStyle) 
     require(airway) 
     require(org.Hs.eg.db)
-    require(TxDb.Hsapiens.UCSC.hg38.knownGene) 
-    require(DEFormats) 
+    require(TxDb.Hsapiens.UCSC.hg38.knownGene)
+    require(DEFormats)
     require(edgeR)
-    
-    
+    require(reshape2)
+    require(cowplot)
     
     # server setup reactivevalues -----------------------------------------------------------
     ## placeholder for the figures to export
@@ -326,7 +327,7 @@ WEIN_server <- function(
     # update aceEditor module
     observe({
       # loading rmd report from disk
-      inFile <- system.file("extdata", "irt.Rmd",package = "idealImmunoTP")
+      inFile <- system.file("extdata", "irt.Rmd",package = "WEIN")
       
       isolate({
         if(!is.null(inFile) && !is.na(inFile)) {
@@ -350,7 +351,7 @@ WEIN_server <- function(
         tagList(
           textInput(
             "se_export_name",label = "Choose a filename for the serialized .rds object",
-            value = "se_ideal_toiSEE.rds"),
+            value = "se_WEIN_toiSEE.rds"),
           downloadButton(
             "button_iSEEexport",
             label = "Export as serialized SummarizedExperiment"
@@ -361,7 +362,7 @@ WEIN_server <- function(
     
     output$button_iSEEexport <- downloadHandler(
       filename = function() {
-        # paste0("se_ideal_toiSEE_",gsub(" ","_",gsub("-","",gsub(":","-",as.character(Sys.time())))),".rds")
+        # paste0("se_WEIN_toiSEE_",gsub(" ","_",gsub("-","",gsub(":","-",as.character(Sys.time())))),".rds")
         input$se_export_name
       }, content = function(file) {
         se <- wrapup_for_iSEE(values$dds_obj, values$res_obj)
@@ -379,22 +380,22 @@ WEIN_server <- function(
         # flush input and values to the environment in two distinct objects (to be reused later?)
         isolate({
           
-          # ideal_env <<- new.env(parent = emptyenv())
+          # WEIN_env <<- new.env(parent = emptyenv())
           cur_inputs <- reactiveValuesToList(input)
           cur_values <- reactiveValuesToList(values)
           tstamp <- gsub(" ","_",gsub("-","",gsub(":","-",as.character(Sys.time()))))
           
           # myvar <- "frfr"
-          # assign("test", myvar, ideal_env)
+          # assign("test", myvar, WEIN_env)
           
           # better practice rather than assigning to global env - notify users of this
-          assign(paste0("ideal_inputs_", tstamp),cur_inputs, envir = ideal_env)
-          assign(paste0("ideal_values_", tstamp),cur_values, envir = ideal_env)
-          stopApp("idealImmunoTP closed, state successfully saved to global R environment.")
+          assign(paste0("WEIN_inputs_", tstamp),cur_inputs, envir = WEIN_env)
+          assign(paste0("WEIN_values_", tstamp),cur_values, envir = WEIN_env)
+          stopApp("WEIN closed, state successfully saved to global R environment.")
           
         })
       } else {
-        stopApp("idealImmunoTP closed")
+        stopApp("WEIN closed")
         q("no")
       }
     })
@@ -411,7 +412,7 @@ WEIN_server <- function(
     
     output$task_state_save <- downloadHandler(
       filename = function() {
-        paste0("idealState_",gsub(" ","_",gsub("-","",gsub(":","-",as.character(Sys.time())))),".RData")
+        paste0("WEINState_",gsub(" ","_",gsub("-","",gsub(":","-",as.character(Sys.time())))),".RData")
       },
       content = function(file) {
         saveState(file)

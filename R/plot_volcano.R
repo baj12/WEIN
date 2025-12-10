@@ -66,8 +66,8 @@ plot_volcano <- function(res_obj,
     mydf$symbol = rownames(mydf)
     pasteText <- "paste('gene:',symbol)"
   }
-  p <- ggplot(mydf, aes_string(x = "log2FoldChange", y = "-log10(pvalue)", 
-                               text = pasteText)) + geom_point(aes_string(color = "isDE"), alpha = 0.4)
+  p <- ggplot(mydf, aes(x = log2FoldChange, y = -log10(pvalue),
+                               text = pasteText)) + geom_point(aes(color = isDE), alpha = 0.4)
 
   if(!is.null(ylim_up))
     p <- p + coord_cartesian(ylim = c(0, ylim_up))
@@ -83,8 +83,8 @@ plot_volcano <- function(res_obj,
       values = c("black", "red"),
       labels = c("nonDE","DE"))
 
-  p <- p + geom_vline(aes(xintercept = 1), col = "lightblue", alpha = 0.6, size = 1.5) +
-    geom_vline(aes(xintercept = -1), col = "lightblue", alpha = 0.6, size = 1.5)
+  p <- p + geom_vline(aes(xintercept = 1), col = "lightblue", alpha = 0.6, linewidth = 1.5) +
+    geom_vline(aes(xintercept = -1), col = "lightblue", alpha = 0.6, linewidth = 1.5)
 
   if(!is.null(intgenes)){
 
@@ -101,10 +101,10 @@ plot_volcano <- function(res_obj,
 
     # df_intgenes <- mydf[mydf$symbol %in% intgenes,]
 
-    p <- p + geom_point(data = df_intgenes,aes_string("log2FoldChange", "-log10(pvalue)"), color = intgenes_color, size = 4)
+    p <- p + geom_point(data = df_intgenes,aes(x = log2FoldChange, y = -log10(pvalue)), color = intgenes_color, size = 4)
 
     if(labels_intgenes) {
-      p <- p + geom_text(data = df_intgenes,aes_string("log2FoldChange", "-log10(pvalue)",label="myids"),
+      p <- p + geom_text(data = df_intgenes,aes(x = log2FoldChange, y = -log10(pvalue), label = myids),
                          color = intgenes_color, size=5,hjust=0.25, vjust=-0.75)
     }
 

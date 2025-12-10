@@ -20,7 +20,7 @@ footer <- function(){
         "License: ",tags$a(href="https://opensource.org/licenses/MIT","MIT"), br(),
 
         "Development of the WEIN package is on ",
-        tags$a(href="https://github.com/baj12/idealImmunoTP", "GitHub"), "."
+        tags$a(href="https://github.com/baj12/WEIN", "GitHub"), "."
         
       )
     )
@@ -74,10 +74,10 @@ read1stCol <- function (fileName,dds_obj){
 #' @export
 #'
 #' @examples
-#' sepguesser(system.file("extdata/design_commas.txt",package = "ideal"))
-#' sepguesser(system.file("extdata/design_semicolons.txt",package = "ideal"))
-#' sepguesser(system.file("extdata/design_spaces.txt",package = "ideal"))
-#' mysep <- sepguesser(system.file("extdata/design_tabs.txt",package = "ideal"))
+#' sepguesser(system.file("extdata/design_commas.txt",package = "WEIN"))
+#' sepguesser(system.file("extdata/design_semicolons.txt",package = "WEIN"))
+#' sepguesser(system.file("extdata/design_spaces.txt",package = "WEIN"))
+#' mysep <- sepguesser(system.file("extdata/design_tabs.txt",package = "WEIN"))
 #'
 #' # to be used for reading in the same file, without having to specify the sep
 #'

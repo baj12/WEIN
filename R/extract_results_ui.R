@@ -13,7 +13,7 @@ extract_results_ui <-  function(){
             id = "help_extractresults",open = NULL,
             shinyBS::bsCollapsePanel(
               "Help",
-              includeMarkdown(system.file("extdata", "help_results.md",package = "idealImmunoTP")))
+              includeMarkdown(system.file("extdata", "help_results.md",package = "WEIN")))
           )
         )
       ),

@@ -12,7 +12,7 @@ signature_ui <- function(){
             id = "help_signatureexplorer",open = NULL,
             shinyBS::bsCollapsePanel(
               "Help",
-              includeMarkdown(system.file("extdata", "help_signatureexplorer.md",package = "idealImmunoTP")))
+              includeMarkdown(system.file("extdata", "help_signatureexplorer.md",package = "WEIN")))
           )
         )
       ),

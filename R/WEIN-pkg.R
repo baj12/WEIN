@@ -54,6 +54,7 @@
 #' Bernd Jagla \email{bernd.jagla@@pasteur.fr}, 2025
 #'
 #' Maintainer: Bernd Jagla \email{bernd.jagla@@pasteur.fr}
-#' @name ideal-pkg
+#' @name WEIN-pkg
 #' @docType package
-NULL
+#' @keywords internal
+"_PACKAGE"

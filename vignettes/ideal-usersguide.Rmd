@@ -1,5 +1,5 @@
 ---
-title: "idealImmunoTP User's Guide"
+title: "WEIN User's Guide"
 author:
 - name: Federico Marini
   affiliation: 
@@ -9,11 +9,11 @@ author:
 - name: Harald Binder
   affiliation: *id
 date: "`r BiocStyle::doc_date()`"
-package: "`r BiocStyle::pkg_ver('idealImmunoTP')`"
+package: "`r BiocStyle::pkg_ver('WEIN')`"
 abstract: >
   In the scope of differential expression analysis, we provide the R/Bioconductor 
-  package `r Biocpkg("idealImmunoTP")`, which serves as a web application to allow 
-  simultaneously for interactive and reproducible analysis. `r Biocpkg("idealImmunoTP")`
+  package `r Biocpkg("WEIN")`, which serves as a web application to allow
+  simultaneously for interactive and reproducible analysis. `r Biocpkg("WEIN")`
   guides the user throughout the steps of Differential Expression analysis and
   produces a wealth of effective visualizations to facilitate data interpretation,
   in a comprehensive and accessible way for a wide range of scientists.
@@ -21,25 +21,25 @@ output:
   BiocStyle::html_document:
     toc_float: true
 vignette: >
-  %\VignetteIndexEntry{idealImmunoTP User's Guide}
+  %\VignetteIndexEntry{WEIN User's Guide}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}  
-  %\VignettePackage{idealImmunoTP}
+  %\VignetteEncoding{UTF-8}
+  %\VignettePackage{WEIN}
   %\VignetteKeywords{GeneExpression, DifferentialExpression, RNASeq, Sequencing, Visualization, QualityControl, GUI, GeneSetEnrichment, ReportWriting}
 ---
 
 
-<!-- **Package**: `r Rpackage("idealImmunoTP")` -->
+<!-- **Package**: `r Rpackage("WEIN")` -->
 
-<!-- **Authors**: `r packageDescription("idealImmunoTP")[["Author"]]` -->
+<!-- **Authors**: `r packageDescription("WEIN")[["Author"]]` -->
 
-<!-- **Version**: `r packageDescription("idealImmunoTP")$Version` -->
+<!-- **Version**: `r packageDescription("WEIN")$Version` -->
 
 **Compiled date**: `r Sys.Date()`
 
 **Last edited**: 2019-02-06
 
-**License**: `r packageDescription("idealImmunoTP")[["License"]]`
+**License**: `r packageDescription("WEIN")[["License"]]`
 
 
 ```{r setup, echo=FALSE, warning=FALSE}
@@ -54,33 +54,33 @@ set.seed(42)
 # Getting started
 
 <p align="center">
-<img src="ideal_logo_v2.png"/>
+<img src="WEIN_logo_v2.png"/>
 </p>
 
-`r Biocpkg("idealImmunoTP")` is an R package distributed as part of the [Bioconductor](http://bioconductor.org) project. 
+`r Biocpkg("WEIN")` is an R package distributed as part of the [Bioconductor](http://bioconductor.org) project. 
 To install the package, start R and enter:
 
 ```{r installation, eval=FALSE}
 if (!requireNamespace("BiocManager", quietly=TRUE))
     install.packages("BiocManager")
-BiocManager::install("ideal")
+BiocManager::install("WEIN")
 ```
 
-The GitHub repository for `r Biocpkg("ideal")` is https://github.com/federicomarini/ideal. 
+The GitHub repository for `r Biocpkg("WEIN")` is https://github.com/baj12/WEIN. 
 This is the place to file an issue, report a bug, or provide a pull request.
 
-Once `r Rpackage("idealImmunoTP")` is installed, it can be loaded by the following command.
+Once `r Rpackage("WEIN")` is installed, it can be loaded by the following command.
 
 ```{r loadlibrary, message=FALSE}
-library("idealImmunoTP")
+library("WEIN")
 ```
 
 # Introduction
 
-`r Biocpkg("ideal")` is a Bioconductor package containing a Shiny application for analyzing RNA-Seq data in the context of differential expression. 
+`r Biocpkg("WEIN")` is a Bioconductor package containing a Shiny application for analyzing RNA-Seq data in the context of differential expression. 
 This enables an interactive and at the same time analysis, keeping the functionality accessible, and yet providing a comprehensive selection of graphs and tables to mine the dataset at hand.
 
-`r Biocpkg("ideal")` is an R package which fully leverages the infrastructure of the Bioconductor project in order to deliver an interactive yet reproducible analysis for the detection of differentially expressed genes in RNA-Seq datasets. 
+`r Biocpkg("WEIN")` is an R package which fully leverages the infrastructure of the Bioconductor project in order to deliver an interactive yet reproducible analysis for the detection of differentially expressed genes in RNA-Seq datasets. 
 Graphs, tables, and interactive HTML reports can be readily exported and shared across collaborators. 
 The dynamic user interface displays a broad level of content and information, subdivided by thematic tasks. 
 All in all, it aims to enforce a proper analysis, by reaching out both life scientists and experienced bioinformaticians, and also fosters the communication between the two sides, offering robust statistical methods and high standard of accessible documentation.
@@ -92,25 +92,25 @@ Reproducibility is supported via state saving and automated report generation.
 
 ## Citation info
 
-If you use `r Biocpkg("ideal")` for your analysis, please cite it as here below:
+If you use `r Biocpkg("WEIN")` for your analysis, please cite it as here below:
 
 ```{r citation}
-citation("idealImmunoTP")
+citation("WEIN")
 ```
 
 # Using the application
 
-There are different ways to use `r Biocpkg("ideal")` for interactive differential expression analysis.
+There are different ways to use `r Biocpkg("WEIN")` for interactive differential expression analysis.
 
-## Launching `r Biocpkg("ideal")` locally
+## Launching `r Biocpkg("WEIN")` locally
 
 First load the library:
 
 ```{r using}
-library("idealImmunoTP")
+library("WEIN")
 ```
 
-and then launch the app with the `idealImmunoTP` function. 
+and then launch the app with the `WEIN` function.
 This takes the following essential parameters as input:
 
 - `dds_obj` - a `DESeqDataSet` object. If not provided, then a `countmatrix` and a `expdesign` need to be provided. If none of the above is provided, it is possible to upload the data during the execution of the Shiny App
@@ -122,31 +122,27 @@ symbols. If not provided, it can be constructed during the execution via the `or
 
 Different modalities are supported to launch the application:
 
-- `idealImmunoTP(dds_obj = dds, res_obj = res, annotation_obj = anno)`, where the objects are precomputed in the current session and provided as parameters
-- `idealImmunoTP(dds_obj = dds)`, as in the command above, but where the result object is assembled at runtime 
-- `idealImmunoTP(countmatrix = countmatrix, expdesign = expdesign)`, where instead of passing the defined `DESeqDataSet` object, its components are given, namely the count matrix (e.g. generated after a run of featureCounts or HTSeq-count) and a data frame with the experimental covariates. 
+- `WEIN(dds_obj = dds, res_obj = res, annotation_obj = anno)`, where the objects are precomputed in the current session and provided as parameters
+- `WEIN(dds_obj = dds)`, as in the command above, but where the result object is assembled at runtime
+- `WEIN(countmatrix = countmatrix, expdesign = expdesign)`, where instead of passing the defined `DESeqDataSet` object, its components are given, namely the count matrix (e.g. generated after a run of featureCounts or HTSeq-count) and a data frame with the experimental covariates.
   The design formula can be constructed interactively at runtime
-- `idealImmunoTP()`, where the count matrix and experimental design can simply be uploaded at runtime, where all the derived objects can be extracted and computed live. 
+- `WEIN()`, where the count matrix and experimental design can simply be uploaded at runtime, where all the derived objects can be extracted and computed live.
   These files have to be formatted as tabular text files, and a function in the package tries to guess the separator, based on heuristics of occurrencies per line of commonly used characters
 
-## Accessing the public instance of `r Biocpkg("ideal")` 
+## Accessing the public instance of `r Biocpkg("WEIN")` 
 
-To use `r Biocpkg("ideal")` without installing any additional software, you can access the public instance of the Shiny Server made available at the Institute of Medical Biostatistics, Epidemiology and Informatics (IMBEI) in Mainz.
+To use `r Biocpkg("WEIN")` without installing any additional software, you can access the public instance of the Shiny Server made available at the Institute of Medical Biostatistics, Epidemiology and Informatics (IMBEI) in Mainz.
 
 This resource is accessible at this address: 
 
-http://shiny.imbei.uni-mainz.de:3838/ideal
+http://shiny.imbei.uni-mainz.de:3838/WEIN
 
 ## Deploying to a Shiny Server
 
-A deployment-oriented version of the package is available at https://github.com/federicomarini/ideal_serveredition. 
-This repository contains also detailed instruction to setup the running instance of a Shiny Server, where `r Biocpkg("ideal")` can be run without further installation for the end-users.
+A deployment-oriented version of the package is available at https://github.com/baj12/WEIN. 
+This repository contains also detailed instruction to setup the running instance of a Shiny Server, where `r Biocpkg("WEIN")` can be run without further installation for the end-users.
 
-Please note that you still need `r Biocpkg("ideal")` to be installed there once during the setup phase - for this operation, you might require root administrator permissions. 
-
-<!-- Following the structure of \texttt{pcaExplorer}, the deployment as a standalone web application is easily achieved also for \texttt{idealImmunoTP}, with the only requirement of a running Shiny Server. Handling of sensitive human patient data can thus occur in a secured way, e.g. with restricted access to an internal instance of the application. This will also avoid the need of external software installation for the users, which could moreover seamlessly access higher performing computing infrastructures. -->
-
-<!-- This implementation of \texttt{idealImmunoTP} is made available at github.com/federicomarini/ideal\_serveredition  -->
+Please note that you still need `r Biocpkg("WEIN")` to be installed there once during the setup phase - for this operation, you might require root administrator permissions. 
 
 # Getting to know the user interface and the functionality
 
@@ -182,7 +178,7 @@ By changing one or more of the input parameters, the user can get a fine control
 
 This displays a list of the underlying objects with which basically all of the analysis can be performed. 
 A green tick icon appears close to each when the respective component is either provided or calculated. 
-For obtaining the best analysis experience in `r Biocpkg("ideal")`, it is recommended to provide all of them.
+For obtaining the best analysis experience in `r Biocpkg("WEIN")`, it is recommended to provide all of them.
 
 ### First steps help
 
@@ -193,12 +189,12 @@ Dedicated step-by-step procedures are also available in each individual tab.
 
 The task menu, accessible by clicking on the cog icon in the upper right part of the application, provides two functionalities:
 
-- `Exit idealImmunoTP & save` will close the application and store the content of the `input` and `values` reactive objects in a list of two elements in the `ideal_env` environment, respectively called `ideal_inputs_YYYYMMDD_HHMMSS` and `ideal_values_YYYYMMDD_HHMMSS`
-- `Save State as .RData` will similarly store `LiveInputs` and `r_data` in a binary file named `idealState_YYYYMMDD_HHMMSS.Rdata`, without closing the application 
+- `Exit WEIN & save` will close the application and store the content of the `input` and `values` reactive objects in a list of two elements in the `ideal_env` environment, respectively called `WEIN_inputs_YYYYMMDD_HHMMSS` and `WEIN_values_YYYYMMDD_HHMMSS`
+- `Save State as .RData` will similarly store `LiveInputs` and `r_data` in a binary file named `WEINState_YYYYMMDD_HHMMSS.Rdata`, without closing the application
            
 # The main app panels
 
-The `r Biocpkg("ideal")` app is a one-paged dashboard, structured in different panels, where each of them is focused on a different aspect of the data exploration. 
+The `r Biocpkg("WEIN")` app is a one-paged dashboard, structured in different panels, where each of them is focused on a different aspect of the data exploration. 
 
 On top of the panels, three `valueBox` objects serve as guiding elements for having an overview of the data at hand: how many genes and samples are in the data, how many entries are in the annotation object, and how many genes were found to be differentially expressed in the results.
 Whenever each of the underlying objects is available, the background color turns from red to green.
@@ -218,7 +214,7 @@ This builds on the primary idea used by `r Biocpkg("pcaExplorer")` and extends i
 - the panel structure appears dynamically in three consecutive mandatory steps, marked with color from red to yellow to green, with optional steps in light blue.
 - the optional step of retrieving the annotation on the fly relieves the user from the task of composing the `data.frame` in advance, and is based on the widely adopted `org.XX.eg.db` Bioconductor packages.
 - when the objects are already passed as parameters, or computed, a brief overview/summary for them is displayed
-- to tighten the concert operations between similar tools with different scope (as `r Biocpkg("pcaExplorer")` and `r Biocpkg("ideal")` are), the information flow can move from the data exploration to decisions taken at the moment of testing
+- to tighten the concert operations between similar tools with different scope (as `r Biocpkg("pcaExplorer")` and `r Biocpkg("WEIN")` are), the information flow can move from the data exploration to decisions taken at the moment of testing
 
 A diagnostic mean-dispersion plot is also provided in a collapsible element at the bottom of the panel, shown when the `DESeqDataSet` is generated and the `DESeq` command from the `DESeq2` package has been applied.
 
@@ -231,7 +227,7 @@ A diagnostic mean-dispersion plot is also provided in a collapsible element at t
 As in `r Biocpkg("pcaExplorer")`, interactive tables for the raw, normalized or (r)log-transformed counts are shown in this tab. 
 The user can also generate a sample-to-sample correlation scatter plot with the selected data.
 
-Additionally, `r Biocpkg("ideal")` has an option to include a filter step at the gene level by removing genes with low absolute or averages low values. 
+Additionally, `r Biocpkg("WEIN")` has an option to include a filter step at the gene level by removing genes with low absolute or averages low values. 
 After this, it might be possible to have to re-run the analysis in step 3 from the Data Setup panel. 
 
 ## Extract Results
@@ -263,7 +259,7 @@ The subset of selected genes are also here presented in static and interactive h
 The functionality in the Gene Finder builds upon the one provided by `r Biocpkg("pcaExplorer")`, and allows to query up to four genes in the same view, which can here be selected from a dropdown input list which supports autocompletion. 
 
 A combined summary table (with both normalized counts and results statistics) is located below an MA plot where the selected genes are marked and annotated on the plot. 
-To avoid repeating this manually, the user can also quickly upload a list of genes as text file (one gene identifier per line), such as members of gene families (e.g. all cytokines, all immunoglobulines, ...) or defined by common function (e.g. all housekeeping genes, or others based on any annotation).
+To avoid repeating this manually, the user can also quickly upload a list of genes as text file (one gene identifier per line), such as members of gene families (e.g. all cytokines, all immunoglobilines, ...) or defined by common function (e.g. all housekeeping genes, or others based on any annotation).
 
 ## Functional Analysis
 
@@ -272,13 +268,13 @@ To avoid repeating this manually, the user can also quickly upload a list of gen
 </p>
 
 The Functional Analysis tab takes the user from the simple lists of DE genes to insight on the affected biological pathways, with three approaches based on the Gene Ontology (GO) databases.
-This panel of idealImmunoTP has a slim interface to the following methods for performing functional analysis:
+This panel of WEIN has a slim interface to the following methods for performing functional analysis:
 
 - `limma::goana` for the quick yet standard implementation
 - `topGO`, particularly valuable for pruning terms which are topologically less meaningful than their specific nodes
 - `goseq`, which accounts for the specific length bias intrinsic in RNA-Seq assays (longer genes have higher chances of being called DE).
 
-`r Biocpkg("ideal")` allows the user to work simultaneously with more gene lists, two of which can be uploaded in a custom way (e.g. list of gene families, or extracted from other existing publications). 
+`r Biocpkg("WEIN")` allows the user to work simultaneously with more gene lists, two of which can be uploaded in a custom way (e.g. list of gene families, or extracted from other existing publications). 
 
 The interaction among these lists can be visually represented in Venn diagrams, as well as with the appealing alternative from the UpSetR package, where all combination of sets are explicitly shown. 
 
@@ -315,12 +311,12 @@ Keep in mind that the fully rendered report (the one you can obtain with the "Ge
 
 ## About
 
-The About tab contains the output of `sessionInfo`, plus general information on `r Biocpkg("ideal")`, including the link to the Github development version. 
+The About tab contains the output of `sessionInfo`, plus general information on `r Biocpkg("WEIN")`, including the link to the Github development version. 
 If requested, the modular structure of the app can be easily expanded, and many new operations on the same set of input data and derived results can be embedded in the same framework. 
 
-# Running `r Biocpkg("ideal")` on an exemplary data set
+# Running `r Biocpkg("WEIN")` on an exemplary data set
 
-We can run `r Biocpkg("ideal")` for demonstration purpose on published datasets that are available as SummarizedExperiment in an experiment Bioconductor packages.
+We can run `r Biocpkg("WEIN")` for demonstration purpose on published datasets that are available as SummarizedExperiment in an experiment Bioconductor packages.
 
 We will use the `r Biocpkg("airway")` dataset, which can be installed with this command:
 
@@ -334,7 +330,7 @@ BiocManager::install("airway")
 
 This package provides a `RangedSummarizedExperiment` object of read counts in genes for an RNA-Seq experiment on four human airway smooth muscle cell lines treated with dexamethasone. More details such as gene models and count quantifications can be found in the `r Biocpkg("airway")` package vignette. 
 
-To run `r Biocpkg("ideal")` on this dataset, the following commands are required. First, prepare the objects to be passed as parameters of `r Biocpkg("ideal")`.
+To run `r Biocpkg("WEIN")` on this dataset, the following commands are required. First, prepare the objects to be passed as parameters of `r Biocpkg("WEIN")`.
 
 ```{r loadairway, message=FALSE}
 library(airway)
@@ -353,9 +349,9 @@ res_airway <- results(dds_airway, contrast = c("dex","trt","untrt"),alpha = 0.05
 Then launch the app itself.
 
 ```{r launchairway, eval=FALSE}
-idealImmunoTP(dds_obj = dds_airway)
+WEIN(dds_obj = dds_airway)
 # or also providing the results object
-idealImmunoTP(dds_obj = dds_airway,res_obj = res_airway)
+WEIN(dds_obj = dds_airway,res_obj = res_airway)
 ```
 
 The `annotation` for this dataset can be built manually by exploiting the `r Biocpkg("org.Hs.eg.db")` package.
@@ -375,7 +371,7 @@ or alternatively, can be handily created at runtime in the optional step.
 Then again, the app can be launched with: 
 
 ```{r launchairwayanno, eval=FALSE}
-idealImmunoTP(dds_obj = dds_airway,
+WEIN(dds_obj = dds_airway,
       annotation_obj = annotation_airway)
 ```
 
@@ -383,7 +379,7 @@ If desired, alternatives can be used. See the well written annotation workflow a
 
 ## Coming from `edgeR`/`limma-voom`
 
-Let's suppose you performed part of your analysis with `r Biocpkg("edgeR")` or `r Biocpkg("limma")`/`voom` and you want to continue inspecting your data interactively using `r Biocpkg("ideal")`. 
+Let's suppose you performed part of your analysis with `r Biocpkg("edgeR")` or `r Biocpkg("limma")`/`voom` and you want to continue inspecting your data interactively using `r Biocpkg("WEIN")`. 
 You can use the functionality provided by the `r Biocpkg("DEFormats")` package to convert the object with:
 
 ```{r fromedgerandlimma}
@@ -424,7 +420,7 @@ tbledger$baseMean <- (2^tbledger$baseMean) * mean(dge_airway$samples$lib.size) /
 edger_resu <- DESeqResults(DataFrame(tbledger))
 edger_resu <- DESeq2:::pvalueAdjustment(edger_resu, independentFiltering = TRUE, 
                                         alpha = 0.05, pAdjustMethod = "BH")
-                                      
+                                       
 # cfr with res_airway
 # plot(res_airway$pvalue,edger_resu$pvalue)
 
@@ -455,10 +451,10 @@ limma_resu <- DESeqResults(DataFrame(tbllimma))
 
 After preparing the objects, you can launch the app with the following command:
 
-```{r ideal-edgerlimma, eval=FALSE}
-idealImmunoTP(redo_dds_airway,edger_resu)
+```{r WEIN-edgerlimma, eval=FALSE}
+WEIN(redo_dds_airway,edger_resu)
 # or ...
-idealImmunoTP(redo_dds_airway,limma_resu)
+WEIN(redo_dds_airway,limma_resu)
 ```
 
 Basically, you need a `data.frame` (e.g. `myresults_df`) with 3 columns to create the `DESeqResults` object to be passed to the app, with this names:
@@ -472,7 +468,7 @@ Then, you just need to call `DESeqResults(DataFrame(myresults_df))`.
 
 # Functions exported by the package for standalone usage
 
-The functions exported by the `r Biocpkg("ideal")` package can be also used in a standalone scenario, provided the required objects are in the working environment. 
+The functions exported by the `r Biocpkg("WEIN")` package can be also used in a standalone scenario, provided the required objects are in the working environment. 
 They are listed here for an overview, but please refer to the documentation for additional details. 
 Where possible, for each function a code snippet will be provided for its typical usage.
 
@@ -503,8 +499,8 @@ myde <- deseqresult2DEgenes(res_airway,FDR = 0.05)
 myde$symbol <- mapIds(org.Hs.eg.db,keys = as.character(myde$id),column = "SYMBOL",keytype="ENSEMBL")
 
 myde_enhanced <- myde
-myde_enhanced$id <- idealImmunoTP:::createLinkENS(myde_enhanced$id,species = "Homo_sapiens")
-myde_enhanced$symbol <- idealImmunoTP:::createLinkGeneSymbol(myde_enhanced$symbol)
+myde_enhanced$id <- WEIN:::createLinkENS(myde_enhanced$id,species = "Homo_sapiens")
+myde_enhanced$symbol <- WEIN:::createLinkGeneSymbol(myde_enhanced$symbol)
 DT::datatable(myde_enhanced[1:100,], escape = FALSE)
 ```
 
@@ -559,14 +555,14 @@ As for the results, this table can be enhanced by adding the links for each cate
 ```{r go-enhance, eval=FALSE}
 mygo_enhanced <- mygo
 # using the unexported function to link the GO term to the entry in the AmiGO db
-mygo_enhanced$category <- idealImmunoTP:::createLinkGO(mygo_enhanced$category)
+mygo_enhanced$category <- WEIN:::createLinkGO(mygo_enhanced$category)
 DT::datatable(mygo_enhanced,escape=FALSE)
 ```
 
 
 ## `plot_ma`
 
-The MA plot provided by `r Biocpkg("ideal")` displays the gene-wise log2-fold changes (logFCs) versus the average expression value. 
+The MA plot provided by `r Biocpkg("WEIN")` displays the gene-wise log2-fold changes (logFCs) versus the average expression value. 
 As a main input parameter, a `DESeqResults` object is required. 
 Control on the appearance of the plot can be applied by selecting the False Discovery Rate (`FDR`), the point transparency (`point_alpha`), adding horizontal lines at particular logFC values (`hlines`). 
 The user can also decide to add rug plots in the margins (setting `add_rug` to `TRUE`).
@@ -630,10 +626,10 @@ The separator list can be provided as a vector in `sep_list` (defaults to comma,
 The heuristics is based on the number of occurrencies of each separator in each line.
 
 ```{r sepguess}
-sepguesser(system.file("extdata/design_commas.txt",package = "idealImmunoTP"))
-sepguesser(system.file("extdata/design_semicolons.txt",package = "idealImmunoTP"))
-sepguesser(system.file("extdata/design_spaces.txt",package = "idealImmunoTP"))
-anyfile <- system.file("extdata/design_tabs.txt",package = "idealImmunoTP") # we know it is going to be TAB
+sepguesser(system.file("extdata/design_commas.txt",package = "WEIN"))
+sepguesser(system.file("extdata/design_semicolons.txt",package = "WEIN"))
+sepguesser(system.file("extdata/design_spaces.txt",package = "WEIN"))
+anyfile <- system.file("extdata/design_tabs.txt",package = "WEIN") # we know it is going to be TAB
 guessed_sep <- sepguesser(anyfile)
 guessed_sep
 # to be used for reading in the same file, without having to specify the sep
@@ -653,7 +649,7 @@ While running the app, the user can
 
 This functionality to retrieve and share the output is provided by action buttons that are placed close to each element of interest. 
 
-# Enhancing `idealImmunoTP`
+# Enhancing `WEIN`
 
 The `annotation_obj` is a quick helper to make your data and results easier to read. For creating it, you can exploit the corresponding `org.XX.eg.db` packages, available in Bioconductor.
 
@@ -717,7 +713,7 @@ As for the `org.XX.eg.db` above, these can all be quickly installed with `BiocMa
 
 # Further development
 
-Additional functionality for the `r Biocpkg("ideal")` will be added in the future, as it is tightly related to a topic under current development research. 
+Additional functionality for the `r Biocpkg("WEIN")` will be added in the future, as it is tightly related to a topic under current development research. 
 
 Improvements, suggestions, bugs, issues and feedback of any type can be sent to marinif@uni-mainz.de.
 
@@ -725,4 +721,3 @@ Improvements, suggestions, bugs, issues and feedback of any type can be sent to 
 
 ```{r sessioninfo}
 sessionInfo()
-```

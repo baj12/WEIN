@@ -44,34 +44,33 @@
 #'                                              design=~cell+dex)
 #' \dontrun{
 #'
-#' idealImmunoTP()
-#' idealImmunoTP(dds)
-#' idealImmunoTP(dds_airway)
+#' WEIN()
+#' WEIN(dds)
+#' WEIN(dds_airway)
 #'
 #' dds_airway <- DESeq2::DESeq(dds_airway)
 #' res_airway <- DESeq2::results(dds_airway)
-#' idealImmunoTP(dds_airway, res_airway)
+#' WEIN(dds_airway, res_airway)
 #' }
 #'
 #' 
 
 # Import necessary functions from other files
-#' @importFrom shinydashboard dashboardPage dashboardHeader dashboardSidebar dashboardBody
-#' @importFrom shiny actionButton bookmarkButton conditionalPanel downloadButton fileInput 
-#' fluidRow h2 h3 h4 hr p selectInput tags textInput updateSelectInput updateSelectizeInput 
+#' @importFrom shinydashboard dashboardPage dashboardHeader dashboardSidebar dashboardBody dropdownMenu menuItem notificationItem
+#' @importFrom shiny actionButton bookmarkButton conditionalPanel downloadButton fileInput
+#' fluidRow h2 h3 h4 hr p selectInput tags textInput updateSelectInput updateSelectizeInput
 #' updateTextInput verbatimTextOutput wellPanel withProgress
 #' @importFrom shinyAce aceEditor
-#' @importFrom shinyBS bsCollapse bsCollapsePanel bsTooltip dropdownMenu menuItem 
-#' notificationItem
+#' @importFrom shinyBS bsCollapse bsCollapsePanel bsTooltip
 #' @importFrom DT dataTableOutput renderDataTable
 #' @importFrom plotly plotlyOutput renderPlotly
 #' @importFrom shinyjqui jqui_resizable
 #' @importFrom rintrojs introjs introjsUI
 #' @importFrom base64enc dataURI
-#' @importFrom utils read.delim readLines
-#' @importFrom grDevices barplot colorRampPalette dev.off pdf
-#' @importFrom graphics text
-#' @importFrom stats as.formula dist formula median model.matrix na.omit quantile 
+#' @importFrom utils read.delim
+#' @importFrom grDevices colorRampPalette dev.off pdf
+#' @importFrom graphics text barplot
+#' @importFrom stats as.formula dist formula median model.matrix na.omit quantile
 #' relevel reshape setNames terms var
 #' @importFrom methods is new
 #' @importFrom BiocParallel MulticoreParam
@@ -79,12 +78,12 @@
 #' @importFrom IRanges IRanges
 #' @importFrom SummarizedExperiment assay assays colData rowData
 #' @importFrom GenomicRanges GRanges
-#' @importFrom DESeq2 DESeq DESeqDataSet DESeqDataSetFromMatrix estimateSizeFactors 
-#' results sizeFactors vst counts design resultsNames normTransform
-#' @importFrom pcaExplorer plotDispEsts
-#' @importFrom ggplot2 aes_string element_blank element_text geom_bar geom_histogram 
-#' geom_hline geom_jitter geom_point geom_raster geom_text geom_vline ggplot 
-#' scale_colour_manual scale_fill_gradient scale_x_discrete scale_y_continuous 
+#' @importFrom DESeq2 DESeq DESeqDataSet DESeqDataSetFromMatrix estimateSizeFactors
+#' results sizeFactors vst counts design resultsNames normTransform plotDispEsts
+#' @importFrom pcaExplorer pcaplot
+#' @importFrom ggplot2 aes_string element_blank element_text geom_bar geom_histogram
+#' geom_hline geom_jitter geom_point geom_raster geom_text geom_vline ggplot
+#' scale_colour_manual scale_fill_gradient scale_x_discrete scale_y_continuous
 #' scale_y_log10 theme theme_bw xlab ylab
 #' @importFrom ggrepel geom_text_repel
 #' @importFrom reshape2 melt
@@ -101,9 +100,10 @@
 #' @importFrom stringr str_replace
 #' @importFrom knitr kable
 #' @importFrom rmarkdown render
-#' @importFrom BiocGenerics rowVars
+#' @importFrom matrixStats rowVars
 #' @importFrom Biobase featureNames
 #' @importFrom methods is
+#' @name WEIN-package
 NULL
 
 #' Multi-dimensional PCA plot
@@ -139,13 +139,13 @@ multiAxPCA = function (object, intgroup = "condition", ntop = 500, returnData = 
   if (returnData) {
     return(percentVar)
   }
-  ggplot(data = d, aes_string(x = "PC1", y = "PC2", color = "group")) + 
-    geom_point(size = 3) + xlab(paste0("PC",pc1,": ", round(percentVar[pc1] * 
-                                                              100), "% variance")) + ylab(paste0("PC",pc2,": ", round(percentVar[pc2] * 
+  ggplot(data = d, aes(x = PC1, y = PC2, color = group)) +
+    geom_point(size = 3) + xlab(paste0("PC",pc1,": ", round(percentVar[pc1] *
+                                                              100), "% variance")) + ylab(paste0("PC",pc2,": ", round(percentVar[pc2] *
                                                                                                                         100), "% variance")) + coord_fixed()
 }
 
-#' Main function to launch the idealImmunoTP Shiny application
+#' Main function to launch the WEIN Shiny application
 #'
 #' Launches the interactive differential expression analysis application
 #'
@@ -167,11 +167,11 @@ WEIN<- function(dds_obj = NULL,
                          cur_type = NULL){
   
   if ( !requireNamespace('shiny',quietly = TRUE) ) {
-    stop("idealImmunoTP requires 'shiny'. Please install it using
+    stop("WEIN requires 'shiny'. Please install it using
          install.packages('shiny')")
   }
   if ( !requireNamespace('tidyr',quietly = TRUE) ) {
-    stop("idealImmunoTP requires 'tidyr'. Please install it using
+    stop("WEIN requires 'tidyr'. Please install it using
          install.packages('tidyr')")
   }
   require(tidyr)
@@ -179,7 +179,7 @@ WEIN<- function(dds_obj = NULL,
   require(shinydashboard)
   # create environment for storing inputs and values
   ## i need the assignment like this to export it up one level - i.e. "globally"
-  ideal_env <<- new.env(parent = emptyenv())
+  WEIN_env <<- new.env(parent = emptyenv())
   
   ## upload max 300mb files - can be changed if necessary
   options(shiny.maxRequestSize=600*1024^2)
@@ -195,7 +195,7 @@ WEIN<- function(dds_obj = NULL,
     cur_type = cur_type
   )
   # Launch the app!
-  shinyApp(ui = idealImmunoTP_ui, 
-           server = idealImmunoTP_server( app_data) 
+  shinyApp(ui = WEIN_ui,
+           server = WEIN_server( app_data)
              )
 }

@@ -18,7 +18,7 @@ tourModuleServer <- function(id, input, session) {
     lapply(names(tour_configs), function(tour_id) {
       observeEvent(input[[tour_id]], {
         tour_data <- read.delim(
-          system.file("extdata", tour_configs[[tour_id]], package = "idealImmunoTP"),
+          system.file("extdata", tour_configs[[tour_id]], package = "WEIN"),
           sep = ";", stringsAsFactors = FALSE
         )
         introjs(session, options = list(steps = tour_data))
@@ -41,7 +41,7 @@ tourModuleServer <- function(id, input, session) {
       box(width = 12, 
           title = "Instructions", status = "info", solidHeader = TRUE, 
           collapsible = TRUE, collapsed = TRUE,
-          includeMarkdown(system.file("extdata", "instructions.md",package = "idealImmunoTP"))
+          includeMarkdown(system.file("extdata", "instructions.md",package = "WEIN"))
       )
     })
     

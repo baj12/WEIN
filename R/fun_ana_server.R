@@ -301,8 +301,8 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
       # lapply(gll(),length)
       gll <- gll()
       txt = ""
-      # save(file = "~/SCHNAPPsDebug/idealImmunoTP.RData", list = ls())
-      # load("~/SCHNAPPsDebug/idealImmunoTP.RData")
+      # save(file = "~/SCHNAPPsDebug/WEIN.RData", list = ls())
+      # load("~/SCHNAPPsDebug/WEIN.RData")
       for (li in 1:length(gll)) {
         tx = paste(gll[[li]], sep = " ",collapse = " ")
         txt = paste(c(txt, names(gll)[li],tx), collapse = "\n")
@@ -433,8 +433,8 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
     output$debugTable <- DT::renderDataTable(server =  TRUE,{
       gll <- gll()
       txt = ""
-      # save(file = "~/SCHNAPPsDebug/idealImmunoTP.RData", list = ls())
-      # load("~/SCHNAPPsDebug/idealImmunoTP.RData")
+      # save(file = "~/SCHNAPPsDebug/WEIN.RData", list = ls())
+      # load("~/SCHNAPPsDebug/WEIN.RData")
       upGll = UpSetR::fromList(gll)
       ugll = unique(unlist(gll))
       rownames(upGll) = ugll

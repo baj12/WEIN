@@ -6,7 +6,7 @@ welcome_panel_ui = function(){
     fluidRow(
       column(
         width = 8,
-        includeMarkdown(system.file("extdata", "welcome.md",package = "idealImmunoTP")),
+        includeMarkdown(system.file("extdata", "welcome.md",package = "WEIN")),
         br(),br(),
         p("If you see a grey box like this one open below..."),
         
@@ -14,7 +14,7 @@ welcome_panel_ui = function(){
           id = "help_welcome",open = "Help", 
           shinyBS::bsCollapsePanel(
             "Help", 
-            includeMarkdown(system.file("extdata", "help_welcome.md",package = "idealImmunoTP"))
+            includeMarkdown(system.file("extdata", "help_welcome.md",package = "WEIN"))
           )
         ),
         

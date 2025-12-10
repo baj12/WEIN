@@ -1,3 +1,28 @@
+# WEIN 1.11.18
+
+## Major changes
+
+* Renamed package from idealImmunoTP to WEIN (Web-based Engine for Interactive Next-generation sequencing analysis)
+* Updated all function names and references from idealImmunoTP to WEIN
+* Package now focuses on immunology applications and is developed for the Advanced Immunology course at Institut Pasteur
+* Updated maintainer information to include Bernd Jagla (Institut Pasteur) as developer
+
+## New features
+
+* Enhanced immunology-focused functionality
+* Updated documentation and vignettes for WEIN
+* Improved package metadata to reflect new focus and ownership
+
+## Bug fixes
+
+* Fixed references to old package name throughout codebase
+* Updated all documentation links to point to new repository
+
+## Other notes
+
+* This package is based on the original 'ideal' package by Federico Marini, with substantial modifications for immunology applications
+* Thanks to Federico Marini for the original implementation and foundation
+
 # ideal 1.10.0
 
 ## New features

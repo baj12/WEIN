@@ -4,7 +4,7 @@
 
 </br>
 
-![](ideal_logo_v2.png)
+![](wein.logo.sml.png)
 
 </br>
 

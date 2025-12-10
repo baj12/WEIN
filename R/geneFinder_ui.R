@@ -12,7 +12,7 @@ geneFinder_ui <- function(){
             id = "help_genefinder",open = NULL,
             shinyBS::bsCollapsePanel(
               "Help",
-              includeMarkdown(system.file("extdata", "help_genefinder.md",package = "idealImmunoTP")))
+              includeMarkdown(system.file("extdata", "help_genefinder.md",package = "WEIN")))
           )
         )
       ),

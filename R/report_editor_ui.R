@@ -11,7 +11,7 @@ report_editor_ui <- function() {NULL}
 #         id = "help_reporteditor",open = NULL, 
 #         shinyBS::bsCollapsePanel(
 #           "Help",
-#           includeMarkdown(system.file("extdata", "help_report.md",package = "idealImmunoTP")))
+#           includeMarkdown(system.file("extdata", "help_report.md",package = "WEIN")))
 #       )
 #     )
 #   ),
@@ -72,7 +72,7 @@ report_editor_ui <- function() {NULL}
 #     tabPanel("Edit report",
 #              icon = icon("pen-to-square"),
 #              aceEditor("acereport_rmd", mode="markdown",theme = "solarized_light",autoComplete = "live",
-#                        value="_Initialization of the_ `idealImmunoTP` _report generation..._",
+#                        value="_Initialization of the_ `WEIN` _report generation..._",
 #                        placeholder = "You can enter some code and text in R Markdown format",
 #                        height="800px"))
 #   )

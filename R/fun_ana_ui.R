@@ -13,7 +13,7 @@ panalAnalysis_ui <- function(){
             id = "help_functionalanalysis", open = NULL,
             shinyBS::bsCollapsePanel(
               "Help",
-              includeMarkdown(system.file("extdata", "help_funcanalysis.md", package = "idealImmunoTP")))
+              includeMarkdown(system.file("extdata", "help_funcanalysis.md", package = "WEIN")))
           )
         )
       ),

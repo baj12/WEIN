@@ -12,7 +12,7 @@ summaryPlots_ui <-  function(){
             id = "help_summaryplots",open = NULL, 
             shinyBS::bsCollapsePanel(
               "Help",
-              includeMarkdown(system.file("extdata", "help_plots.md",package = "idealImmunoTP")))
+              includeMarkdown(system.file("extdata", "help_plots.md",package = "WEIN")))
           )
         )
       ),

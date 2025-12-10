@@ -14,7 +14,7 @@ panel_count_overview_ui <- function(){
             id = "help_countsoverview",open = NULL, 
             shinyBS::bsCollapsePanel(
               "Help",
-              includeMarkdown(system.file("extdata", "help_overview.md",package = "idealImmunoTP")))
+              includeMarkdown(system.file("extdata", "help_overview.md",package = "WEIN")))
           )
         )
       ),

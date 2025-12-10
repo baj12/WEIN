@@ -2,6 +2,14 @@ gene_finder_server <- function(id, values, annoSpecies_df, exportPlots) {
   moduleServer(id, function(input, output, session) {
     
     ns <- session$ns
+    # Helper function (define at top of server)
+    has_valid_genes <- function(x) {
+      if (is.null(x)) return(FALSE)
+      if (length(x) == 0) return(FALSE)
+      if (all(is.na(x))) return(FALSE)
+      if (all(x == "")) return(FALSE)
+      return(TRUE)
+    }
     
     # Validates gene availability at index
     validate_gene_at_index <- function(values, index) {

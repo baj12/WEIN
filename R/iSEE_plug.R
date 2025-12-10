@@ -1,21 +1,21 @@
 #' wrapup_for_iSEE
-#' 
+#'
 #' Combine data from a typical DESeq2 run
-#' 
+#'
 #' Combines the DESeqDataSet input and DESeqResults into a SummarizedExperiment
 #' object, which can be readily explored with iSEE.
-#' 
-#' A typical usage would be after running the DESeq2 pipeline as specified in 
-#' one of the workflows which include this package, e.g. in the context of the 
-#' ideal package.
+#'
+#' A typical usage would be after running the DESeq2 pipeline as specified in
+#' one of the workflows which include this package, e.g. in the context of the
+#' WEIN package.
 #'
 #' @param dds A \code{\link{DESeqDataSet}} object.
 #' @param res A \code{\link{DESeqResults}} object.
 #'
-#' @return A SummarizedExperiment object, with raw counts, normalized counts, and 
-#' variance-stabilizing transformed counts in the assay slots; and with colData 
+#' @return A SummarizedExperiment object, with raw counts, normalized counts, and
+#' variance-stabilizing transformed counts in the assay slots; and with colData
 #' and rowData extracted from the corresponding input parameters
-#' 
+#'
 #' @export
 #'
 #' @examples
@@ -27,7 +27,7 @@
 #' se <- wrapup_for_iSEE(dds, res)
 #' # library(iSEE)
 #' # iSEE(se)
-#' 
+#'
 #' \dontrun{
 #' # or with the well known airway package...
 #' library(airway)

@@ -11,14 +11,14 @@ This file provides guidance to agents when working with code in this repository.
 - Run tests: `Rscript -e "devtools::test()"`
 - Check package: `Rscript -e "devtools::check()"`
 - Install package: `R CMD INSTALL .` or `devtools::install()`
-- Run app: `idealImmunoTP()` after loading library
+- Run app: `WEIN()` after loading library
 - Run tests with data: Source runTest.R after ensuring testData.RData exists
 
 ## Project Structure
 - Modular Shiny app with separate UI and server components
 - UI modules in R/*_ui.R files
 - Server modules in R/*_server.R files
-- Core app functions in R/idealImmunoTP.R
+- Core app functions in R/WEIN.R
 - Helper functions in R/helpers.R
 - Tests in tests/testthat/
 

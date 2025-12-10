@@ -249,24 +249,9 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
     values$genelistUP <- reactive({
       listUP <- tryCatch({
         # browser()
-        res_tbl <- deseqresult2DEgenes(values$res_obj, FDR = values$FDR)
-        if(nrow(res_tbl)<1) return(NULL)
-        res_tbl_UP <- res_tbl[res_tbl$log2FoldChange > 0 & !is.na(res_tbl$padj),]
-        # res_tbl_DOWN <- res_tbl[res_tbl$log2FoldChange < 0 & !is.na(res_tbl$padj),]
-        
-        if("symbol" %in% colnames(values$res_obj)) { 
-          if(!is.null(values$annotation_obj)) {
-            res_tbl_UP$symbol <- values$annotation_obj$gene_name[
-              match(res_tbl_UP$id,
-                    rownames(values$annotation_obj))]
-            listUP <- res_tbl_UP$symbol
-          } else {
-            listUP <- NULL
-          }
-        } else {
-          listUP <- res_tbl_UP$symbol
-        }
-        listUP},
+        # Use the new utility function
+        gene_lists <- generate_gene_lists(values$res_obj, values$FDR, values$annotation_obj)
+        gene_lists$UP},
         error=function(e)cat(file = stderr(), paste("genelistUP error ; ", e))
       )
       return(listUP)
@@ -274,43 +259,16 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
     
     values$genelistDOWN <- reactive({
       # browser()
-      res_tbl <- deseqresult2DEgenes(values$res_obj, FDR = values$FDR)
-      if(nrow(res_tbl)<1) return(NULL)
-      # res_tbl_UP <- res_tbl[res_tbl$log2FoldChange > 0 & !is.na(res_tbl$padj),]
-      res_tbl_DOWN <- res_tbl[res_tbl$log2FoldChange < 0 & !is.na(res_tbl$padj),]
-      
-      if("symbol" %in% colnames(values$res_obj)) { 
-        if(!is.null(values$annotation_obj)) {
-          res_tbl_DOWN$symbol <- values$annotation_obj$gene_name[
-            match(res_tbl_DOWN$id,
-                  rownames(values$annotation_obj))]
-          listDOWN <- res_tbl_DOWN$symbol
-        } else {
-          listDOWN <- NULL
-        }
-      } else {
-        listDOWN <- res_tbl_DOWN$symbol
-      }
-      return(listDOWN)
+      # Use the new utility function
+      gene_lists <- generate_gene_lists(values$res_obj, values$FDR, values$annotation_obj)
+      gene_lists$DOWN
     })
     
     values$genelistUPDOWN <- reactive({
       # browser()
-      res_tbl <- deseqresult2DEgenes(values$res_obj, FDR = values$FDR)
-      if(nrow(res_tbl)<1) return(NULL)
-      if("symbol" %in% colnames(values$res_obj)) { 
-        if(!is.null(values$annotation_obj)) {
-          res_tbl$symbol <- values$annotation_obj$gene_name[
-            match(res_tbl$id,
-                  rownames(values$annotation_obj))]
-          listUPDOWN <- res_tbl$symbol
-        } else {
-          listUPDOWN <- NULL
-        }
-      } else {
-        listUPDOWN <- res_tbl$symbol
-      }
-      return(listUPDOWN)
+      # Use the new utility function
+      gene_lists <- generate_gene_lists(values$res_obj, values$FDR, values$annotation_obj)
+      gene_lists$UPDOWN
     })
     
     
