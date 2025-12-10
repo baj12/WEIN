@@ -2,8 +2,8 @@ dash_Header_ui <- function(){
   shinydashboard::dashboardHeader(
     title = tags$span(
       img(src = "ideal/ideal_logo_v2.png", height = "50px"),
-      paste0("idealImmunoTP - Interactive Differential Expression AnaLysis ",
-             packageVersion("idealImmunoTP"))),
+      paste0("WEIN - Web-based Engine for Interactive Next-generation sequencing analysis ",
+             packageVersion("WEIN"))),
     titleWidth = 600,
     
     # TODO:
@@ -20,7 +20,7 @@ dash_Header_ui <- function(){
       badgeStatus = NULL, 
       headerText = "ideal Tasks menu",
       notificationItem(
-        text = actionButton("task_exit_and_save","Exit idealImmunoTP & save",
+        text = actionButton("task_exit_and_save","Exit WEIN & save",
                             class = "btn_no_border",
                             onclick = "setTimeout(function(){window.close();}, 100); "),
         icon = icon("right-from-bracket"),status = "primary"),

@@ -1,4 +1,4 @@
-library("idealImmunoTP")
+library("WEIN")
 library("testthat")
 
 context("Testing Utility Functions")

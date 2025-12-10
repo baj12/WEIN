@@ -1,4 +1,4 @@
-#' UI Components for idealImmunoTP
+#' UI Components for WEIN
 #'
 #' Contains all UI-related functions for the idealImmunoTP Shiny application.
 #'
@@ -6,7 +6,7 @@
 #' @docType package
 NULL
 
-#' Create the UI for idealImmunoTP
+#' Create the UI for WEIN
 #'
 #' Defines the complete UI structure for the idealImmunoTP Shiny application.
 #'
@@ -16,12 +16,12 @@ NULL
 #' 
 #' @return A Shiny UI definition
 #' @export
-idealImmunoTP_ui <- function() {
+WEIN_ui <- function() {
   require(shiny)
   require(shinydashboard)
   nsUI <- NS("ui_setup")
   shinydashboard::dashboardPage(
-    title = "idealImmunoTP - Interactive Differential Expression AnaLysis for immunology TP",
+    title = "WEIN - Web-based Engine for Interactive Next-generation sequencing analysis",
     dash_Header_ui(),
     
     sideBar_ui(), 

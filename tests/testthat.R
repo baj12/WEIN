@@ -1,4 +1,4 @@
 library(testthat)
-library(idealImmunoTP)
+library(WEIN)
 
-test_check("idealImmunoTP")
+test_check("WEIN")

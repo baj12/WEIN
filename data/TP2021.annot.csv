@@ -1,0 +1,17 @@
+,name,Stimulus,CMVstatus,sex,age,Donor
+D1_A_Y,D1_A_Y,A,neg,M,Y,D1
+D1_L_Y,D1_L_Y,L,neg,M,Y,D1
+D1_N_Y,D1_N_Y,N,neg,M,Y,D1
+D1_P_Y,D1_P_Y,P,neg,M,Y,D1
+D2_A_Y,D2_A_Y,A,neg,M,Y,D2
+D2_L_Y,D2_L_Y,L,neg,M,Y,D2
+D2_N_Y,D2_N_Y,N,neg,M,Y,D2
+D2_P_Y,D2_P_Y,P,neg,M,Y,D2
+D3_A_O,D3_A_O,A,neg,M,O,D3
+D3_L_O,D3_L_O,L,neg,M,O,D3
+D3_N_O,D3_N_O,N,neg,M,O,D3
+D3_P_O,D3_P_O,P,neg,M,O,D3
+D4_A_O,D4_A_O,A,neg,M,O,D4
+D4_L_O,D4_L_O,L,neg,M,O,D4
+D4_N_O,D4_N_O,N,neg,M,O,D4
+D4_P_O,D4_P_O,P,neg,M,O,D4

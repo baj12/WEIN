@@ -12,14 +12,14 @@ footer <- function(){
       class = "foot-inner",
       list(
         # hr(),
-        "idealImmunoTP is based on the ideal project by Federico Marini ",
+        "WEIN (Web-based Engine for Interactive Next-generation sequencing analysis) is based on the ideal project by Federico Marini ",
         tags$a(href="https://github.com/federicomarini/ideal", "GitHub"),
         ". This is further developed by Bernd Jagla at the Institut Pasteur.",
         br(),
         "",
         "License: ",tags$a(href="https://opensource.org/licenses/MIT","MIT"), br(),
 
-        "Development of the idealImmunoTP package is on ",
+        "Development of the WEIN package is on ",
         tags$a(href="https://github.com/baj12/idealImmunoTP", "GitHub"), "."
         
       )

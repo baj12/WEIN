@@ -1,4 +1,4 @@
-# library(idealImmunoTP)
+# library(WEIN)
 
 .libPaths()
 
@@ -98,10 +98,10 @@ countmatrix = NULL
   # app <- shinyApp(ui = ideal_ui, server = ideal_server)
   # runApp(app)
   # cp = load("idealState_20231118_123859.RData")
-# idealImmunoTP(dds_obj = dds_airway, annotation_obj = annotation_airway, res_obj = res_airway)
+# WEIN(dds_obj = dds_airway, annotation_obj = annotation_airway, res_obj = res_airway)
   source("R/ideal.R", local = T); 
-  # idealImmunoTP(dds_obj = r_data$dds_obj, res_obj = r_data$res_obj, annotation_obj = r_data$annotation_obj, expdesign = r_data$expdesign)
-  idealImmunoTP()
+  # WEIN(dds_obj = r_data$dds_obj, res_obj = r_data$res_obj, annotation_obj = r_data$annotation_obj, expdesign = r_data$expdesign)
+  WEIN()
 # cp = load(file = "test.Rdata")
 # dds_obj = ideal_env$ideal_values_20210526_152858$dds_obj 
 # res_obj = ideal_env$ideal_values_20210526_152858$res_obj
@@ -114,8 +114,8 @@ countmatrix = NULL
 # options(browser = "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome")
 # 
 # source("R/ideal.R", local = T);
-# idealImmunoTP(dds_obj = dds_obj, 
-#       res_obj = res_obj, 
+# WEIN(dds_obj = dds_obj,
+#       res_obj = res_obj,
 #       annotation_obj = annotation_obj,
 #       countmatrix = countmatrix,
 #       expdesign = expdesign, 

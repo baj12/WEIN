@@ -1,0 +1,17 @@
+,name,Stimulus,CMVstatus,age,group,Donor,BATCH,sex
+D3g_O_P_A_f,D3g_O_P_A_f,antiCD3CD28,pos,old,Iakov,D3g,g,F
+D3g_O_P_P_f,D3g_O_P_P_f,polyIC,pos,old,Iakov,D3g,g,F
+D3g_O_P_L_f,D3g_O_P_L_f,LPS,pos,old,Iakov,D3g,g,F
+D4g_O_P_N_f,D4g_O_P_N_f,null,pos,old,Iakov,D4g,g,F
+D4g_O_P_A_f,D4g_O_P_A_f,antiCD3CD28,pos,old,Iakov,D4g,g,F
+D4g_O_P_P_f,D4g_O_P_P_f,polyIC,pos,old,Iakov,D4g,g,F
+D4g_O_P_L_f,D4g_O_P_L_f,LPS,pos,old,Iakov,D4g,g,F
+D1g_O_N_N_f,D1g_O_N_N_f,null,neg,old,Iakov,D1g,g,F
+D1g_O_N_A_f,D1g_O_N_A_f,antiCD3CD28,neg,old,Iakov,D1g,g,F
+D1g_O_N_P_f,D1g_O_N_P_f,polyIC,neg,old,Iakov,D1g,g,F
+D1g_O_N_L_f,D1g_O_N_L_f,LPS,neg,old,Iakov,D1g,g,F
+D2g_O_N_N_f,D2g_O_N_N_f,null,neg,old,Iakov,D2g,g,F
+D2g_O_N_A_f,D2g_O_N_A_f,antiCD3CD28,neg,old,Iakov,D2g,g,F
+D2g_O_N_P_f,D2g_O_N_P_f,polyIC,neg,old,Iakov,D2g,g,F
+D2g_O_N_L_f,D2g_O_N_L_f,LPS,neg,old,Iakov,D2g,g,F
+D3g_O_P_N_f,D3g_O_P_N_f,null,pos,old,Iakov,D3g,g,F

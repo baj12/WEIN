@@ -1,4 +1,4 @@
-#' Server Components for idealImmunoTP
+#' Server Components for WEIN
 #'
 #' Contains all server-related functions for the idealImmunoTP Shiny application.
 #'
@@ -7,7 +7,7 @@
 NULL
 
 
-#' Create the server for idealImmunoTP
+#' Create the server for WEIN
 #'
 #' Defines the complete server logic for the idealImmunoTP Shiny application.
 #'
@@ -23,7 +23,7 @@ NULL
 #' 
 #' @return A Shiny server definition
 #' @export
-idealImmunoTP_server <- function(
+WEIN_server <- function(
     app_data = list(
       dds_obj = NULL,
       res_obj = NULL,

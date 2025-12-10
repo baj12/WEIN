@@ -1,4 +1,4 @@
-library("idealImmunoTP")
+library("WEIN")
 library("testthat")
 library("DESeq2")
 
@@ -13,17 +13,17 @@ test_that("Complete workflow functions correctly", {
   res <- results(dds)
   
   # Test that all major functions exist
-  expect_true(exists("idealImmunoTP"))
+  expect_true(exists("WEIN"))
   expect_true(exists("multiAxPCA"))
   expect_true(exists("plot_ma"))
   expect_true(exists("plot_volcano"))
   
   # Test that the main function creates an app
-  app <- idealImmunoTP()
+  app <- WEIN()
   expect_is(app, "shiny.appobj")
   
   # Test that the main function works with data
-  app_with_data <- idealImmunoTP(dds_obj = dds, res_obj = res)
+  app_with_data <- WEIN(dds_obj = dds, res_obj = res)
   expect_is(app_with_data, "shiny.appobj")
 })
 

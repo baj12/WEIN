@@ -1,6 +1,6 @@
-# `ideal`-report
+# `WEIN`-report
 
-This content has been loaded from the template report `.Rmd` file, provided with the `ideal` package. Please edit it at your best convenience!
+This content has been loaded from the template report `.Rmd` file, provided with the `WEIN` package. Please edit it at your best convenience!
 
 ```{r setup, include=FALSE, eval = TRUE, echo = FALSE}
 opts_chunk$set(
@@ -409,34 +409,31 @@ if(!is.null(values$gene_signatures) &
 }
 ```
 
-# About `ideal`
+# About `WEIN`
 
-`ideal` is a Bioconductor package containing a Shiny application for
+`WEIN` (Web-based Engine for Interactive Next-generation sequencing analysis) is a Bioconductor package containing a Shiny application for
  interactive and reproducible Differential Expression analysis.
 
-`ideal` is developed in the Bioinformatics Division (led by Harald Binder) 
+`WEIN` is developed by Bernd Jagla at the Institut Pasteur, based on the original `ideal` package developed in the Bioinformatics Division (led by Harald Binder)
 of the Institute of Medical Biostatistics, Epidemiology and Informatics (IMBEI)
 at the University Medical Center of the Johannes Gutenberg University Mainz.
 
 ## Developers
 
-`ideal` is currently maintained by me, Federico Marini, at the IMBEI (www.imbei.uni-mainz.de).
-You can contact me by clicking on the button below.
+`WEIN` is currently developed by Bernd Jagla at the Institut Pasteur. You can contact him by clicking on the button below.
 
-<a href="mailto:mailto:marinif@uni-mainz.de?subject=[ideal_feedback]" class="btn btn-primary">Federico Marini</a>
+<a href="mailto:bernd.jagla@pasteur.fr?subject=[WEIN_feedback]" class="btn btn-primary">Bernd Jagla</a>
 
 ## Code availability
 
-`ideal` is a part of the Bioconductor project (www.bioconductor.org).
-All code for `ideal`, especially for the development version, is available
-on <a href="https://github.com/federicomarini/ideal" target="_blank">GitHub</a>.
+`WEIN` is available on <a href="https://github.com/baj12/idealImmunoTP" target="_blank">GitHub</a>.
 
 ## Citation info
 
-If you use `ideal` for your analysis, please cite it as here below:
+If you use `WEIN` for your analysis, please cite the original `ideal` package as well as acknowledge the development of `WEIN`:
 
 ```{r}
-citation("ideal")
+citation("ideal") # Original package by Federico Marini
 ```
 
 # Session Info
@@ -456,11 +453,11 @@ footertemplate <- function(){
       list(
         hr(),
         "This report was generated with",
-        tags$a(href="https://github.com/federicomarini/ideal", "ideal"), br(),
-        "ideal is a project developed by Federico Marini in the Bioinformatics division of the ",
+        tags$a(href="https://github.com/baj12/idealImmunoTP", "WEIN"), br(),
+        "WEIN is a project developed by Bernd Jagla at the Institut Pasteur, based on the original ideal package by Federico Marini in the Bioinformatics division of the ",
         tags$a(href="http://www.unimedizin-mainz.de/imbei","IMBEI"),br(),
-        "Development of the pcaExplorer package is on ",
-        tags$a(href="https://github.com/federicomarini/ideal", "GitHub")
+        "Development of the WEIN package is on ",
+        tags$a(href="https://github.com/baj12/idealImmunoTP", "GitHub")
       )
     )
   )

@@ -188,7 +188,7 @@ data_setup_server <- function(id, values, annoSpecies_df) {
           showNotification("All components for generating the DESeqDataset object have been loaded, proceed to Step 2!",
                            type = "message")
         } else {
-          showNotification("The 'airway' package is currently not installed. Please do so by executing BiocManager::install('airway') before launching idealImmunoTP()",type = "warning")
+          showNotification("The 'airway' package is currently not installed. Please do so by executing BiocManager::install('airway') before launching WEIN()",type = "warning")
         }
       })
     )

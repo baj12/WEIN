@@ -1,12 +1,12 @@
-#' ideal: Interactive Differential Expression Analysis
+#' WEIN: Web-based Engine for Interactive Next-generation sequencing analysis
 #'
-#' ideal makes differential expression analysis interactive, easy and reproducible.
+#' WEIN makes bulk RNAseq data analysis interactive, easy and reproducible.
 #' The analysis of RNA-seq datasets is guided by the Shiny app as main component of
 #' the package, which also provides a wide set of functions to efficiently extract
 #' information from the existing data. The app can be also deployed on a Shiny
 #' server, to allow its usage without any installation on the user's side.
 #'
-#' ideal makes differential expression analysis interactive, easy and reproducible.
+#' WEIN makes bulk RNAseq data analysis interactive, easy and reproducible.
 #' The analysis of RNA-seq datasets is guided by the Shiny app as main component of
 #' the package, which also provides a wide set of functions to efficiently extract
 #' information from the existing data. The app can be also deployed on a Shiny
@@ -51,9 +51,9 @@
 #' @importFrom plotly plotlyOutput ggplotly renderPlotly
 #' 
 #' @author
-#' Federico Marini \email{marinif@@uni-mainz.de}, 2016-2017
+#' Bernd Jagla \email{bernd.jagla@@pasteur.fr}, 2025
 #'
-#' Maintainer: Federico Marini \email{marinif@@uni-mainz.de}
+#' Maintainer: Bernd Jagla \email{bernd.jagla@@pasteur.fr}
 #' @name ideal-pkg
 #' @docType package
 NULL

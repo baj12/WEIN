@@ -22,7 +22,7 @@ BiocManager::install(c("airway", "DESeq2","SummarizedExperiment"
 install.packages('shinyjqui')
 install.packages("markdown")
 
-library(idealImmunoTP)
+library(WEIN)
 library(airway)
 
 
@@ -70,5 +70,5 @@ library(edgeR)
 
 load(file = "testData.RData")
 
-idealImmunoTP(dds_obj = dds_airway, annotation_obj = annotation_airway, res_obj = res_airway)
+WEIN(dds_obj = dds_airway, annotation_obj = annotation_airway, res_obj = res_airway)
 

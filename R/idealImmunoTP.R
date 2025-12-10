@@ -1,6 +1,6 @@
-#' idealImmunoTP: Interactive Differential Expression Analysis
+#' WEIN: Web-based Engine for Interactive Next-generation sequencing analysis
 #'
-#' idealImmunoTP makes differential expression analysis interactive, easy and reproducible.
+#' WEIN makes bulk RNAseq data analysis interactive, easy and reproducible.
 #' This function launches the main application included in the package.
 #'
 #' @param dds_obj A \code{\link{DESeqDataSet}} object. If not provided, then a
@@ -26,7 +26,7 @@
 #' @return A Shiny App is launched for interactive data exploration and
 #' differential expression analysis
 #'
-#' @export idealImmunoTP
+#' @export WEIN
 #' 
 #' @examples
 #' # with simulated data...
@@ -157,7 +157,7 @@ multiAxPCA = function (object, intgroup = "condition", ntop = 500, returnData = 
 #' @param gene_signatures A list of gene signatures
 #' @return A Shiny application
 #' @export
-idealImmunoTP<- function(dds_obj = NULL,
+WEIN<- function(dds_obj = NULL,
                          res_obj = NULL,
                          annotation_obj = NULL,
                          countmatrix = NULL,
