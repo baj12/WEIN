@@ -197,12 +197,6 @@ count_overview_server <- function(id, values) {
       
       # and extract the count data from the DESeq2 object.
       heatmapcounts <- assay(nt)[select, ]
-      # save(file = "~/scShinyHubDebug/WEIN.RData", list = c(ls(), ls(envir = globalenv())))
-      # load(file="~/scShinyHubDebug/WEIN.RData")
-      # if("symbol" %in% names(dds_obj)) {
-      #   p <- plot_ma(values$res_obj,
-      #                intgenes = values$genelist_ma$`Gene Symbol`,annotation_obj = values$annotation_obj,FDR = input$FDR)
-      # }
       # cluster_cols builds the dendrogram on the top
       if (!is.null(values$annotation_obj)){
         rownames(heatmapcounts) <- values$annotation_obj$gene_name[
@@ -210,13 +204,6 @@ count_overview_server <- function(id, values) {
                 rownames(values$annotation_obj))]
       }
       heatmaply(heatmapcounts, cluster_rows = T, show_rownames = TRUE, cluster_cols = T)
-      # p = ggplotify::as.ggplot(p)
-      # p$theme = list()
-      # # browser()
-      # cat(file =stderr(), paste("geneHeatmap renderPlot: ", input$compute_pairwisecorr,"done.\n"))
-      # # ggsave(
-      # #   filename = paste0("test.",input$compute_pairwisecorr, ".png"), plot = p)
-      # p
     })
     
     output$geneHeatmapgenes <- renderPrint({
