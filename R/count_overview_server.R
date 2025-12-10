@@ -122,7 +122,6 @@ count_overview_server <- function(id, values) {
         #TODO message about color_by
         return(NULL)
       }
-      # browser()
       barplot(sizeFactors(values$dds_obj),
               main = "Size factors ",
               col = col[as.integer(colData(values$dds_obj)[, values$color_by[1]])],
@@ -134,12 +133,11 @@ count_overview_server <- function(id, values) {
       req(input$compute_pairwisecorr)
       
       plotOutput(ns("corrplot"), height = "1000px")
-      # )
+
     })
     
     output$heatcorr_plotUI <- renderUI({
       input$compute_pairwisecorr
-      # if(!input$compute_pairwisecorr) return()
       # TODO check that values$color_by is set and set message otherwise
       plotlyOutput(ns("heatcorr"))
     })
