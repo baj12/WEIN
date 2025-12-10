@@ -25,6 +25,8 @@
 *.docx
 *.pptx
 
+todo.list.txt
+
 # Shiny bookmark files (these can get very large)
 shiny_bookmarks/
 

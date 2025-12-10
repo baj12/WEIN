@@ -156,9 +156,15 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
         )
       )
       
-      if(is.null(input$ma_brush)) return(NULL)
+      shiny::validate(
+        need(!is.null(input$ma_brush),
+             "Please select a region on the MA plot")
+      )
+      shiny::validate(
+        need(!is.null(input$mazoom_click),
+             "Please click on a gene in the zoomed MA plot")
+      )
       
-      if(is.null(input$mazoom_click)) return(ggplot() + annotate("text",label="click to generate the boxplot\nfor the selected gene",0,0) + theme_bw())
       
       selectedGene <- as.character(curDataClick()$ID)
       selectedGeneSymbol <- values$annotation_obj$gene_name[match(selectedGene,values$annotation_obj$gene_id)]
@@ -212,9 +218,11 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
     
     
     cur_combires <- reactive({
+      shiny::validate(
+        need(!is.null(values$res_obj),
+             "Results object is not available")
+      )
       
-      if(is.null(values$res_obj))
-        return(NULL)
       
       normCounts <- as.data.frame(counts(estimateSizeFactors(values$dds_obj),normalized=TRUE))
       normCounts$id <- rownames(normCounts)

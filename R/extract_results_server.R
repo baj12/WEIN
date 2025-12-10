@@ -51,14 +51,6 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
                                                  alpha = values$FDR,
                                                  filterFun = ihw)
                        
-                       # if(input$resu_lfcshrink) {
-                       #   incProgress(amount = 0.15,detail = "Results extracted. Shrinking the logFC now...")
-                       #   values$res_obj <- lfcShrink(values$dds_obj,
-                       #                               # contrast = c(input$choose_expfac, input$fac1_c1, input$fac1_c2),
-                       #                               contrast = list(c(input$choose_expfac),c(choose_expfac2)),
-                       #                               res = values$res_obj)
-                       #   incProgress(amount = 0.8,detail = "logFC shrunken, adding annotation info...")
-                       # } else {
                        incProgress(amount = 0.9,detail = "logFC left unshrunken, adding annotation info...")
                        # }
                      } else {
@@ -67,30 +59,10 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
                                                  contrast = list(c(choose_expfac),c(choose_expfac2)),
                                                  independentFiltering = input$resu_indfil, 
                                                  alpha = values$FDR)
-                       # if(input$resu_lfcshrink) {
-                       #   incProgress(amount = 0.15,detail = "Results extracted. Shrinking the logFC now...")
-                       #   
-                       #   coef = c("Intercept", "STIMULUS_LPS_vs_antiCD3CD28")
-                       #   values$res_obj <- lfcShrink(values$dds_obj,
-                       #                               # contrast = c(input$choose_expfac, input$fac1_c1, input$fac1_c2),
-                       #                               contrast = list(c(input$choose_expfac),c(choose_expfac2)),
-                       #                               res = values$res_obj,
-                       #                               type = "ashr")
-                       #   incProgress(amount = 0.8,detail = "logFC shrunken, adding annotation info...")
-                       # } else {
                        incProgress(amount = 0.9,detail = "logFC left unshrunken, adding annotation info...")
                        # }
                      }
-                     # }
-                     # should not happen as all are factors,
-                     # BJ commenting out
-                     # if(class(colData(values$dds_obj)[,input$choose_expfac]) %in% c("integer","numeric"))
-                     #   values$res_obj <- results(values$dds_obj,name = input$choose_expfac,
-                     #                             independentFiltering = input$resu_indfil, 
-                     #                             alpha = values$FDR
-                     #                             # , addMLE = input$resu_lfcshrink
-                     #   )
-                     
+
                      # adding info from the annotation
                      if(!is.null(values$annotation_obj))
                        values$res_obj$symbol <- values$annotation_obj$gene_name[

@@ -19,7 +19,10 @@ data_setup_server <- function(id, values, annoSpecies_df) {
     
     output$ui_step2 <- renderUI({
       cat(file = stderr(), paste("ui_step2\n"))
-      req(values$expdesign, values$countmatrix)
+      shiny::validate(
+        need(!is.null(values$expdesign) && !is.null(values$countmatrix),
+             "Please provide both experimental design and count matrix")
+      )
       
       box(width = 12, title = "Step 2s", status = "warning", solidHeader = TRUE,
           tagList(
@@ -114,7 +117,10 @@ data_setup_server <- function(id, values, annoSpecies_df) {
     
     output$ddsdesign <- renderUI({
       cat(file = stderr(), paste("ddsdesign\n"))
-      req(values$expdesign)
+      shiny::validate(
+        need(!is.null(values$expdesign),
+             "Please provide experimental design data")
+      )
       # if(is.null(values$expdesign))
       #   return(NULL)
       # browser()
@@ -172,7 +178,10 @@ data_setup_server <- function(id, values, annoSpecies_df) {
     )
     
     output$ddsintercept <- renderUI({
-      req(values$expdesign, input$dds_design)
+      shiny::validate(
+        need(!is.null(values$expdesign) && !is.null(input$dds_design),
+             "Please provide both experimental design and design formula")
+      )
       if(input$dds_design[1] == "*") {
         return(NULL)
       }
@@ -186,10 +195,13 @@ data_setup_server <- function(id, values, annoSpecies_df) {
         updateSelectInput(session, ns("dds_design"), selected = "")
       }
     }, ignoreInit = TRUE)
-    
     output$ui_stepanno <- renderUI({
       cat(file = stderr(), paste("ui_stepanno\n"))
-      req(values$dds_obj)
+      shiny::validate(
+        need(!is.null(values$dds_obj),
+             "Please create a DESeqDataSet object first")
+      )
+      
       
       box(width = 12, title = "Optional Step", status = "info", solidHeader = TRUE,
           tagList(
@@ -405,7 +417,10 @@ data_setup_server <- function(id, values, annoSpecies_df) {
     })
     
     output$ui_diydds <- renderUI({
-      req(values$expdesign, values$countmatrix, input$dds_design)
+      shiny::validate(
+        need(!is.null(values$expdesign) && !is.null(values$countmatrix) && !is.null(input$dds_design),
+             "Please provide experimental design, count matrix, and design formula")
+      )
       actionButton(ns("button_diydds"),"Generate the dds object", class = "btn btn-success")
     })
     
@@ -415,7 +430,10 @@ data_setup_server <- function(id, values, annoSpecies_df) {
     })
     
     output$ui_stepoutlier <- renderUI({
-      req(values$dds_obj)
+      shiny::validate(
+        need(!is.null(values$dds_obj),
+             "Please create a DESeqDataSet object first")
+      )
       # browser()
       box(
         width = 12, title = "Optional Step", status = "info", solidHeader = TRUE,

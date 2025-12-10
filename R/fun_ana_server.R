@@ -14,7 +14,10 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
           return(data.frame())
         } else {
           gl <- read1stCol(input[[gl_name]]$datapath, values$dds_obj)
-          if(is.null(gl)) return(NULL)
+          shiny::validate(
+            need(!is.null(gl),
+                 "Failed to read gene list file")
+          )
           return(gl)
         }
       })
@@ -231,7 +234,10 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
     # Generic function to create UI output
     create_ui_output <- function(ns, value_name, title, output_name) {
       renderUI({
-        if(is.null(values[[value_name]])) return(NULL)
+      shiny::validate(
+        need(!is.null(values[[value_name]]),
+             paste("Value", value_name, "is not available"))
+      )
         tagList(
           h4(title),
           DT::dataTableOutput(ns(output_name))
@@ -242,7 +248,10 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
     # Generic function to create DataTable output
     create_dt_output <- function(ns, value_name, link_column = "rownames", column_type = "GO") {
       DT::renderDataTable({
-        if(is.null(values[[value_name]])) return(NULL)
+      shiny::validate(
+        need(!is.null(values[[value_name]]),
+             paste("Value", value_name, "is not available"))
+      )
         mytbl <- values[[value_name]]
         
         if (link_column == "rownames") {
@@ -422,9 +431,12 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
         output[[paste0(output_name, "_plot")]] <- renderPlotly({
           s <- input[[dt_input_name]]
           if(length(s) == 0) return(NULL)
-          
           topgo_data <- values[[topgo_value_name]]
-          if(is.null(topgo_data)) return(NULL)
+          shiny::validate(
+            need(!is.null(topgo_data),
+                 paste("TopGO data", topgo_value_name, "is not available"))
+          )
+
           
           create_goterm_heatmap(topgo_data, s, values, annoSpecies_df)
         })

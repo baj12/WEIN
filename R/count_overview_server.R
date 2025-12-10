@@ -130,7 +130,10 @@ count_overview_server <- function(id, values) {
       
     })
     output$pairwise_plotUI <- renderUI({
-      req(input$compute_pairwisecorr)
+      shiny::validate(
+        need(!is.null(input$compute_pairwisecorr),
+             "Please compute pairwise correlations first")
+      )
       
       plotOutput(ns("corrplot"), height = "1000px")
 
@@ -142,33 +145,54 @@ count_overview_server <- function(id, values) {
       plotlyOutput(ns("heatcorr"))
     })
     output$pca_Dim1 <-renderUI({
-      req(input$compute_pairwisecorr)
+      shiny::validate(
+        need(!is.null(input$compute_pairwisecorr),
+             "Please compute pairwise correlations first")
+      )
       selectizeInput(ns("pcaDim1"), label = "Which PCA on X",
                      choices = c(1:20), selected = 1, multiple = F)
     })
     output$pca_Dim2 <-renderUI({
-      req(input$compute_pairwisecorr)
+      shiny::validate(
+        need(!is.null(input$compute_pairwisecorr),
+             "Please compute pairwise correlations first")
+      )
       selectizeInput(ns("pcaDim2"), label = "Which PCA on Y",
                      choices = c(1:20), selected = 2, multiple = F)
     })
     output$pca_plotUI <- renderUI({
-      req(input$compute_pairwisecorr)
+      shiny::validate(
+        need(!is.null(input$compute_pairwisecorr),
+             "Please compute pairwise correlations first")
+      )
       plotlyOutput(ns("pcaPlot"))
     })
     output$pcaEV_plotUI <- renderUI({
-      req(input$compute_pairwisecorr)
+      shiny::validate(
+        need(!is.null(input$compute_pairwisecorr),
+             "Please compute pairwise correlations first")
+      )
       plotlyOutput(ns("pcaEVPlot"))
     })
     output$pca_plotUI34 <- renderUI({
-      req(input$compute_pairwisecorr)
+      shiny::validate(
+        need(!is.null(input$compute_pairwisecorr),
+             "Please compute pairwise correlations first")
+      )
       plotlyOutput(ns("pcaPlot34"))
     })
     output$pca_plotUI56 <- renderUI({
-      req(input$compute_pairwisecorr)
+      shiny::validate(
+        need(!is.null(input$compute_pairwisecorr),
+             "Please compute pairwise correlations first")
+      )
       plotlyOutput(ns("pcaPlot56"))
     })
     output$sizeFactors_plotUI    <- renderUI({
-      req(input$compute_pairwisecorr)
+      shiny::validate(
+        need(!is.null(input$compute_pairwisecorr),
+             "Please compute pairwise correlations first")
+      )
       plotOutput(ns("sizeFactorsPlot"))
     }) 
     output$geneHeatmap_plotUI <- renderUI({

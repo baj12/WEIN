@@ -85,7 +85,10 @@ ui_setup_server <- function(id, values) {
     })
     output$nonZeroCountsPlot <- renderPlot({
       # browser()
-      if(is.null(values$dds_obj)) return(NULL)
+      shiny::validate(
+        need(!is.null(values$dds_obj),
+             "DESeqDataSet object is not available")
+      )
       counts <- assays(values$dds_obj)[["counts"]]
       # colSums sums over each column producing a vector of counts.
       countsNz <- colSums(counts)
@@ -103,7 +106,10 @@ ui_setup_server <- function(id, values) {
       )
     })
     output$alignedSequencesPlot <- renderPlot({
-      if(is.null(values$dds_obj)) return(NULL)
+      shiny::validate(
+        need(!is.null(values$dds_obj),
+             "DESeqDataSet object is not available")
+      )
       counts <- assays(values$dds_obj)[["counts"]]
       ylim <- c(0, 1.4 * max(colSums(counts)))
       op <- par(mar = c(4, 10, 4, 2) + 0.1)

@@ -50,7 +50,10 @@ read1stCol <- function (fileName,dds_obj){
     return(NULL)
   }
   )
-  if(is.null(cm)) return(NULL)
+  shiny::validate(
+    need(!is.null(cm),
+         "Failed to read count matrix file")
+  )
   if (ncol(cm) >1) {
     cm = cm[,1, drop = F]
   }
