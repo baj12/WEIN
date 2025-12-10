@@ -36,6 +36,8 @@ shiny_bookmarks/
 test.Rdata
 testData.RData
 idealState_*.RData
+idealState_20231118_123859.RData
+shiny_bookmarks/*/*.rds
 
 # Temporary files
 *.tmp
@@ -61,3 +63,4 @@ idealState_*.RData
 .Rcheck/
 packrat/
 renv/
+.Rproj.user
