@@ -1,4 +1,63 @@
-.Rproj.user
+# History files
 .Rhistory
 .RData
 .Ruserdata
+
+# Session Data
+.RDataTmp
+.RSession*
+
+# Example code in library
+/library/*/examples/
+
+# R project file
+*.Rproj
+*.Rproj.user
+
+# RStudio files
+.rstudio
+.rstudio-desktop
+.rstudio-backup
+
+# R Markdown files
+*.html
+*.pdf
+*.docx
+*.pptx
+
+# Shiny bookmark files (these can get very large)
+shiny_bookmarks/
+
+# Large data files
+*.RData
+*.rds
+*.Rdata
+*.rda
+test.Rdata
+testData.RData
+idealState_*.RData
+
+# Temporary files
+*.tmp
+*.temp
+
+# Log files
+*.log
+
+# macOS files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Thumbnails
+.Thumbnails
+
+# Files that might appear on external disks
+.Spotlight-V100
+.Trashes
+
+# Directories
+.Rcheck/
+packrat/
+renv/
