@@ -1,0 +1,769 @@
+data_setup_server <- function(id, values, annoSpecies_df) {
+  moduleServer(id, function(input, output, session) {
+    
+    ns <- session$ns
+    
+    output$dt_cm <- DT::renderDataTable({
+      if(is.null(values$countmatrix))
+        return(NULL)
+      datatable(values$countmatrix, options = list(scrollX = TRUE, scrollY = "400px"))
+    })
+    
+    output$dt_ed <- DT::renderDataTable({
+      if(is.null(values$expdesign))
+        return(NULL)
+      datatable(values$expdesign, options = list(scrollX = TRUE))
+    })
+    
+    
+    
+    output$ui_step2 <- renderUI({
+      cat(file = stderr(), paste("ui_step2\n"))
+      req(values$expdesign, values$countmatrix)
+      
+      box(width = 12, title = "Step 2s", status = "warning", solidHeader = TRUE,
+          tagList(
+            # as in https://groups.google.com/forum/#!topic/shiny-discuss/qQ8yICfvDu0
+            h2("Select the DE design and create the DESeqDataSet object"),
+            fluidRow(
+              column(
+                width = 6,
+                
+                uiOutput(ns("ddsdesign")),
+                uiOutput(ns("ddsintercept")),
+                # checkboxInput(inputId = "multiplyDesign", label = "multiply first two arguments",value = FALSE),
+                textInput(ns("geneFilter"), "Reg. expr. to fileter genes", value = values$geneFilter),
+                uiOutput(ns("ui_diydds")),
+                hr(),
+                # uiOutput("ok_dds"),
+                verbatimTextOutput(ns("debugdiy"))
+              ),
+              column(
+                width = 6,
+                plotOutput(ns("cooccurrence_matrix_plot")) %>% shinyjqui::jqui_resizable(),
+                
+              )
+            )
+          ))
+    })
+    
+    
+    # Plot cooccurrence matrix ----------------------------------------------
+    output$cooccurrence_matrix_plot <- shiny::renderPlot({
+      shiny::validate(
+        shiny::need(
+          input$dds_design != "" ,
+          paste0("Please provide a formula where all terms appear in ",
+                 "the sample data")
+        )
+      )
+      if (is.null(cooccurrenceplots())) {
+        NULL
+      } else {
+        # cowplot::plot_grid(plotlist = cooccurrenceplots(),
+        #                    ncol = 1)
+        cooccurrenceplots() 
+      }
+    })
+    
+    # The following comes from ExploreModelMatrix package
+    ## ----------------------------------------------------------------------- ##
+    ## Create co-occurrence plot
+    ## ----------------------------------------------------------------------- ##
+    ## 
+    cooccurrenceplots <- reactive({
+      cat(file = stderr(), paste("cooccurrenceplots\n"))
+      # browser()
+      if(is.null(values$expdesign))
+        return(NULL)
+      if(is.null(input$dds_design))
+        return(NULL)
+      if(input$dds_design[1] == "*"){
+        updateSelectInput(session, inputId = "dds_design", selected = "")
+        return(NULL)
+      }
+      # if(!all(input$dds_design %in% colnames(values$expdesign)))
+      #   return(NULL)
+      dsgString = paste(input$dds_design, collapse = " + ")
+      dsgString = str_replace(dsgString, fixed(" + * + "), " * ")
+      if(is.null(tryCatch( as.formula(paste0("~", dsgString)),
+                           error = function(e) return(NULL) ))){
+        return(NULL)
+      }
+      dsgn <- as.formula(paste0("~", dsgString))
+      expanded_formula <- terms(dsgn, data = values$expdesign)
+      model_matrix <- model.matrix(expanded_formula, data =  values$expdesign)
+      longData<-reshape2::melt(model_matrix)
+      longData<-longData[longData$value!=0,]
+      
+      p1 = ggplot(longData, aes(x = Var1, y = Var2)) + 
+        geom_raster(aes(fill=value)) + 
+        scale_fill_gradient(low="grey90", high="darkgrey") +
+        theme(axis.title.x = element_blank(),axis.title.y = element_blank(),
+              axis.text.y =  element_text(size=14),
+              legend.position = "none") 
+      
+      sample_counts <- as.data.frame(colSums(model_matrix != 0))
+      colnames(sample_counts) = "count"
+      sample_counts$names = rownames(sample_counts)
+      sample_counts$names = factor(sample_counts$names, levels = levels(longData$Var2))
+      all(levels(longData$Var2) %in% sample_counts$names)
+      sample_counts = sample_counts[levels(longData$Var2),]
+      p2 = ggplot(sample_counts, aes(x=names, y=count)) + 
+        geom_bar(stat = "identity") + coord_flip() + 
+        theme(axis.title.x = element_blank(),
+              axis.title.y = element_blank(),
+              axis.text.y = element_blank(),
+              axis.ticks.y = element_blank())
+      cowplot::plot_grid(p1, p2,rel_widths = c(4, 1) )
+    })
+    
+    observeEvent(input$geneFilter, {
+      cat(file = stderr(), paste("input$geneFilter\n"))
+      # browser()
+      if (is.null(values$geneFilter)) {
+        updateTextInput(session, inputId = "geneFilter", value = "^MT-|^RP")
+        return()
+      } 
+      if(input$geneFilter == values$geneFilter){
+        # nothing changed
+        return(NULL)
+      }
+      values$geneFilter = input$geneFilter
+      # browser()
+      values$dds_obj = NULL
+    })
+    
+    output$ddsdesign <- renderUI({
+      cat(file = stderr(), paste("ddsdesign\n"))
+      req(values$expdesign)
+      # if(is.null(values$expdesign))
+      #   return(NULL)
+      # browser()
+      poss_covars <- colnames(values$expdesign)
+      cat(file = stderr(), "selectINPUT dds_design\n")
+      # browser()
+      choices = unique(c(values$dds_design, poss_covars, "*"))
+      selectInput(ns('dds_design'), label = 'Select the design for your experiment: ',
+                  choices = choices, selected = values$dds_design, multiple = TRUE, selectize = T)
+    })
+    
+    
+    observeEvent(input$help_format, {
+      showModal(modalDialog(
+        title = "Format specifications for idealImmunoTP",
+        includeMarkdown(system.file("extdata", "datainput.md",package = "idealImmunoTP")),
+        h4("Example:"),
+        tags$img(
+          src = base64enc::dataURI(file = system.file("www", "help_dataformats.png",package = "pcaExplorer"), mime = "image/png"),
+          width = 750
+        ),
+        easyClose = TRUE,
+        footer = NULL,
+        size = "l"
+      ))
+    })
+    
+    observeEvent(input$btn_loaddemo,withProgress(
+      message = "Loading demo data",
+      detail = "Loading airway count and metadata information", value = 0,
+      {
+        aw <- requireNamespace("airway",quietly = TRUE)
+        incProgress(0.2,detail = "`airway` package loaded")
+        if(aw) {
+          data(airway,package="airway",envir = environment())
+          
+          cm_airway <- assay(airway)
+          incProgress(0.7, detail = "Count matrix loaded")
+          ed_airway <- as.data.frame(colData(airway))
+          
+          values$countmatrix <- cm_airway
+          values$expdesign <- ed_airway
+          incProgress(0.3, detail = "Experimental metadata loaded")
+          # just to be sure, erase the annotation and the rest
+          # browser()
+          values$dds_obj <- NULL
+          values$annotation_obj <- NULL
+          values$res_obj <- NULL
+          showNotification("All components for generating the DESeqDataset object have been loaded, proceed to Step 2!",
+                           type = "message")
+        } else {
+          showNotification("The 'airway' package is currently not installed. Please do so by executing BiocManager::install('airway') before launching idealImmunoTP()",type = "warning")
+        }
+      })
+    )
+    
+    output$ddsintercept <- renderUI({
+      req(values$expdesign, input$dds_design)
+      if(input$dds_design[1] == "*") {
+        return(NULL)
+      }
+      poss_covars <- levels(values$expdesign[,input$dds_design[1]])
+      selectInput(ns('dds_intercept'), label = 'Select the intercept for your experiment: ',
+                  choices = c(NULL, poss_covars), selected = values$dds_intercept, multiple = FALSE)
+    })
+    
+    observeEvent(input$dds_design, {
+      if(length(input$dds_design) > 0 && input$dds_design[1] == "*") {
+        updateSelectInput(session, ns("dds_design"), selected = "")
+      }
+    }, ignoreInit = TRUE)
+    
+    output$ui_stepanno <- renderUI({
+      cat(file = stderr(), paste("ui_stepanno\n"))
+      req(values$dds_obj)
+      
+      box(width = 12, title = "Optional Step", status = "info", solidHeader = TRUE,
+          tagList(
+            h2("Create the annotation data frame for your dataset"),
+            
+            fluidRow(
+              column(
+                width = 8,
+                uiOutput(ns("ui_selectspecies")),
+                verbatimTextOutput(ns("speciespkg")),
+                uiOutput(ns("ui_idtype")),
+                verbatimTextOutput(ns("printDIYanno"))
+                
+              )
+            )
+            ,
+            uiOutput(ns("ui_getanno"))
+          )
+      )
+    })
+    output$printDIYanno <- renderPrint({
+      print(head(values$annotation_obj))
+    })
+    
+    
+    output$speciespkg <- renderText({
+      if (is.null(values$dds_obj)) #
+        return(NULL)
+      shiny::validate(
+        need(values$cur_species!="",
+             "Select a species - requires the corresponding annotation package"
+        )
+      )
+      annopkg <- annoSpecies_df$pkg[annoSpecies_df$species==values$cur_species]
+      shiny::validate(
+        need(require(annopkg,character.only=TRUE),
+             paste0("The package ",annopkg, " is not installed/available. Try installing it with BiocManager::install('",annopkg,"')"))
+      )
+      retmsg <- paste0(annopkg," - package available and loaded")
+      # if (!require(annopkg,character.only=TRUE)) {
+      # stop("The package",annopkg, "is not installed/available. Try installing it with BiocManager::install() ?")
+      # }
+      retmsg <- paste0(retmsg," - ",gsub(".eg.db","",gsub("org.","",annopkg)))
+      retmsg
+    })
+    
+    
+    
+    output$ui_getanno <- renderUI({
+      if (is.null(values$dds_obj) ) ### and not provided already with sep annotation?
+        return(NULL)
+      shiny::validate(
+        need(values$cur_species != "",
+             "Select a species first in the panel")
+      )
+      actionButton(ns("button_getanno"),"Retrieve the gene symbol annotation for the uploaded data", class = "btn btn-primary")
+    })
+    
+    
+    observeEvent(input$button_getanno,
+                 {
+                   withProgress(message="Retrieving the annotation...",
+                                detail = "Locating package", value = 0,{
+                                  # browser()
+                                  annopkg <- annoSpecies_df$pkg[annoSpecies_df$species==input$speciesSelect]
+                                  incProgress(0.1,detail = "Matching identifiers")
+                                  values$cur_species <- input$speciesSelect
+                                  values$cur_type <- input$idtype
+                                  
+                                  if (input$idtype == "SYMBOL") {
+                                    values$annotation_obj = data.frame(gene_id = rownames(values$dds_obj), gene_name = rownames(values$dds_obj), 
+                                                                       stringsAsFactors = FALSE, row.names = rownames(values$dds_obj))
+                                  } else {
+                                    tryCatch({
+                                      annotation_obj <- get_annotation_orgdb(values$dds_obj,orgdb_species = annopkg, idtype = input$idtype)
+                                      values$annotation_obj <- annotation_obj
+                                      # and also, set the species in the reactiveValues
+                                    },
+                                    error=function(e) {
+                                      showNotification(
+                                        paste("Warning! The annotation object was not generated,",
+                                              "because of an error in the underlying `mapIds` function:",
+                                              "-----", e), type = "warning")
+                                    })
+                                  }
+                                })
+                   
+                 })
+    
+    observeEvent(input$speciesSelect,{
+      values$cur_species <- input$speciesSelect
+      curr_idtype <- values$cur_type
+      updateSelectInput(session, inputId = ns("idtype"), selected = curr_idtype)
+    }
+    )
+    
+    observeEvent(input$button_rundeseq,
+                 {
+                   withProgress(message="Running DESeq on your data...",
+                                detail = "This step might take a while", value = 0,{
+                                  # trick to keep species info while still changing the dds_obj
+                                  curr_species <- input$speciesSelect
+                                  incProgress(0.1)
+                                  
+                                  # if(input$nrcores == 1){
+                                  #   pa = FALSE
+                                  #   bp = bpparam()
+                                  # } else {
+                                  pa = FALSE
+                                  bp = MulticoreParam(workers = 8)
+                                  # }
+                                  # leave open option for computing in parallel?
+                                  values$dds_obj <- tryCatch({
+                                    DESeq(values$dds_obj,
+                                          parallel = pa,
+                                          BPPARAM = bp)},
+                                    # BPPARAM = MulticoreParam(workers = input$nrcores))},
+                                    error = function(e) {
+                                      showNotification(
+                                        paste(
+                                          "Error during creation of DDS object",
+                                          "-----", e
+                                        ),
+                                        type = "error"
+                                      )
+                                      return(values$dds_obj)
+                                    }
+                                  )
+                                  incProgress(0.89)
+                                  updateSelectInput(session, inputId = ns("speciesSelect"), selected = curr_species)
+                                })
+                 })
+    
+    # server run deseq --------------------------------------------------------
+    output$rundeseq <- renderUI({
+      if(is.null(values$dds_obj))
+        return(NULL)
+      else
+        actionButton(ns("button_rundeseq"),"Run DESeq!", icon = icon("spinner"), class = "btn btn-success")
+    })
+    
+    output$ui_step3 <- renderUI({
+      if (is.null(values$dds_obj)) #
+        return(NULL)
+      box(width = 12, title = "Step 3", status = "success", solidHeader = TRUE,
+          tagList(
+            h2("Run DESeq!"),
+            
+            # fluidRow(
+            #   column(
+            #     width = 4,
+            #     uiOutput("ui_nrcores")
+            #   )
+            # ),
+            
+            uiOutput(ns("rundeseq")),
+            verbatimTextOutput(ns("printDIYresults")),
+            uiOutput(ns("ui_stepend"))
+          )
+      )
+    })
+    
+    output$ui_stepend <- renderUI({
+      if(is.null(values$dds_obj))
+        return(NULL)
+      if (!"results" %in% mcols(mcols(values$dds_obj))$type) #
+        return(NULL)
+      
+      tagList(
+        h2("Good to go!")
+        # ,
+        # box(width = 6, title = "Diagnostic plot", status = "info", solidHeader = TRUE,
+        #     collapsible = TRUE, collapsed = TRUE,
+        #     plotOutput("diagno_dispests"))
+      )
+    })
+    
+    
+    output$printDIYresults <- renderPrint({
+      shiny::validate(
+        need(!is.null(values$dds_obj),
+             "Provide or construct a dds object")
+      )
+      shiny::validate(
+        need("results" %in% mcols(mcols(values$dds_obj))$type ,
+             "dds object provided, but couldn't find results. you should first run DESeq() with the button up here"
+        )
+      )
+      summary(DESeq2::results(values$dds_obj), alpha = values$FDR)
+    })
+    
+    output$ui_selectspecies <- renderUI({
+      if (is.null(values$dds_obj)) #
+        return(NULL)
+      selectInput(ns("speciesSelect"),label = "Select the species of your samples - it will also be used for enhancing result tables",
+                  choices = annoSpecies_df$species,selected="Human")
+    })
+    output$ui_idtype <- renderUI({
+      if (is.null(values$dds_obj)) #
+        return(NULL)
+      
+      std_choices <- c("ENSEMBL","ENTREZID","REFSEQ","SYMBOL")
+      if(!"speciesSelect" %in% names(input)) {
+        return (NULL)
+      }
+      if (input$speciesSelect!=""){
+        annopkg <- annoSpecies_df$pkg[annoSpecies_df$species==input$speciesSelect]
+        require(annopkg,character.only=TRUE)
+        pkg_choices <- keytypes(get(annopkg))
+        std_choices <- union(std_choices, pkg_choices)
+      }
+      selectInput(ns("idtype"), "select the id type in your data", choices=std_choices, selected = "SYMBOL")
+    })
+    
+    output$ui_diydds <- renderUI({
+      req(values$expdesign, values$countmatrix, input$dds_design)
+      actionButton(ns("button_diydds"),"Generate the dds object", class = "btn btn-success")
+    })
+    
+    observeEvent(input$button_diydds,{
+      if(!is.null(values$countmatrix) & !is.null(values$expdesign))
+        values$dds_obj <- diyDDS()
+    })
+    
+    output$ui_stepoutlier <- renderUI({
+      req(values$dds_obj)
+      # browser()
+      box(
+        width = 12, title = "Optional Step", status = "info", solidHeader = TRUE,
+        tagList(
+          h2("Remove sample(s) from the current dataset - suspected outliers!"),
+          
+          fluidRow(
+            column(
+              width = 8,
+              uiOutput(ns("ui_selectoutliers")),
+              uiOutput(ns("outliersout")),
+              verbatimTextOutput(ns("printremoved"))
+            )
+          )
+        )
+      )
+    })
+    
+    output$printremoved <- renderPrint({
+      print(values$removedsamples)
+    })
+    
+    output$outliersout <- renderUI({
+      if(is.null(values$dds_obj))
+        return(NULL)
+      else
+        actionButton(ns("button_outliersout"),"Recompute the dds without some samples",class = "btn btn-primary")
+    })
+    
+    observeEvent(input$button_outliersout,{
+      cat(file = stderr(), paste("input$button_outliersout\n"))
+      
+      withProgress({
+        allsamples <- colnames(values$countmatrix)
+        outliersamples <- input$selectoutliers
+        
+        keptsamples <- setdiff(allsamples,outliersamples)
+        colData <- values$expdesign[keptsamples,]
+        colData[, input$dds_design[1]] = relevel(colData[, input$dds_design[1]], ref = values$dds_intercept)
+        dds <- tryCatch({DESeqDataSetFromMatrix(countData = values$countmatrix[,keptsamples],
+                                                colData = colData,
+                                                design  = design(values$dds_obj)
+                                                # design=as.formula(paste0("~",paste(input$dds_design, collapse=" + ")))
+        )}, error = function(e) {
+          showNotification(
+            paste(
+              "Error during creation of DDS object",
+              "-----", e
+            ),
+            type = "error"
+          )
+          return(NULL)
+        })
+        if (is.null(dds)) {
+          return(NULL)
+        }
+        dds <- estimateSizeFactors(dds)
+        
+        # return(dds)
+        # re-create the dds and keep track of which samples were removed
+        values$removedsamples <- input$selectoutliers
+        
+        curr_species <- input$speciesSelect
+        values$dds_obj <- dds
+        updateSelectInput(session, inputId = ns("speciesSelect"), selected = curr_species)
+        
+        # accordingly, reset the results
+        values$res_obj <- NULL},
+        message = "Removing selected samples from the current dataset")
+    })
+    
+    
+    output$upload_count_matrix <- renderUI({
+      # if (!is.null(values$dds_obj) | !is.null(values$countmatrix)) {
+      #   return(fluidRow(column(
+      #     width = 12,
+      #     tags$li("You already provided a count matrix or a DESeqDataSet object as input. You can check your input data in the collapsible box here below."), offset = 2)))
+      # } else {
+        return(fileInput(inputId = ns("uploadcmfile"),
+                         label = "Upload one or more count matrix file(s)",
+                         accept = c("text/csv", "text/comma-separated-values",
+                                    "text/tab-separated-values", "text/plain",
+                                    ".csv", ".tsv", ".xls"), multiple = TRUE))
+      # }
+    })
+    
+    output$upload_metadata <- renderUI({
+      # if (!is.null(values$dds_obj) | !is.null(values$expdesign)) {
+      #   return(fluidRow(column(
+      #     width = 12,
+      #     tags$li("You already provided a matrix/data.frame with the experimental covariates or a DESeqDataSet object as input. You can check your input data in the collapsible box here below."), offset = 2)))
+      #   
+      # } else {
+        return(fileInput(inputId = ns("uploadmetadatafile"),
+                         label = "Upload a sample metadata matrix file",
+                         accept = c("text/csv", "text/comma-separated-values",
+                                    "text/tab-separated-values", "text/plain",
+                                    ".csv", ".tsv"), multiple = FALSE))
+      # }
+    })
+    
+    readCountmatrix <- reactive({
+      if (is.null(input$uploadcmfile))
+        return(NULL)
+      on.exit({
+        if (!is.null(getDefaultReactiveDomain())) {
+          removeNotification(id = "readCountmatrix")
+        }
+      })
+      if (!is.null(getDefaultReactiveDomain())) {
+        showNotification("readCountmatrix",
+                         id = "readCountmatrix",
+                         duration = NULL
+        )
+      }
+      
+      guessed_sep <- sepguesser(input$uploadcmfile$datapath[1])
+      cm <- utils::read.delim(input$uploadcmfile$datapath[1], header = TRUE,
+                              as.is = TRUE, sep = guessed_sep, quote = "",
+                              row.names = 1, # https://github.com/federicomarini/pcaExplorer/issues/1
+                              ## TODO: tell the user to use tsv, or use heuristics
+                              ## to check what is most frequently occurring separation character? -> see sepGuesser.R
+                              check.names = FALSE)
+      if (nrow(input$uploadcmfile) > 1){
+        for (r in 2:nrow(input$uploadcmfile)) {
+          cmt <- utils::read.delim(input$uploadcmfile$datapath[r], header = TRUE,
+                                   as.is = TRUE, sep = guessed_sep, quote = "",
+                                   row.names = 1, # https://github.com/federicomarini/pcaExplorer/issues/1
+                                   ## TODO: tell the user to use tsv, or use heuristics
+                                   ## to check what is most frequently occurring separation character? -> see sepGuesser.R
+                                   check.names = FALSE)
+          cm2 = base::merge(cm, cmt, by = 0,  all=T)
+          rownames(cm2) = cm2$Row.names
+          cm2$Row.names = NULL
+          cm = cm2
+        }
+      }
+      cm[is.na(cm)] <- 0
+      cat(file = stderr(), paste("read count data: rows:", nrow(cm), "ncol:", ncol(cm), "\n", "sample names:", colnames(cm), "\n"))
+      # browser()
+      return(cm)
+    })
+    
+    readMetadata <- reactive({
+      if (is.null(input$uploadmetadatafile))
+        return(NULL)
+      # browser()
+      
+      guessed_sep <- sepguesser(input$uploadmetadatafile$datapath)
+      expdesign <- utils::read.delim(input$uploadmetadatafile$datapath, header = TRUE,
+                                     sep = guessed_sep, quote = "",
+                                     check.names = FALSE, stringsAsFactors = TRUE)
+      if (colnames(expdesign)[1] == "") {
+        tryCatch({
+          rownames(expdesign) <- expdesign[,1]},
+          error = function(e) {
+            showNotification(paste("Error while load meta data:\n", e),
+                             type = "error")
+            return(NULL)
+          }
+        )
+        expdesign <- expdesign[,-1]
+      }
+      cat(file = stderr(), paste("read metadata: rows:", nrow(expdesign), "colnames:", colnames(expdesign), "\n"))
+      # browser()
+      return(expdesign)
+    })
+    
+    # as in http://stackoverflow.com/questions/29716868/r-shiny-how-to-get-an-reactive-data-frame-updated-each-time-pressing-an-actionb
+    observeEvent(input$uploadcmfile,
+                 {
+                   # browser()
+                   values$countmatrix <- readCountmatrix()
+                   values$dds_obj <- NULL
+                   values$res_obj <- NULL
+                 })
+    
+    observeEvent(input$uploadmetadatafile,{
+      cat(file = stderr(), paste("input$uploadmetadatafile\n"))
+      
+      # browser()
+      if("restoreBookmark" %in% names(values))
+        if(values$restoreBookmark & !is.null(values$expdesign)){
+          return()
+        }
+      
+      values$expdesign <- readMetadata()
+      values$dds_obj <- NULL
+      values$res_obj <- NULL
+    })
+    
+    observeEvent(input$dds_intercept, {
+      values$dds_intercept = input$dds_intercept
+    })
+    
+    # server outliers --------------------------------------------------------
+    output$ui_selectoutliers <- renderUI({
+      if(is.null(values$dds_obj))
+        return(NULL)
+      # cat(file = stderr(), "ui_selectoutliers UI\n")
+      md = colnames(values$dds_obj)
+      cm = colnames(values$dds_obj)
+      if (!is.null(readCountmatrix()))
+        cm <- readCountmatrix()
+      if (!is.null(readMetadata()))
+        md <- readMetadata()
+      comSamples <- intersect(colnames(cm), rownames(md))
+      sele <- values$removedsamples
+      
+      
+      checkboxGroupInput("selectoutliers","Select the samples to remove - candidate outliers",
+                         choices = comSamples, selected = sele)
+      # selectInput("selectoutliers","Select the samples to remove - candidate outliers",
+      #             choices = colnames(values$dds_obj), selected = NULL,multiple = TRUE
+      # )
+    })
+    
+    
+    diyDDS <- reactive({
+      cat(file = stderr(), paste("diyDDS\n"))
+      
+      if (is.null(values$countmatrix) | is.null(values$expdesign) | is.null(input$dds_design)) {
+        return(NULL)
+      }
+      # browser()
+      if (!is.null(readCountmatrix()))
+        values$countmatrix <- readCountmatrix()
+      if (!is.null(readMetadata()))
+        values$expdesign <- readMetadata()
+      comSamples <- intersect(colnames(values$countmatrix), rownames(values$expdesign))
+      if(length(comSamples)==0){
+        showNotification("count and meta data don't have any samples in common. Please reload data.", type = "error")
+      }
+      metaData <- readMetadata()
+      values$expdesign <- values$expdesign[comSamples, ]
+      dsgString = paste(input$dds_design, collapse = " + ")
+      dsgString = str_replace(dsgString, fixed(" + * + "), " * ")
+      if(is.null(tryCatch( as.formula(paste0("~", dsgString)),
+                           error = function(e) return(NULL) ))){
+        showNotification("There is a problem with the design", type = "error")
+        return(NULL)
+      }
+      dsgn <- as.formula(paste0("~", dsgString))
+      
+      # dsgn <- input$dds_design
+      filterExp <- input$geneFilter
+      values$geneFilter = input$geneFilter
+      values$dds_design = input$dds_design
+      values$res_obj = NULL
+      if (!is(dsgn,"formula")) {
+        dStr <- paste0("~", paste(input$dds_design, collapse = " + "))
+        # if (input$multiplyDesign) {
+        #   dStr <- sub('\\+', '*', dStr)
+        # }
+        dsgn <- as.formula(dStr)
+      }
+      locfunc <- stats::median
+      counts <- values$countmatrix[, comSamples]
+      # save(file = "~/SCHNAPPsDebug/idealImmunoTP.RData", list = ls())
+      # cp = load("~/SCHNAPPsDebug/idealImmunoTP.RData")
+      if (nchar(filterExp)>0){
+        counts <- counts[grep(filterExp, rownames(counts), invert = TRUE), ]
+      }
+      values$countmatrix <- counts
+      cGenes = 1:nrow(counts)
+      # browser()
+      md = readMetadata()
+      rc = readCountmatrix()
+      colData = values$expdesign[comSamples, ]
+      c1 = colnames(values$countmatrix)
+      c2= rownames(values$expdesign)
+      design = dsgn
+      # browser()
+      # save(file = "~/SCHNAPPsDebug/idealImmunoTPDDS.RData", list = c('counts', "colData", "design", "comSamples", "c1", "c2", "md", "rc"))
+      colData[, input$dds_design[1]] = relevel(colData[, input$dds_design[1]], ref = values$dds_intercept)
+      dds <- tryCatch(
+        {
+          # add 1 if all rows contain at least one 0
+          # needed for estimateSizeFactors
+          # one call also estimateSizeFactors(dds, type = "iterate"). but that takes too long
+          if (all(rowSums(counts==0)>0)) {
+            counts = counts + 1
+          }
+          # reset if count data was supplied via GUI and not as parameter
+          dds <- DESeqDataSetFromMatrix(
+            countData = counts,
+            colData = colData,
+            design = design
+          )
+          dds <- estimateSizeFactors(dds)
+        },
+        error = function(e) {
+          cat(file = stderr(), paste("error during creation of dds object:", e))
+          # save(file = "~/SCHNAPPsDebug/idealImmunoTPDDS.RData", list = c('counts', "colData", "design", "comSamples", "c1", "c2", "md", "rc"))
+          # cp =load("/Users/bernd/SCHNAPPsDebug/idealImmunoTPDDS.RData")
+          showNotification(
+            paste(
+              "Error during creation of DDS object",
+              "-----", e
+            ),
+            type = "error"
+          )
+          return(NULL)
+        }
+      )
+      return(dds)
+    })
+    
+    output$debugdiy <- renderPrint({
+      if(!is.null(values$dds_obj)){
+        print(values$dds_obj)
+        print("Design:")
+        print(design(values$dds_obj))
+        print("Gene filter:")
+        print(values$geneFilter)
+      }
+    })
+    
+    return(list(
+      genefilter = reactive(input$geneFilter),
+      design   = reactive(input$dds_design),
+      intercept= reactive(input$dds_intercept)
+      # ,
+      # dds_obj  = dds_obj,
+      # diyDDS   = diyDDS
+    ))
+  })
+}
+

@@ -35,6 +35,32 @@ footer <- function(){
 
 ############################# helper funcs #################################
 
+
+read1stCol <- function (fileName,dds_obj){
+  guessed_sep <- sepguesser(fileName)
+  
+  cm <- tryCatch({utils::read.delim(fileName, header = TRUE,
+                                    as.is = TRUE, sep = guessed_sep, 
+                                    # row.names = 1, # https://github.com/federicomarini/pcaExplorer/issues/1
+                                    ## TODO: tell the user to use tsv, or use heuristics
+                                    ## to check what is most frequently occurring separation character? -> see sepGuesser.R
+                                    check.names = FALSE)
+  }, error=function(e){
+    cat(file = stderr(), paste(e,"\n"))
+    return(NULL)
+  }
+  )
+  if(is.null(cm)) return(NULL)
+  if (ncol(cm) >1) {
+    cm = cm[,1, drop = F]
+  }
+  cm = cm[cm[,1] %in% rownames(dds_obj),, drop = F]
+  if(nrow(cm)<1) return(NULL)
+  return(cm)
+}
+
+
+
 #' Make an educated guess on the separator character
 #'
 #' This function tries to guess which separator was used in a text delimited file
