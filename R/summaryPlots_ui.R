@@ -32,6 +32,9 @@ summaryPlots_ui <-  function(){
                h4("Zoomed section"),
                plotOutput(nsSP("mazoom"),click= nsSP('mazoom_click')),
                numericInput(nsSP('size_genelabels'), label = 'Labels size: ', value = 4,min = 1,max = 8),
+               textAreaInput(nsSP('gene_list_input'), label = 'Add genes (space-separated):', value = '', placeholder = 'Paste gene names here...', rows = 3),
+               actionButton(nsSP('add_genes_button'), 'Add Genes to Selection'),
+               actionButton(nsSP('clear_genes_button'), 'Clear Gene Selection'),
                div(align = "right", style = "margin-right:15px; margin-bottom:10px",
                    downloadButton(nsSP("download_plot_mazoom"), "Download Plot"),
                    textInput(nsSP("filename_plot_mazoom"),label = "Save as...",value = "plot_mazoom.pdf")))
@@ -54,6 +57,7 @@ summaryPlots_ui <-  function(){
         column(6,
                h4("volcano plot"),
                plotly::plotlyOutput(nsSP("volcanoplot")),
+               checkboxInput(nsSP("show_gene_names"), "Show gene names", value = TRUE),
                div(align = "right", style = "margin-right:15px; margin-bottom:10px",
                    downloadButton(nsSP("download_plot_volcanoplot"), "Download Plot"),
                    textInput(nsSP("filename_plot_volcanoplot"),label = "Save as...",value = "plot_volcanoplot.pdf"))

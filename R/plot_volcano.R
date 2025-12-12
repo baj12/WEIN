@@ -19,6 +19,9 @@
 #' @param intgenes_color The color to use to mark the genes on the main plot.
 #' @param labels_intgenes Logical, whether to add the gene identifiers/names close
 #' to the marked plots
+#' @param annotation_obj A \code{data.frame} object, with row.names as gene
+#' identifiers (e.g. ENSEMBL ids) and a column, \code{gene_name}, containing
+#' e.g. HGNC-based gene symbols. Optional
 #'
 #' @return An object created by \code{ggplot}
 #' @export
@@ -52,7 +55,8 @@ plot_volcano <- function(res_obj,
                          title = NULL,
                          intgenes = NULL,
                          intgenes_color = "steelblue",
-                         labels_intgenes = TRUE) {
+                         labels_intgenes = TRUE,
+                         annotation_obj = NULL) {
 
   mydf <- as.data.frame(res_obj)
   mydf$id <- rownames(mydf)
@@ -92,6 +96,13 @@ plot_volcano <- function(res_obj,
       # use the gene names
       df_intgenes <- mydf[mydf$symbol %in% intgenes, ]
       df_intgenes$myids <- df_intgenes$symbol
+    } else if(!is.null(annotation_obj)) {
+      # use annotation object to get gene names
+      df_intgenes <- mydf[rownames(mydf) %in% intgenes, ]
+      # Map row names to gene names using annotation object
+      gene_names <- annotation_obj$gene_name[match(rownames(df_intgenes), rownames(annotation_obj))]
+      # Use gene names where available, fallback to row names
+      df_intgenes$myids <- ifelse(!is.na(gene_names) & gene_names != "", gene_names, rownames(df_intgenes))
 
     } else {
       # use whatever is there as id
@@ -104,8 +115,9 @@ plot_volcano <- function(res_obj,
     p <- p + geom_point(data = df_intgenes,aes(x = log2FoldChange, y = -log10(pvalue)), color = intgenes_color, size = 4)
 
     if(labels_intgenes) {
-      p <- p + geom_text(data = df_intgenes,aes(x = log2FoldChange, y = -log10(pvalue), label = myids),
-                         color = intgenes_color, size=5,hjust=0.25, vjust=-0.75)
+      p <- p + geom_text_repel(data = df_intgenes,aes(x = log2FoldChange, y = -log10(pvalue), label = myids),
+                         color = intgenes_color, size=5, box.padding = 0.5, point.padding = 0.5,
+                         segment.color = intgenes_color, segment.size = 0.5, show.legend = FALSE)
     }
 
   }

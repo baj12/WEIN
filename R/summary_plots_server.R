@@ -27,24 +27,149 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
       # Use throttle to control frequency
       brush_throttle()
       
-      if(is.null(input$ma_brush)) return(ggplot() + annotate("text",label="click and drag to zoom in",0,0) + theme_bw())
-      
-      if(!is.null(values$annotation_obj))
-        p <- plot_ma(values$res_obj,annotation_obj = values$annotation_obj,FDR = values$FDR) +
-          coord_cartesian(xlim = c(input$ma_brush$xmin,input$ma_brush$xmax),
-                          ylim = c(input$ma_brush$ymin,input$ma_brush$ymax)) +
-          geom_text(aes_string(label="genename"),size=input$size_genelabels,hjust=0.25, vjust=-0.75)
-      else
-        p <-  plot_ma(values$res_obj,annotation_obj = values$annotation_obj,FDR = values$FDR) +
-          coord_cartesian(xlim = c(input$ma_brush$xmin,input$ma_brush$xmax),
-                          ylim = c(input$ma_brush$ymin,input$ma_brush$ymax))
+      # Check if we have manually selected genes
+      manual_genes <- selected_genes()
+      if (!is.null(manual_genes) && length(manual_genes) > 0) {
+        # Create plot with all selected genes highlighted
+        p <- plot_ma(values$res_obj, annotation_obj = values$annotation_obj, FDR = values$FDR,
+                       intgenes = manual_genes, intgenes_color = "steelblue", labels_intgenes = TRUE,
+                       labels_repel = TRUE)
+        
+        # Adjust window size based on selected genes
+        mama <- data.frame(mean=values$res_obj$baseMean, lfc=values$res_obj$log2FoldChange,
+                               padj = values$res_obj$padj, isDE= ifelse(is.na(values$res_obj$padj), FALSE, values$res_obj$padj < 0.10),
+                               ID=rownames(values$res_obj))
+        mama$genename <- values$annotation_obj$gene_name[match(mama$ID, rownames(values$annotation_obj))]
+        mama$logmean <- log10(mama$mean)
+        
+        # Filter to only include manually selected genes
+        matched_by_name <- which(mama$genename %in% manual_genes)
+        matched_by_id <- which(mama$ID %in% manual_genes)
+        matched_indices <- unique(c(matched_by_name, matched_by_id))
+        
+        if (length(matched_indices) > 0) {
+          selected_data <- mama[matched_indices, ]
+          
+          # Add some padding around the points
+          x_range <- range(selected_data$logmean, na.rm = TRUE)
+          y_range <- range(selected_data$lfc, na.rm = TRUE)
+          x_padding <- 0.1 * diff(x_range)
+          y_padding <- 0.1 * diff(y_range)
+          
+          p <- p + coord_cartesian(xlim = c(x_range[1] - x_padding, x_range[2] + x_padding),
+                                         ylim = c(y_range[1] - y_padding, y_range[2] + y_padding))
+        }
+      } else {
+        # Use original brushing behavior
+        if(is.null(input$ma_brush)) return(ggplot() + annotate("text",label="click and drag to zoom in",0,0) + theme_bw())
+        
+        if(!is.null(values$annotation_obj))
+          p <- plot_ma(values$res_obj,annotation_obj = values$annotation_obj,FDR = values$FDR) +
+            coord_cartesian(xlim = c(input$ma_brush$xmin,input$ma_brush$xmax),
+                            ylim = c(input$ma_brush$ymin,input$ma_brush$ymax))
+        else
+          p <-  plot_ma(values$res_obj,annotation_obj = values$annotation_obj,FDR = values$FDR) +
+            coord_cartesian(xlim = c(input$ma_brush$xmin,input$ma_brush$xmax),
+                            ylim = c(input$ma_brush$ymin,input$ma_brush$ymax))
+      }
       exportPlots$plot_mazoom <- p
       p
     })
     
      
     
+    # Reactive value to store selected genes
+    selected_genes <- reactiveVal(NULL)
+    
+    # Function to validate gene names against the DESeq object
+    validate_genes <- function(gene_list, dds_obj, annotation_obj) {
+      if (is.null(dds_obj) || is.null(annotation_obj)) {
+        return(list(valid = character(0), invalid = gene_list))
+      }
+      
+      # Get all available gene names from annotation
+      all_gene_names <- annotation_obj$gene_name
+      all_gene_ids <- rownames(annotation_obj)
+      
+      # Check if genes are in the annotation object
+      valid_genes <- gene_list[gene_list %in% c(all_gene_names, all_gene_ids)]
+      invalid_genes <- gene_list[!gene_list %in% c(all_gene_names, all_gene_ids)]
+      
+      return(list(valid = valid_genes, invalid = invalid_genes))
+    }
+    
+    # Observe add genes button
+    observeEvent(input$add_genes_button, {
+      # Parse gene list from input (split by whitespace)
+      gene_input <- input$gene_list_input
+      if (is.null(gene_input) || gene_input == "") {
+        showNotification("Please enter gene names to add.", type = "warning")
+        return()
+      }
+      
+      # Split by whitespace
+      new_genes <- unlist(strsplit(gene_input, "\\s+"))
+      new_genes <- new_genes[new_genes != ""]
+      
+      if (length(new_genes) == 0) {
+        showNotification("No valid gene names found in input.", type = "warning")
+        return()
+      }
+      
+      # Validate genes
+      validation_result <- validate_genes(new_genes, values$dds_obj, values$annotation_obj)
+      
+      # Notify user about invalid genes
+      if (length(validation_result$invalid) > 0) {
+        showNotification(paste("Invalid gene names:", paste(validation_result$invalid, collapse = ", ")),
+                           type = "error", duration = 10)
+      }
+      
+      # Add valid genes to selection
+      if (length(validation_result$valid) > 0) {
+        current_genes <- selected_genes()
+        if (is.null(current_genes)) {
+          selected_genes(validation_result$valid)
+        } else {
+          # Combine with existing genes, removing duplicates
+          combined_genes <- unique(c(current_genes, validation_result$valid))
+          selected_genes(combined_genes)
+        }
+        showNotification(paste("Added", length(validation_result$valid), "genes to selection."), type = "message")
+      } else if (length(validation_result$invalid) == 0) {
+        showNotification("No valid genes found in input.", type = "warning")
+      }
+    })
+    
+    # Observe clear genes button
+    observeEvent(input$clear_genes_button, {
+      selected_genes(NULL)
+      showNotification("Gene selection cleared.", type = "message")
+    })
+    
     curData <- reactive({
+      # If we have manually selected genes, use those
+      manual_genes <- selected_genes()
+      if (!is.null(manual_genes) && length(manual_genes) > 0) {
+        # Create data frame with all manually selected genes
+        mama <- data.frame(mean=values$res_obj$baseMean,lfc=values$res_obj$log2FoldChange,padj = values$res_obj$padj,isDE= ifelse(is.na(values$res_obj$padj), FALSE, values$res_obj$padj < 0.10),ID=rownames(values$res_obj))
+        mama$genename <- values$annotation_obj$gene_name[match(mama$ID,rownames(values$annotation_obj))]
+        
+        # Filter to only include manually selected genes
+        # First try to match by gene name, then by ID
+        matched_by_name <- which(mama$genename %in% manual_genes)
+        matched_by_id <- which(mama$ID %in% manual_genes)
+        matched_indices <- unique(c(matched_by_name, matched_by_id))
+        
+        if (length(matched_indices) > 0) {
+          res <- mama[matched_indices, ]
+        } else {
+          res <- mama[numeric(0), ]  # Empty data frame with same structure
+        }
+        return(res)
+      }
+      
+      # Otherwise, use brushed data as before
       mama <- data.frame(mean=values$res_obj$baseMean,lfc=values$res_obj$log2FoldChange,padj = values$res_obj$padj,isDE= ifelse(is.na(values$res_obj$padj), FALSE, values$res_obj$padj < 0.10),ID=rownames(values$res_obj))
       mama$genename <- values$annotation_obj$gene_name[match(mama$ID,rownames(values$annotation_obj))]
       # mama$yesorno <- ifelse(mama$isDE,"yes","no")
@@ -82,11 +207,11 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
     
     
     output$ma_brush_out <- DT::renderDataTable({
-      if(nrow(curData())==0)
+      brushedObject <- curData()
+      if(nrow(brushedObject)==0)
         return(NULL)
       # browser()
       # curData()
-      brushedObject <- curData()
       selectedGenes <- as.character(brushedObject$ID)
       rownames(brushedObject) = selectedGenes
       brushedObject
@@ -95,16 +220,31 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
     output$selectedGenesMAplot <- renderText({
       brushedObject <- curData()
       selectedGenes <- as.character(brushedObject$ID)
-      paste(selectedGenes, collapse = " ")
+      
+      # If we have an annotation object, try to use gene names instead of IDs
+      if (!is.null(values$annotation_obj) && nrow(brushedObject) > 0) {
+        geneNames <- values$annotation_obj$gene_name[match(selectedGenes, rownames(values$annotation_obj))]
+        # Use gene names where available, fallback to IDs
+        displayNames <- ifelse(!is.na(geneNames) & geneNames != "", geneNames, selectedGenes)
+        paste(displayNames, collapse = " ")
+      } else {
+        paste(selectedGenes, collapse = " ")
+      }
     })
     output$heatbrush <- renderPlotly({
-      if((is.null(input$ma_brush))|is.null(values$dds_obj)) {
+      # Check if we have manually selected genes
+      manual_genes <- selected_genes()
+      if (is.null(values$dds_obj)) {
         return(NULL)
       }
-      #
       
       brushedObject <- curData()
       selectedGenes <- as.character(brushedObject$ID)
+      
+      if (length(selectedGenes) == 0) {
+        return(NULL)
+      }
+      
       toplot <- assay(values$dds_obj)[selectedGenes,]
       rownames(toplot) <- values$annotation_obj$gene_name[match(rownames(toplot),rownames(values$annotation_obj))]
       
@@ -122,14 +262,21 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
     })
     
     
+    
     output$hpi_brush <- renderPlotly({
-      # if((is.null(input$ma_brush))|is.null(values$dds_obj)) {
-      #   # plot(100:1)
-      # }
-      #return(NULL)
-      # browser()
+      # Check if we have manually selected genes
+      manual_genes <- selected_genes()
+      if (is.null(values$dds_obj)) {
+        return(NULL)
+      }
+      
       brushedObject <- curData()
       selectedGenes <- as.character(brushedObject$ID)
+      
+      if (length(selectedGenes) == 0) {
+        return(NULL)
+      }
+      
       toplot <- assay(values$dds_obj)[selectedGenes,]
       rownames(toplot) <- values$annotation_obj$gene_name[match(rownames(toplot),rownames(values$annotation_obj))]
       mycolss <- c("#313695","#4575b4","#74add1","#abd9e9","#e0f3f8","#fee090","#fdae61","#f46d43","#d73027","#a50026") # to be consistent with red/blue usual coding
@@ -149,7 +296,6 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
       heatmaply::heatmaply(toplot,Colv = as.logical(input$heatmap_colv),colors = mycolss, cexCol = 1)
     })
     
-    
     output$deb <- renderPrint({
       # curDataClick()
       selectedGene <- curDataClick()$ID
@@ -162,7 +308,13 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
     })
     
     output$volcanoplot <- renderPlotly({
-      p <- plot_volcano(values$res_obj, FDR = values$FDR)
+      # Check if we have manually selected genes
+      manual_genes <- selected_genes()
+      if (!is.null(manual_genes) && length(manual_genes) > 0) {
+        p <- plot_volcano(values$res_obj, FDR = values$FDR, intgenes = manual_genes, intgenes_color = "steelblue", labels_intgenes = input$show_gene_names, annotation_obj = values$annotation_obj)
+      } else {
+        p <- plot_volcano(values$res_obj, FDR = values$FDR, annotation_obj = values$annotation_obj)
+      }
       exportPlots$plot_volcanoplot <- p
       plotly::ggplotly(p)
     })
@@ -183,17 +335,29 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
         )
       )
       
-      shiny::validate(
-        need(!is.null(input$ma_brush),
-             "Please select a region on the MA plot")
-      )
-      shiny::validate(
-        need(!is.null(input$mazoom_click),
-             "Please click on a gene in the zoomed MA plot")
-      )
+      # Allow gene finder to work with manually selected genes or brushed/clicked genes
+      manual_genes <- selected_genes()
+      if (!is.null(manual_genes) && length(manual_genes) > 0) {
+        # Use the first manually selected gene if available
+        selectedGene <- manual_genes[1]
+        # Try to match by gene name first, then by ID
+        matched_by_name <- which(values$annotation_obj$gene_name %in% selectedGene)
+        if (length(matched_by_name) > 0) {
+          selectedGene <- rownames(values$annotation_obj)[matched_by_name[1]]
+        }
+      } else {
+        shiny::validate(
+          need(!is.null(input$ma_brush),
+               "Please select a region on the MA plot")
+        )
+        shiny::validate(
+          need(!is.null(input$mazoom_click),
+               "Please click on a gene in the zoomed MA plot")
+        )
+        
+        selectedGene <- as.character(curDataClick()$ID)
+      }
       
-      
-      selectedGene <- as.character(curDataClick()$ID)
       selectedGeneSymbol <- values$annotation_obj$gene_name[match(selectedGene,values$annotation_obj$gene_id)]
       
       p <- ggplotCounts(values$dds_obj, selectedGene, intgroup = values$color_by, annotation_obj=values$annotation_obj)
@@ -206,12 +370,26 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
     })
     
     output$rentrez_infobox <- renderUI({
-      shiny::validate(
-        need(
-          (nrow(curDataClick()) > 0),
-          "Select a gene first to display additional info (retrieved from the NCBI/ENTREZ db website)"
+      # Check if we have manually selected genes
+      manual_genes <- selected_genes()
+      if (!is.null(manual_genes) && length(manual_genes) > 0) {
+        # Use the first manually selected gene
+        selectedGene <- manual_genes[1]
+        # Try to match by gene name first, then by ID
+        matched_by_name <- which(values$annotation_obj$gene_name %in% selectedGene)
+        if (length(matched_by_name) > 0) {
+          selectedGene <- rownames(values$annotation_obj)[matched_by_name[1]]
+        }
+      } else {
+        shiny::validate(
+          need(
+            (nrow(curDataClick()) > 0),
+            "Select a gene first to display additional info (retrieved from the NCBI/ENTREZ db website)"
+          )
         )
-      )
+        selectedGene <- as.character(curDataClick()$ID)
+      }
+      
       shiny::validate(
         need(
           (!is.null(values$cur_species)),
@@ -219,7 +397,6 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
         )
       )
       # browser()
-      selectedGene <- as.character(curDataClick()$ID)
       selgene_entrez <- mapIds(get(annoSpecies_df[values$cur_species,]$pkg),
                                selectedGene, "ENTREZID", values$cur_type)
       fullinfo <- geneinfo(selgene_entrez)
@@ -308,17 +485,39 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
       input$filename_plot_heatbrush
     }, content = function(file) {
       pdf(file)
-      brushedObject <- curData()
+      # Check if we have manually selected genes
+      manual_genes <- selected_genes()
+      if (!is.null(manual_genes) && length(manual_genes) > 0) {
+        # Create data frame with all manually selected genes
+        mama <- data.frame(mean=values$res_obj$baseMean,lfc=values$res_obj$log2FoldChange,padj = values$res_obj$padj,isDE= ifelse(is.na(values$res_obj$padj), FALSE, values$res_obj$padj < 0.10),ID=rownames(values$res_obj))
+        mama$genename <- values$annotation_obj$gene_name[match(mama$ID,rownames(values$annotation_obj))]
+        
+        # Filter to only include manually selected genes
+        # First try to match by gene name, then by ID
+        matched_by_name <- which(mama$genename %in% manual_genes)
+        matched_by_id <- which(mama$ID %in% manual_genes)
+        matched_indices <- unique(c(matched_by_name, matched_by_id))
+        
+        if (length(matched_indices) > 0) {
+          selectedGenes <- mama$ID[matched_indices]
+        } else {
+          selectedGenes <- character(0)
+        }
+      } else {
+        brushedObject <- curData()
+        selectedGenes <- as.character(brushedObject$ID)
+      }
       
-      selectedGenes <- as.character(brushedObject$ID)
-      toplot <- assay(values$dds_obj)[selectedGenes,]
-      rownames(toplot) <- values$annotation_obj$gene_name[match(rownames(toplot),rownames(values$annotation_obj))]
-      
-      if(input$pseudocounts) toplot <- log2(1+toplot)
-      
-      if(input$rowscale) toplot <- mat_rowscale(toplot)
-      
-      heatmaply(toplot,cluster_cols = as.logical(input$heatmap_colv))
+      if (length(selectedGenes) > 0) {
+        toplot <- assay(values$dds_obj)[selectedGenes,]
+        rownames(toplot) <- values$annotation_obj$gene_name[match(rownames(toplot),rownames(values$annotation_obj))]
+        
+        if(input$pseudocounts) toplot <- log2(1+toplot)
+        
+        if(input$rowscale) toplot <- mat_rowscale(toplot)
+        
+        heatmaply(toplot,cluster_cols = as.logical(input$heatmap_colv))
+      }
       dev.off()
     })
     # tbls
