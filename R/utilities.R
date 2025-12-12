@@ -52,17 +52,85 @@ read_metadata <- function(filepath, sepguesser_function = sepguesser) {
   
   # Use data.table::fread for better performance when available
   if (requireNamespace("data.table", quietly = TRUE)) {
-    expdesign <- data.table::fread(filepath, sep = guessed_sep, header = TRUE,
-                                    check.names = FALSE, data.table = FALSE)
+    # First, try to read the file to check for header/data mismatches
+    # Read first few lines to determine structure
+    first_lines <- readLines(filepath, n = 3)
+    if (length(first_lines) >= 2) {
+      # Count fields in header and first data line
+      header_fields <- unlist(strsplit(first_lines[1], split = guessed_sep, fixed = TRUE))
+      first_data_fields <- unlist(strsplit(first_lines[2], split = guessed_sep, fixed = TRUE))
+      
+      # If first data line has one more field than header, it likely contains row names
+      if (length(first_data_fields) == length(header_fields) + 1) {
+        # In this case, we should treat the first column of data as row names
+        # Read without header first to get raw data
+        raw_data <- data.table::fread(filepath, sep = guessed_sep, header = FALSE,
+                                      check.names = FALSE, data.table = FALSE)
+        
+        # The header is the first line of the file
+        header_line <- first_lines[1]
+        header_names <- unlist(strsplit(header_line, split = guessed_sep, fixed = TRUE))
+        
+        # Create proper column names (first column contains row names)
+        proper_colnames <- c("row_names", header_names)
+        colnames(raw_data) <- proper_colnames
+        
+        # Move row_names column to actual row names
+        if (nrow(raw_data) > 0 && ncol(raw_data) > 0) {
+          rownames(raw_data) <- raw_data[,"row_names"]
+          raw_data[,"row_names"] <- NULL
+        }
+        
+        expdesign <- raw_data
+      } else {
+        # Normal case - use fread with header=TRUE
+        expdesign <- data.table::fread(filepath, sep = guessed_sep, header = TRUE,
+                                        check.names = FALSE, data.table = FALSE)
+        
+        # For metadata files, the first column typically contains row names (sample IDs)
+        # but there's no corresponding header element for these row names
+        # So we move the first column to row names
+        if (nrow(expdesign) > 0 && ncol(expdesign) > 0) {
+          rownames(expdesign) <- expdesign[,1]
+          expdesign[,1] <- NULL
+        }
+      }
+    } else {
+      # Simple case - just read normally
+      expdesign <- data.table::fread(filepath, sep = guessed_sep, header = TRUE,
+                                      check.names = FALSE, data.table = FALSE)
+      
+      # For metadata files, the first column typically contains row names (sample IDs)
+      if (nrow(expdesign) > 0 && ncol(expdesign) > 0) {
+        rownames(expdesign) <- expdesign[,1]
+        expdesign[,1] <- NULL
+      }
+    }
+    
+    # Convert all columns to factors
+    if (nrow(expdesign) > 0) {
+      for (i in seq_along(expdesign)) {
+        if (is.character(expdesign[[i]])) {
+          expdesign[[i]] <- as.factor(expdesign[[i]])
+        }
+      }
+    }
   } else {
     expdesign <- utils::read.delim(filepath, header = TRUE,
                                    sep = guessed_sep, quote = "",
+                                   row.names = 1,
                                    check.names = FALSE, stringsAsFactors = TRUE)
   }
-  if (colnames(expdesign)[1] == "") {
-    rownames(expdesign) <- expdesign[,1]
-    expdesign <- expdesign[,-1]
+  
+  # Additional check for empty column names
+  if (ncol(expdesign) > 0 && colnames(expdesign)[1] == "") {
+    # If first column name is empty, also use first column as row names
+    if (nrow(expdesign) > 0) {
+      rownames(expdesign) <- expdesign[,1]
+      expdesign <- expdesign[,-1]
+    }
   }
+  
   return(expdesign)
 }
 

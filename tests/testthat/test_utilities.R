@@ -35,10 +35,66 @@ test_that("read_metadata function works", {
   md <- read_metadata("test_metadata.txt")
   expect_is(md, "data.frame")
   expect_equal(nrow(md), 2)
-  expect_equal(ncol(md), 2)
+  expect_equal(ncol(md), 1)
+  expect_equal(rownames(md), c("sample1", "sample2"))
   
   # Clean up
   unlink("test_metadata.txt")
+})
+
+test_that("read_metadata handles typical metadata files correctly", {
+  # Create a test file representing a typical metadata file
+  # First column contains sample names, subsequent columns contain metadata
+  test_data <- "sample\tcondition\ttreatment\nsample1\tcontrol\tuntreated\nsample2\ttreated\twith_drug"
+  writeLines(test_data, "test_typical_metadata.txt")
+  
+  # Test reading the metadata
+  md <- read_metadata("test_typical_metadata.txt")
+  expect_is(md, "data.frame")
+  expect_equal(nrow(md), 2)
+  # Should have 2 columns (condition, treatment) with row names from first column
+  expect_equal(ncol(md), 2)
+  expect_equal(rownames(md), c("sample1", "sample2"))
+  expect_equal(colnames(md), c("condition", "treatment"))
+  
+  # Clean up
+  unlink("test_typical_metadata.txt")
+})
+
+test_that("read_metadata handles header/data mismatch correctly", {
+  # Create a test file where header has n-1 elements and data rows have n elements
+  # This represents the case where first column contains row names but has no header
+  test_data <- "condition\ttreatment\nsample1\tcontrol\tuntreated\nsample2\ttreated\twith_drug"
+  writeLines(test_data, "test_header_mismatch.txt")
+  
+  # Test reading the metadata
+  md <- read_metadata("test_header_mismatch.txt")
+  expect_is(md, "data.frame")
+  expect_equal(nrow(md), 2)
+  # Should have 2 columns (condition, treatment) with row names from first column
+  expect_equal(ncol(md), 2)
+  expect_equal(rownames(md), c("sample1", "sample2"))
+  
+  # Clean up
+  unlink("test_header_mismatch.txt")
+})
+
+test_that("read_metadata handles files with n column headers and first column as sample names", {
+  # Create a test file with n column headers where first column corresponds to sample names
+  test_data <- "sample\tcondition\ttreatment\nsample1\tcontrol\tuntreated\nsample2\ttreated\twith_drug"
+  writeLines(test_data, "test_metadata_n_columns.txt")
+  
+  # Test reading the metadata
+  md <- read_metadata("test_metadata_n_columns.txt")
+  expect_is(md, "data.frame")
+  expect_equal(nrow(md), 2)
+  # Should have 2 columns (condition, treatment) with row names from first column
+  expect_equal(ncol(md), 2)
+  expect_equal(rownames(md), c("sample1", "sample2"))
+  expect_equal(colnames(md), c("condition", "treatment"))
+  
+  # Clean up
+  unlink("test_metadata_n_columns.txt")
 })
 
 test_that("create_dds function exists", {
