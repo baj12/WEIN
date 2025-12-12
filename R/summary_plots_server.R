@@ -130,10 +130,14 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
         current_genes <- selected_genes()
         if (is.null(current_genes)) {
           selected_genes(validation_result$valid)
+          # Update the text area to show all selected genes
+          updateTextAreaInput(session, ns("gene_list_input"), value = paste(validation_result$valid, collapse = " "))
         } else {
           # Combine with existing genes, removing duplicates
           combined_genes <- unique(c(current_genes, validation_result$valid))
           selected_genes(combined_genes)
+          # Update the text area to show all selected genes
+          updateTextAreaInput(session, ns("gene_list_input"), value = paste(combined_genes, collapse = " "))
         }
         showNotification(paste("Added", length(validation_result$valid), "genes to selection."), type = "message")
       } else if (length(validation_result$invalid) == 0) {
