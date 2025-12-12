@@ -137,7 +137,7 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
       # browser()
       datatable(mydf, extensions = 'Buttons',
                 options = list(dom = 'lfrtipB', buttons = c('csv'),
-                              pageLength = 50, deferRender = TRUE),
+                              pageLength = 10, deferRender = TRUE),
                 escape = FALSE, filter = list(position = 'top', clear = FALSE))%>%
         formatRound(columns=c('baseMean', 'log2FoldChange', 'lfcSE', 'stat', 'pvalue', 'padj'), digits=3)
     })
