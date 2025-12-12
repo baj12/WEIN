@@ -1,0 +1,60 @@
+name: Shinytest2
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  shinytest2:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: |
+            local::.
+            any::shinytest2
+            any::chromote
+          needs: check
+
+      - name: Install Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser
+        shell: bash
+
+      - name: Setup Chrome environment
+        run: |
+          echo "CHROMOTE_CHROME=/usr/bin/chromium-browser" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Run shinytest2
+        run: |
+          options(crayon.enabled = TRUE)
+          shinytest2::test_app()
+        shell: Rscript {0}
+        
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shinytest2-results
+          path: tests/testthat/_snaps/
+          
+      - name: Show test output
+        if: always()
+        run: |
+          find . -name "*.Rout*" -exec cat '{}' \; || true
+        shell: bash

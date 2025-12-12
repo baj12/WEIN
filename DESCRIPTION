@@ -63,14 +63,17 @@ Imports:
     shinyjqui,
     plotly,
     methods
-Suggests: 
-    testthat, 
-    BiocStyle, 
-    airway, 
+Suggests:
+    testthat (>= 3.0.0),
+    BiocStyle,
+    airway,
     org.Hs.eg.db,
-    TxDb.Hsapiens.UCSC.hg38.knownGene, 
-    DEFormats, 
-    edgeR
+    TxDb.Hsapiens.UCSC.hg38.knownGene,
+    DEFormats,
+    edgeR,
+    shinytest2,
+    chromote
+Config/testthat/edition: 3
 URL: https://github.com/baj12/WEIN,
     https://baj12.github.io/WEIN/
 BugReports: https://github.com/baj12/WEIN/issues
