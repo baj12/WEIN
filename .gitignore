@@ -41,20 +41,16 @@ idealState_*.RData
 idealState_20231118_123859.RData
 shiny_bookmarks/*/*.rds
 
-# Additional large files found
-test.Rdata
-idealState_*_*.RData
-
 # JAR files
 *.jar
-bfg-1.14.0.jar
-
-# Additional large files found
-shiny_bookmarks/*/*.rds
-test.Rdata
-testData.RData
-idealState_*.RData
 bfg-*.jar
+
+# CSV files (potentially large)
+*.csv
+TPimmuno2025_*.csv
+
+# Data directory files
+data/*.csv
 
 # Temporary files
 *.tmp
