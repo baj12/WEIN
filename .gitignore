@@ -51,6 +51,8 @@ TPimmuno2025_*.csv
 
 # Data directory files
 data/*.csv
+data/*.CSV
+data/*.txt
 
 # Temporary files
 *.tmp
@@ -76,4 +78,10 @@ data/*.csv
 .Rcheck/
 packrat/
 renv/
+
+# Large files that should not be tracked
+shiny_bookmarks/*/*.rds
+idealState_*.RData
+test.Rdata
+*.Rdata
 .Rproj.user
