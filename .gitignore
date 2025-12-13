@@ -84,4 +84,7 @@ shiny_bookmarks/*/*.rds
 idealState_*.RData
 test.Rdata
 *.Rdata
+
+# Test problem files
+tests/testthat/_problems/
 .Rproj.user
