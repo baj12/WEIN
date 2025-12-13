@@ -44,8 +44,8 @@ plotCoefficients <- function(dds, geneName, legend=TRUE){
   
   # gets the transformed counts from dds object and the conditions needed for plotting
   # also contains the sample names
-  gene1Counts = plotCounts(dds, gene=geneName, 
-                           intgroup=intgrpNoInt, 
+  gene1Counts = plotCounts(dds, gene=geneName,
+                           intgroup=intgrpNoInt,
                            returnData=T,
                            transform = T)
   # normalize (should use rlog???)
@@ -76,8 +76,8 @@ plotCoefficients <- function(dds, geneName, legend=TRUE){
   }
   
   # we use boxplot to get the names of the columns in the strip chart below.
-  bp <- boxplot(formula(paste(countsName, 
-                              paste(as.character(design(dds)), collapse=""))), 
+  bp <- boxplot(formula(paste(countsName,
+                              paste(as.character(design(dds)), collapse=""))),
                 data = gene1Counts, plot = F)
   bp_names = bp$names
   
@@ -86,74 +86,78 @@ plotCoefficients <- function(dds, geneName, legend=TRUE){
   ylim = plotParameters[[1]]
   arrowCount = plotParameters[[2]]
   legendPos = plotParameters[[3]]
-  oldPars = par()
-  par(mar=c(5.1, 4.1, 4.1, 12.1), xpd=TRUE)
   
-  # base plot
-  stripchart(formula(paste(countsName, paste(as.character(design(dds)), collapse = ""))), 
-             data=gene1Counts, vertical=TRUE,las=2, method="jitter",
-             cex.axis=0.7, main=paste(geneName), 
-             ylim=ylim, ylab = "log2(count)")
-  
-  lgth <- .1 # length of the edges of the arrow head (in inches).
-  abline(h=0) # reference line (intercept)
-  pos = 1 
-  # first one is the Intercept so we handle this separately
-  a = arrowCount[1] * arrowDist * -1
-  arrows(pos+a,0,pos+a,coefs[["Intercept"]],lwd=3,col=cols[1],length=lgth)
-  abline(h=coefs[["Intercept"]],col=cols[1])
-  
-  for (colIdx in 2:length(bp_names)){
-    a = arrowCount[colIdx] * arrowDist * -1 # x position of arrow
-    fctLevels = strsplit(bp_names[colIdx],"\\.")[[1]] # actual elements of the factor
-    rIdx = 1 # index in which factor is being looked at
-    baseLine = coefs[["Intercept"]]
-    #non interaction terms
-    coefIdx = rep(1, length(fctLevels)) # coefficient index
-    for(fctIdx in 1:length(fctLevels)){
-      lIdx = which(levels(dds@colData@listData[[intgrp[rIdx]]]) == fctLevels[fctIdx])
-      coefIdx[fctIdx] = lIdx
-      if(lIdx>1){ #need to print arrow
-        coefName = paste(intgrp[rIdx], fctLevels[fctIdx],"vs", levels(dds@colData@listData[[intgrp[rIdx]]])[1], sep = "_")
-        arrows(colIdx+a,baseLine,colIdx+a,baseLine+coefs[[coefName]],
-               lwd=3,col=cols[which(colnames(coefs) ==coefName)],length=lgth)
-        baseLine = baseLine + coefs[[coefName]]
-        a = a + arrowDist
-      }
-      # interaction terms (only the case if min 2 are not reference)
-      if(sum(coefIdx>1)>1){
-        # check if current is part of the factors 
-        # since interactions are build by concatenating the strings we can do the following:
-        interName1 = paste0(intgrp[rIdx], fctLevels[fctIdx])
-        interName1Pos = grep(interName1, colnames(coefs))
-        if(length(interName1Pos) > 0) {
-          interName2 = gsub(interName1, "", colnames(coefs)[interName1Pos])
-          interName2 = gsub("\\.", "", interName2)
-          coefName = ""
-          for(fctIdx2 in 1:length(fctLevels)){
-            if(grep(fctLevels[fctIdx],bp_names[colIdx])>0 & coefIdx[fctIdx2]>1){ # needs to be in the name of column we are working on & not reference
-              coefName = paste(coefName, paste0(intgrp[fctIdx2], fctLevels[fctIdx2]), sep = ".")
-            }
-          }
-          coefName = substring(coefName, 2) # remove the first "."
+  # Suppress par() warnings that commonly occur in Shiny reactive contexts
+  suppressWarnings({
+    oldPars = par()
+    par(mar=c(5.1, 4.1, 4.1, 12.1), xpd=TRUE)
+    
+    # base plot
+    stripchart(formula(paste(countsName, paste(as.character(design(dds)), collapse = ""))),
+               data=gene1Counts, vertical=TRUE,las=2, method="jitter",
+               cex.axis=0.7, main=paste(geneName),
+               ylim=ylim, ylab = "log2(count)")
+    
+    lgth <- .1 # length of the edges of the arrow head (in inches).
+    abline(h=0) # reference line (intercept)
+    pos = 1
+    # first one is the Intercept so we handle this separately
+    a = arrowCount[1] * arrowDist * -1
+    arrows(pos+a,0,pos+a,coefs[["Intercept"]],lwd=3,col=cols[1],length=lgth)
+    abline(h=coefs[["Intercept"]],col=cols[1])
+    
+    for (colIdx in 2:length(bp_names)){
+      a = arrowCount[colIdx] * arrowDist * -1 # x position of arrow
+      fctLevels = strsplit(bp_names[colIdx],"\\.")[[1]] # actual elements of the factor
+      rIdx = 1 # index in which factor is being looked at
+      baseLine = coefs[["Intercept"]]
+      #non interaction terms
+      coefIdx = rep(1, length(fctLevels)) # coefficient index
+      for(fctIdx in 1:length(fctLevels)){
+        lIdx = which(levels(dds@colData@listData[[intgrp[rIdx]]]) == fctLevels[fctIdx])
+        coefIdx[fctIdx] = lIdx
+        if(lIdx>1){ #need to print arrow
+          coefName = paste(intgrp[rIdx], fctLevels[fctIdx],"vs", levels(dds@colData@listData[[intgrp[rIdx]]])[1], sep = "_")
           arrows(colIdx+a,baseLine,colIdx+a,baseLine+coefs[[coefName]],
                  lwd=3,col=cols[which(colnames(coefs) ==coefName)],length=lgth)
           baseLine = baseLine + coefs[[coefName]]
           a = a + arrowDist
         }
+        # interaction terms (only the case if min 2 are not reference)
+        if(sum(coefIdx>1)>1){
+          # check if current is part of the factors
+          # since interactions are build by concatenating the strings we can do the following:
+          interName1 = paste0(intgrp[rIdx], fctLevels[fctIdx])
+          interName1Pos = grep(interName1, colnames(coefs))
+          if(length(interName1Pos) > 0) {
+            interName2 = gsub(interName1, "", colnames(coefs)[interName1Pos])
+            interName2 = gsub("\\.", "", interName2)
+            coefName = ""
+            for(fctIdx2 in 1:length(fctLevels)){
+              if(grep(fctLevels[fctIdx],bp_names[colIdx])>0 & coefIdx[fctIdx2]>1){ # needs to be in the name of column we are working on & not reference
+                coefName = paste(coefName, paste0(intgrp[fctIdx2], fctLevels[fctIdx2]), sep = ".")
+              }
+            }
+            coefName = substring(coefName, 2) # remove the first "."
+            arrows(colIdx+a,baseLine,colIdx+a,baseLine+coefs[[coefName]],
+                   lwd=3,col=cols[which(colnames(coefs) ==coefName)],length=lgth)
+            baseLine = baseLine + coefs[[coefName]]
+            a = a + arrowDist
+          }
+        }
+        rIdx = rIdx + 1
       }
-      rIdx = rIdx + 1
     }
-  }
-  if(legend){
-    # legend(legendPos, inset=c(-0.2,0),legend=names(coefs), 
-    #        text.col = cols, cex = 0.7,
-    #        merge = F)
-    legend("topright", inset=c(-.28,0),legend=names(coefs), 
-           text.col = cols, cex = 0.7, pch=c(1,3),
-           merge = F)
-  }
-  par(oldPars)
+    if(legend){
+      # legend(legendPos, inset=c(-0.2,0),legend=names(coefs),
+      #        text.col = cols, cex = 0.7,
+      #        merge = F)
+      legend("topright", inset=c(-.28,0),legend=names(coefs),
+             text.col = cols, cex = 0.7, pch=c(1,3),
+             merge = F)
+    }
+    par(oldPars)
+  })
 }
 # plotCoefficients(dds, geneName = geneName )
 

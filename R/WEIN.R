@@ -19,9 +19,11 @@
 #' @param expdesign A \code{data.frame} containing the info on the covariates
 #' of each sample. If not provided, it is possible to upload the data during the
 #' execution of the Shiny App
-#' @param gene_signatures A list of vectors, one for each pathway/signature. This 
+#' @param gene_signatures A list of vectors, one for each pathway/signature. This
 #' is for example the output of the \code{\link{read_gmt}} function. The provided
 #' object can also be replaced during runtime in the dedicated upload widget.
+#' @param state_file An optional path to a .RData file containing saved application state.
+#' If provided, the application state will be restored from this file.
 #'
 #' @return A Shiny App is launched for interactive data exploration and
 #' differential expression analysis
@@ -52,6 +54,17 @@
 #' res_airway <- DESeq2::results(dds_airway)
 #' WEIN(dds_airway, res_airway)
 #' }
+#'
+#' # Restore from a saved state file
+#' \dontrun{
+#' WEIN(state_file = "my_analysis_state.RData")
+#' }
+#'
+#' # Save current state from within the app:
+#' # 1. Click on "Save State as .RData" button in the header
+#' # 2. This creates a timestamped .RData file with your current analysis state
+#' # 3. Later, restore the session with:
+#' #    WEIN(state_file = "WEINState_2023-12-01_14-30-45.RData")
 #'
 #' 
 
@@ -155,6 +168,7 @@ multiAxPCA = function (object, intgroup = "condition", ntop = 500, returnData = 
 #' @param countmatrix A count matrix
 #' @param expdesign A data frame with experimental design
 #' @param gene_signatures A list of gene signatures
+#' @param state_file An optional path to a .RData file containing saved application state
 #' @return A Shiny application
 #' @export
 WEIN<- function(dds_obj = NULL,
@@ -164,7 +178,8 @@ WEIN<- function(dds_obj = NULL,
                          expdesign = NULL,
                          gene_signatures = NULL,
                          cur_species = NULL,
-                         cur_type = NULL){
+                         cur_type = NULL,
+                         state_file = NULL){
   
   if ( !requireNamespace('shiny',quietly = TRUE) ) {
     stop("WEIN requires 'shiny'. Please install it using
@@ -177,6 +192,28 @@ WEIN<- function(dds_obj = NULL,
   require(tidyr)
   require(shiny)
   require(shinydashboard)
+  
+  # If a state file is provided, load the saved state
+  if (!is.null(state_file) && file.exists(state_file)) {
+    # Load the RData file
+    load(state_file)
+    
+    # Check if the required objects exist in the loaded environment
+    if (exists("r_data")) {
+      # Restore the application state from the saved data
+      dds_obj <- if (exists("r_data") && !is.null(r_data$dds_obj)) r_data$dds_obj else dds_obj
+      res_obj <- if (exists("r_data") && !is.null(r_data$res_obj)) r_data$res_obj else res_obj
+      annotation_obj <- if (exists("r_data") && !is.null(r_data$annotation_obj)) r_data$annotation_obj else annotation_obj
+      countmatrix <- if (exists("r_data") && !is.null(r_data$countmatrix)) r_data$countmatrix else countmatrix
+      expdesign <- if (exists("r_data") && !is.null(r_data$expdesign)) r_data$expdesign else expdesign
+      gene_signatures <- if (exists("r_data") && !is.null(r_data$gene_signatures)) r_data$gene_signatures else gene_signatures
+      cur_species <- if (exists("r_data") && !is.null(r_data$cur_species)) r_data$cur_species else cur_species
+      cur_type <- if (exists("r_data") && !is.null(r_data$cur_type)) r_data$cur_type else cur_type
+    } else {
+      warning("State file does not contain valid application data. Starting with provided or default parameters.")
+    }
+  }
+  
   # create environment for storing inputs and values
   ## i need the assignment like this to export it up one level - i.e. "globally"
   WEIN_env <<- new.env(parent = emptyenv())

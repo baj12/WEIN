@@ -56,16 +56,11 @@ read1stCol <- function (fileName,dds_obj){
       # Use fread for better performance
       dt <- data.table::fread(fileName, sep = guessed_sep, header = TRUE,
                               check.names = FALSE, data.table = FALSE)
-      # Convert to data frame with proper row names
-      rownames(dt) <- dt[,1]
-      dt[,1] <- NULL
       dt
     } else {
       # Fallback to read.delim
       utils::read.delim(fileName, header = TRUE,
                         as.is = TRUE, sep = guessed_sep,
-                        # row.names = 1, # https://github.com/federicomarini/pcaExplorer/issues/1
-                        # Check separator and inform user if needed
                         check.names = FALSE)
     }
   }, error=function(e){
@@ -75,14 +70,25 @@ read1stCol <- function (fileName,dds_obj){
   )
   shiny::validate(
     need(!is.null(cm),
-         "Failed to read count matrix file")
+         "Failed to read gene list file. Please check the file format and try again.")
   )
-  if (ncol(cm) >1) {
-    cm = cm[,1, drop = F]
+  
+  # For gene lists, we expect a single column or we take the first column
+  if (ncol(cm) >= 1) {
+    # Extract the first column as a vector
+    first_col <- cm[,1]
+    # Filter to only include genes that exist in the dds_obj
+    valid_genes <- first_col[first_col %in% rownames(dds_obj)]
+    if(length(valid_genes) > 0) {
+      # Return as a data frame with one column
+      result <- data.frame(gene_id = valid_genes, stringsAsFactors = FALSE)
+      return(result)
+    } else {
+      return(NULL)
+    }
+  } else {
+    return(NULL)
   }
-  cm = cm[cm[,1] %in% rownames(dds_obj),, drop = F]
-  if(nrow(cm)<1) return(NULL)
-  return(cm)
 }
 
 

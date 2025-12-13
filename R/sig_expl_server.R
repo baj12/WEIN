@@ -88,7 +88,7 @@ signature_explorer_server <- function(id, values, annoSpecies_df, exportPlots) {
       if (is.null(values$gene_signatures)) #
         return(NULL)
       validate(
-        need(!is.null(values$cur_species), message = "Please specify the species in the Data Setup panel")
+        need(!is.null(values$cur_species), message = "Please specify the species in the Data Setup panel under Step 2")
       )
       
       std_choices <- c("SYMBOL", "ENSEMBL","ENTREZID","REFSEQ")
@@ -151,12 +151,12 @@ signature_explorer_server <- function(id, values, annoSpecies_df, exportPlots) {
     
     output$sig_heat <- renderPlotly({
       validate(
-        need(!is.null(values$gene_signatures), message = "Please provide some gene signatures in gmt format"),
-        need(!is.null(values$vst_obj), message = "Compute the vst transformed data"),
-        need(!is.null(values$anno_vec), message = "Setup the conversion between data ids and signature ids"),
+        need(!is.null(values$gene_signatures), message = "Please provide gene signatures in GMT format using the upload button above"),
+        need(!is.null(values$vst_obj), message = "Please compute the VST transformed data in the Data Setup panel"),
+        need(!is.null(values$anno_vec), message = "Please set up the conversion between data IDs and signature IDs"),
         need((!is.null(values$res_obj) | !input$sig_useDEonly),
              message = "Please compute the results first if you want to subset to DE genes only"),
-        need(input$sig_selectsig!="", message = "Select a signature")
+        need(input$sig_selectsig!="", message = "Please select a signature from the dropdown menu")
       )
       
       print(

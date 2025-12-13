@@ -21,7 +21,9 @@
 #' @param countmatrix Count matrix
 #' @param expdesign Experimental design data frame
 #' @param gene_signatures Gene signatures list
-#' 
+#' @param cur_species Current species for annotation
+#' @param cur_type Current ID type for annotation
+#'
 #' @return A Shiny server definition
 #' @export
 WEIN_server <- function(
@@ -33,7 +35,7 @@ WEIN_server <- function(
       expdesign = NULL,
       gene_signatures = NULL,
       cur_species = NULL,
-      cur_type = NULL ))
+      cur_type = NULL))
 {
   dds_obj <- app_data$dds_obj
   res_obj <- app_data$res_obj
@@ -115,6 +117,13 @@ WEIN_server <- function(
       genelistDOWN = c(),
       genelistUPDOWN = c(),
     )
+    
+    # Check if we're restoring from a saved state file
+    # If dds_obj is provided but countmatrix/expdesign are not, populate them
+    if(!is.null(dds_obj) && (is.null(countmatrix) || is.null(expdesign))) {
+      values$countmatrix <- counts(dds_obj, normalized = FALSE)
+      values$expdesign <- as.data.frame(colData(dds_obj))
+    }
     
     # this part sets the "matching" objects if something is provided that is depending on these
     if(!is.null(dds_obj)){
@@ -205,8 +214,11 @@ WEIN_server <- function(
     
     # not implemented
     output$diagno_dispests <- renderPlot({
-      BiocGenerics::plotDispEsts(values$dds_obj)
-    })
+          # Suppress par() warnings that commonly occur in Shiny reactive contexts
+          suppressWarnings({
+            BiocGenerics::plotDispEsts(values$dds_obj)
+          })
+        })
     
     
     output$checkdds <- reactive({

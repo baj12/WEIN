@@ -84,48 +84,54 @@ ui_setup_server <- function(id, values) {
       tags$div(HTML('<i class="fa fa-check fa-3x icon-done"></i>'))
     })
     output$nonZeroCountsPlot <- renderPlot({
-      # browser()
-      shiny::validate(
-        need(!is.null(values$dds_obj),
-             "DESeqDataSet object is not available")
-      )
-      counts <- assays(values$dds_obj)[["counts"]]
-      # colSums sums over each column producing a vector of counts.
-      countsNz <- colSums(counts)
-      # adjust the maximum for being able to plot numbers on top of the bars
-      ylim <- c(0, 1.3 * max(countsNz))
-      # las=2 rotates the labels
-      par(mar = c(4, 10, 4, 2) + 0.1)
-      xx <- barplot(countsNz,
-                    xlim = ylim, main = "number of non-zero countsNz",
-                    las = 2, horiz = T, cex.names = 0.75
-      )
-      text(
-        y = xx, x = countsNz, label = prettyNum(countsNz, big.mark = ","),
-        pos = 4, cex = 0.6, col = "darkgreen"
-      )
-    })
+          # browser()
+          shiny::validate(
+            need(!is.null(values$dds_obj),
+                 "DESeqDataSet object is not available")
+          )
+          # Suppress par() warnings that commonly occur in Shiny reactive contexts
+          suppressWarnings({
+            counts <- assays(values$dds_obj)[["counts"]]
+            # colSums sums over each column producing a vector of counts.
+            countsNz <- colSums(counts)
+            # adjust the maximum for being able to plot numbers on top of the bars
+            ylim <- c(0, 1.3 * max(countsNz))
+            # las=2 rotates the labels
+            par(mar = c(4, 10, 4, 2) + 0.1)
+            xx <- barplot(countsNz,
+                          xlim = ylim, main = "number of non-zero countsNz",
+                          las = 2, horiz = T, cex.names = 0.75
+            )
+            text(
+              y = xx, x = countsNz, label = prettyNum(countsNz, big.mark = ","),
+              pos = 4, cex = 0.6, col = "darkgreen"
+            )
+          })
+        })
     output$alignedSequencesPlot <- renderPlot({
-      shiny::validate(
-        need(!is.null(values$dds_obj),
-             "DESeqDataSet object is not available")
-      )
-      counts <- assays(values$dds_obj)[["counts"]]
-      ylim <- c(0, 1.4 * max(colSums(counts)))
-      op <- par(mar = c(4, 10, 4, 2) + 0.1)
-      
-      # Here we use a different orientation of the bar plot.
-      xx <- barplot(colSums(counts),
-                    xlim = ylim, main = "Number of Aligned Sequences",
-                    horiz = T, las = 2, cex.names = 0.75
-      )
-      text(
-        y = xx, x = colSums(counts), label = prettyNum(colSums(counts),
-                                                       big.mark = ","
-        ), pos = 4,
-        cex = 0.8, col = "red"
-      )
-    })
+          shiny::validate(
+            need(!is.null(values$dds_obj),
+                 "DESeqDataSet object is not available")
+          )
+          # Suppress par() warnings that commonly occur in Shiny reactive contexts
+          suppressWarnings({
+            counts <- assays(values$dds_obj)[["counts"]]
+            ylim <- c(0, 1.4 * max(colSums(counts)))
+            op <- par(mar = c(4, 10, 4, 2) + 0.1)
+            
+            # Here we use a different orientation of the bar plot.
+            xx <- barplot(colSums(counts),
+                          xlim = ylim, main = "Number of Aligned Sequences",
+                          horiz = T, las = 2, cex.names = 0.75
+            )
+            text(
+              y = xx, x = colSums(counts), label = prettyNum(colSums(counts),
+                                                             big.mark = ","
+              ), pos = 4,
+              cex = 0.8, col = "red"
+            )
+          })
+        })
     
   })
 }

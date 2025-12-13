@@ -117,7 +117,7 @@ create_gene_list_handler <- function(list_num, input, values, ns, read1stCol) {
       gl <- read1stCol(input[[gl_name]]$datapath, values$dds_obj)
       shiny::validate(
         need(!is.null(gl),
-             "Failed to read gene list file")
+             "Failed to read gene list file. Please ensure the file is properly formatted with gene identifiers in the first column.")
       )
       return(gl)
     }

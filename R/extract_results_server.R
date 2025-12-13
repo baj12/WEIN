@@ -23,7 +23,7 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
     output$runresults <- renderUI({
       shiny::validate(
         need(input$choose_expfac!="",
-             "Select a factor for the contrast first")
+             "Please select a factor for the contrast first")
       )
       
       actionButton(ns("button_runresults"),"Extract the results!", icon = icon("spinner"), class = "btn btn-success")
@@ -78,11 +78,11 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
       shiny::validate(
         # need(input$choose_expfac!="" & input$fac1_c1 != "" & input$fac1_c2 != "" & input$fac1_c1 != input$fac1_c2 ,
         need(input$choose_expfac != ""  ,
-             "Please select a coefficient to build the contrast"
+             "Please select a coefficient to build the contrast first"
         )
       )
       shiny::validate(
-        need(!is.null(values$res_obj), "Parameters selected, please compute the results first")
+        need(!is.null(values$res_obj), "Parameters selected, please compute the results first by clicking the 'Compute Results' button")
       )
       # summary(results(values$dds_obj,contrast = c(input$choose_expfac, input$fac1_c1, input$fac1_c2)))
       summary(values$res_obj,alpha = values$FDR)
@@ -91,7 +91,7 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
     output$printdds <- renderPrint({
       shiny::validate(
         need(!is.null(values$dds_obj),
-             "Please provide a count matrix/dds object"
+             "Please provide a count matrix or DESeqDataSet object to view results"
         )
       )
       
@@ -102,7 +102,7 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
     output$printres <- renderPrint({
       shiny::validate(
         need(!is.null(values$res_obj),
-             "Please provide a DESeqResults object"
+             "Please provide a DESeqResults object or compute results first"
         )
       )
       print(sub(".*p-value: (.*)","\\1",mcols(values$res_obj, use.names=TRUE)["pvalue","description"]))

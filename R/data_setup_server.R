@@ -5,13 +5,15 @@ data_setup_server <- function(id, values, annoSpecies_df) {
     
     output$dt_cm <- DT::renderDataTable({
       if(is.null(values$countmatrix))
-        return(NULL)
+        return(datatable(data.frame(Message = "No count matrix data uploaded yet. Please upload a count matrix file to proceed."),
+                         options = list(dom = 't'), rownames = FALSE))
       datatable(values$countmatrix, options = list(scrollX = TRUE, scrollY = "400px"))
     })
     
     output$dt_ed <- DT::renderDataTable({
       if(is.null(values$expdesign))
-        return(NULL)
+        return(datatable(data.frame(Message = "No experimental design data uploaded yet. Please upload a metadata file to proceed."),
+                         options = list(dom = 't'), rownames = FALSE))
       datatable(values$expdesign, options = list(scrollX = TRUE))
     })
     
@@ -21,7 +23,7 @@ data_setup_server <- function(id, values, annoSpecies_df) {
       cat(file = stderr(), paste("ui_step2\n"))
       shiny::validate(
         need(!is.null(values$expdesign) && !is.null(values$countmatrix),
-             "Please provide both experimental design and count matrix")
+             "Please provide both experimental design and count matrix files to proceed")
       )
       
       box(width = 12, title = "Step 2s", status = "warning", solidHeader = TRUE,
@@ -53,21 +55,23 @@ data_setup_server <- function(id, values, annoSpecies_df) {
     
     # Plot cooccurrence matrix ----------------------------------------------
     output$cooccurrence_matrix_plot <- shiny::renderPlot({
-      shiny::validate(
-        shiny::need(
-          input$dds_design != "" ,
-          paste0("Please provide a formula where all terms appear in ",
-                 "the sample data")
-        )
-      )
-      if (is.null(cooccurrenceplots())) {
-        NULL
-      } else {
-        # cowplot::plot_grid(plotlist = cooccurrenceplots(),
-        #                    ncol = 1)
-        cooccurrenceplots() 
-      }
-    })
+          shiny::validate(
+            shiny::need(
+              input$dds_design != "" ,
+              "Please select a design formula where all terms appear in the sample data"
+            )
+          )
+          # Suppress par() warnings that commonly occur in Shiny reactive contexts
+          suppressWarnings({
+            if (is.null(cooccurrenceplots())) {
+              NULL
+            } else {
+              # cowplot::plot_grid(plotlist = cooccurrenceplots(),
+              #                    ncol = 1)
+              cooccurrenceplots()
+            }
+          })
+        })
     
     # The following comes from ExploreModelMatrix package
     ## ----------------------------------------------------------------------- ##
@@ -119,7 +123,7 @@ data_setup_server <- function(id, values, annoSpecies_df) {
       cat(file = stderr(), paste("ddsdesign\n"))
       shiny::validate(
         need(!is.null(values$expdesign),
-             "Please provide experimental design data")
+             "Please upload experimental design data to proceed with design selection")
       )
       # if(is.null(values$expdesign))
       #   return(NULL)
@@ -180,7 +184,7 @@ data_setup_server <- function(id, values, annoSpecies_df) {
     output$ddsintercept <- renderUI({
       shiny::validate(
         need(!is.null(values$expdesign) && !is.null(input$dds_design),
-             "Please provide both experimental design and design formula")
+             "Please provide both experimental design data and select a design formula")
       )
       if(input$dds_design[1] == "*") {
         return(NULL)
@@ -199,7 +203,7 @@ data_setup_server <- function(id, values, annoSpecies_df) {
       cat(file = stderr(), paste("ui_stepanno\n"))
       shiny::validate(
         need(!is.null(values$dds_obj),
-             "Please create a DESeqDataSet object first")
+             "Please create a DESeqDataSet object first before removing outliers")
       )
       
       
@@ -232,7 +236,7 @@ data_setup_server <- function(id, values, annoSpecies_df) {
         return(NULL)
       shiny::validate(
         need(values$cur_species!="",
-             "Select a species - requires the corresponding annotation package"
+             "Please select a species - this requires the corresponding annotation package to be installed"
         )
       )
       annopkg <- annoSpecies_df$pkg[annoSpecies_df$species==values$cur_species]
@@ -255,7 +259,7 @@ data_setup_server <- function(id, values, annoSpecies_df) {
         return(NULL)
       shiny::validate(
         need(values$cur_species != "",
-             "Select a species first in the panel")
+             "Please select a species first in the panel above")
       )
       actionButton(ns("button_getanno"),"Retrieve the gene symbol annotation for the uploaded data", class = "btn btn-primary")
     })
@@ -387,11 +391,11 @@ data_setup_server <- function(id, values, annoSpecies_df) {
     output$printDIYresults <- renderPrint({
       shiny::validate(
         need(!is.null(values$dds_obj),
-             "Provide or construct a dds object")
+             "Please provide or construct a DESeqDataSet object to view results")
       )
       shiny::validate(
         need("results" %in% mcols(mcols(values$dds_obj))$type ,
-             "dds object provided, but couldn't find results. you should first run DESeq() with the button up here"
+             "DESeq results not found. Please run DESeq() first using the 'Run DESeq!' button above"
         )
       )
       summary(DESeq2::results(values$dds_obj), alpha = values$FDR)
@@ -423,7 +427,7 @@ data_setup_server <- function(id, values, annoSpecies_df) {
     output$ui_diydds <- renderUI({
       shiny::validate(
         need(!is.null(values$expdesign) && !is.null(values$countmatrix) && !is.null(input$dds_design),
-             "Please provide experimental design, count matrix, and design formula")
+             "Please provide experimental design, count matrix, and select a design formula to generate the dds object")
       )
       actionButton(ns("button_diydds"),"Generate the dds object", class = "btn btn-success")
     })
@@ -436,7 +440,7 @@ data_setup_server <- function(id, values, annoSpecies_df) {
     output$ui_stepoutlier <- renderUI({
       shiny::validate(
         need(!is.null(values$dds_obj),
-             "Please create a DESeqDataSet object first")
+             "Please create a DESeqDataSet object first by uploading data and selecting a design formula")
       )
       # browser()
       box(

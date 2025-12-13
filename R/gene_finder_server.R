@@ -54,24 +54,27 @@ gene_finder_server <- function(id, values, annoSpecies_df, exportPlots) {
       return(myid)
     }
     create_gene_plot <- function(values, input, index) {
-      validate_color_by(values)
-      validate_gene_at_index(values, index)
-      
-      myid <- get_gene_id_at_index(values, index)
-      
-      p <- ggplotCounts(
-        values$dds_obj, 
-        myid, 
-        intgroup = values$color_by,
-        annotation_obj = values$annotation_obj
-      )
-      
-      if (input$ylimZero_genefinder) {
-        p <- p + ylim(0.1, NA)
-      }
-      
-      return(p)
-    }
+          validate_color_by(values)
+          validate_gene_at_index(values, index)
+          
+          myid <- get_gene_id_at_index(values, index)
+          
+          # Suppress par() warnings that commonly occur in Shiny reactive contexts
+          p <- suppressWarnings({
+            ggplotCounts(
+              values$dds_obj,
+              myid,
+              intgroup = values$color_by,
+              annotation_obj = values$annotation_obj
+            )
+          })
+          
+          if (input$ylimZero_genefinder) {
+            p <- p + ylim(0.1, NA)
+          }
+          
+          return(p)
+        }
     
     # Create all 4 plot outputs using loop
     lapply(1:4, function(i) {
@@ -114,25 +117,28 @@ gene_finder_server <- function(id, values, annoSpecies_df, exportPlots) {
     
 
     output$plotCoefficients<- renderPlot({
-      shiny::validate(
-        need(
-          length(values$color_by)>0,
-          "Select an experimental factor in the Group/color by element in the sidebar"
-        )
-      )
-      shiny::validate(
-        need(
-          (length(values$avail_symbols)>0 | length(values$avail_ids)>0),
-          "Select at least a gene to plot"
-        )
-      )
-      # browser()
-      mysym <- values$avail_symbols[1]
-      myid <- values$annotation_obj$gene_id[match(mysym, values$annotation_obj$gene_name)]
-      plotCoefficients(values$dds_obj, myid, legend = T)
-      
-      
-    })
+          shiny::validate(
+            need(
+              length(values$color_by)>0,
+              "Select an experimental factor in the Group/color by element in the sidebar"
+            )
+          )
+          shiny::validate(
+            need(
+              (length(values$avail_symbols)>0 | length(values$avail_ids)>0),
+              "Select at least a gene to plot"
+            )
+          )
+          # browser()
+          mysym <- values$avail_symbols[1]
+          myid <- values$annotation_obj$gene_id[match(mysym, values$annotation_obj$gene_name)]
+          # Suppress par() warnings that commonly occur in Shiny reactive contexts
+          suppressWarnings({
+            plotCoefficients(values$dds_obj, myid, legend = T)
+          })
+          
+          
+        })
     
     # server report editor --------------------------------------------------------
     ### yaml generation
@@ -145,53 +151,65 @@ gene_finder_server <- function(id, values, annoSpecies_df, exportPlots) {
     })
     
     output$ma_highlight <- renderPlot({
-      shiny::validate(
-        need(!is.null(values$res_obj),message = "Please generate the results object to display the plot and show the combined tables")
-      )
-      
-      if("symbol" %in% names(values$res_obj)) {
-        p <- plot_ma(values$res_obj,
-                     intgenes = values$avail_symbols,annotation_obj = values$annotation_obj,FDR = values$FDR)
-      } else {
-        p <- plot_ma(values$res_obj,
-                     intgenes = values$avail_ids,annotation_obj = values$annotation_obj,FDR = values$FDR)
-      }
-      
-      exportPlots$plot_mahighlight <- p
-      p
-    })
+          shiny::validate(
+            need(!is.null(values$res_obj),message = "Please generate the results object in the Extract Results panel to display the plot and show the combined tables")
+          )
+          
+          # Suppress par() warnings that commonly occur in Shiny reactive contexts
+          suppressWarnings({
+            if("symbol" %in% names(values$res_obj)) {
+              p <- plot_ma(values$res_obj,
+                           intgenes = values$avail_symbols,annotation_obj = values$annotation_obj,FDR = values$FDR)
+            } else {
+              p <- plot_ma(values$res_obj,
+                           intgenes = values$avail_ids,annotation_obj = values$annotation_obj,FDR = values$FDR)
+            }
+          })
+          
+          exportPlots$plot_mahighlight <- p
+          p
+        })
     
     output$ma_hl_list <- renderPlot({
-      shiny::validate(
-        need(!is.null(values$genelist_ma),message = "Need a list of ma to plot here")
-      )
-      shiny::validate(
-        need("symbol" %in% names(values$res_obj),
-             message = "Need annotation with symbol column")
-      )
-      if(is.null(values$genelist_ma))
-        return(NULL)
-      if("symbol" %in% names(values$res_obj)) {
-        p <- plot_ma(values$res_obj,
-                     intgenes = values$genelist_ma$`Gene Symbol`,annotation_obj = values$annotation_obj,FDR = values$FDR)
-      } else {
-        # plot_ma(values$res_obj,
-        # intgenes = values$genelist_ma,annotation_obj = values$annotation_obj)
-        return(NULL)
-      }
-      exportPlots$plot_mahllist <- p
-      p
-    })
+          shiny::validate(
+            need(!is.null(values$genelist_ma),message = "Please select genes in the MA plot to generate a list to plot here")
+          )
+          shiny::validate(
+            need("symbol" %in% names(values$res_obj),
+                 message = "Please ensure your results object has gene symbol annotation. This requires setting up annotation in the Data Setup panel.")
+          )
+          if(is.null(values$genelist_ma))
+            return(NULL)
+          
+          # Suppress par() warnings that commonly occur in Shiny reactive contexts
+          suppressWarnings({
+            if("symbol" %in% names(values$res_obj)) {
+              p <- plot_ma(values$res_obj,
+                           intgenes = values$genelist_ma$`Gene Symbol`,annotation_obj = values$annotation_obj,FDR = values$FDR)
+            } else {
+              # plot_ma(values$res_obj,
+              # intgenes = values$genelist_ma,annotation_obj = values$annotation_obj)
+              return(NULL)
+            }
+          })
+          exportPlots$plot_mahllist <- p
+          p
+        })
     
     observeEvent(input$gl_ma,
-                 {
-                   gl = gl_ma()
-                   if(is.null(gl)) {values$genelist_ma = data.frame(); return(NULL)}
-                   if(nrow(gl)<1) {values$genelist_ma = data.frame(); return(NULL)}
-                   mydf <- as.data.frame(gl,stringsAsFactors=FALSE)
-                   names(mydf) <- "Gene Symbol"
-                   values$genelist_ma <- mydf
-                 })
+                     {
+                       gl = gl_ma()
+                       if(is.null(gl)) {values$genelist_ma = data.frame(); return(NULL)}
+                       if(nrow(gl)<1) {values$genelist_ma = data.frame(); return(NULL)}
+                       # If gl is already a data frame with gene_id column, convert to Gene Symbol
+                       if("gene_id" %in% names(gl)) {
+                         mydf <- data.frame("Gene Symbol" = gl$gene_id, stringsAsFactors=FALSE)
+                       } else {
+                         mydf <- as.data.frame(gl,stringsAsFactors=FALSE)
+                         names(mydf) <- "Gene Symbol"
+                       }
+                       values$genelist_ma <- mydf
+                     })
     
     
     

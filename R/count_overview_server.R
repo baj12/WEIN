@@ -103,11 +103,11 @@ count_overview_server <- function(id, values) {
     output$pcaPlot56 <- renderPlotly({
       shiny::validate(
         need(!is.null(values$dds_obj),
-             "Provide or construct a dds object")
+             "Please provide or construct a DESeqDataSet object to view plots")
       )
       shiny::validate(
         need(!is.null(values$color_by),
-             "Provide group to color by")
+             "Please select a group to color by in the sidebar")
       )
       rld <- vst(values$dds_obj, blind = FALSE,nsub=10)
        p = multiAxPCA(rld, intgroup = values$color_by, ntop = 1000, pc1=5, pc2=6)
@@ -116,19 +116,21 @@ count_overview_server <- function(id, values) {
     })
     
     output$sizeFactorsPlot <- renderPlot({
-      
-      col <- RColorBrewer::brewer.pal(min(8,unique(colData(values$dds_obj)[, values$color_by[1]]) %>% length()), "Dark2")
-      if(is.null(values$color_by)) {
-        #TODO message about color_by
-        return(NULL)
-      }
-      barplot(sizeFactors(values$dds_obj),
-              main = "Size factors ",
-              col = col[as.integer(colData(values$dds_obj)[, values$color_by[1]])],
-              cex.axis = 1.2, cex.names = 0.8, las = 3
-      )
-      
-    })
+          # Suppress par() warnings that commonly occur in Shiny reactive contexts
+          suppressWarnings({
+            col <- RColorBrewer::brewer.pal(min(8,unique(colData(values$dds_obj)[, values$color_by[1]]) %>% length()), "Dark2")
+            if(is.null(values$color_by)) {
+              #TODO message about color_by
+              return(NULL)
+            }
+            barplot(sizeFactors(values$dds_obj),
+                    main = "Size factors ",
+                    col = col[as.integer(colData(values$dds_obj)[, values$color_by[1]])],
+                    cex.axis = 1.2, cex.names = 0.8, las = 3
+            )
+          })
+          
+        })
     output$pairwise_plotUI <- renderUI({
       shiny::validate(
         need(!is.null(input$compute_pairwisecorr),
@@ -150,7 +152,7 @@ count_overview_server <- function(id, values) {
     output$pca_Dim1 <-renderUI({
       shiny::validate(
         need(!is.null(input$compute_pairwisecorr),
-             "Please compute pairwise correlations first")
+             "Please compute pairwise correlations first by clicking the 'Compute Pairwise Correlations' button")
       )
       selectizeInput(ns("pcaDim1"), label = "Which PCA on X",
                      choices = c(1:20), selected = 1, multiple = F)

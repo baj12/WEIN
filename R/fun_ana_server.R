@@ -370,17 +370,20 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
     })
     
     output$vennlists <- renderPlot({
-      # Use debouncer to control frequency
-      venn_debouncer()
-      
-      shiny::validate(
-        need(all(sapply(gll(),function(arg) !is.null(arg))),
-             message = "Some lists are empty - make sure you extracted the results using the annotation object")
-        
-      )
-      
-      gplots::venn(gll())
-    })
+          # Use debouncer to control frequency
+          venn_debouncer()
+          
+          shiny::validate(
+            need(all(sapply(gll(),function(arg) !is.null(arg))),
+                 message = "Some lists are empty - make sure you extracted the results using the annotation object")
+            
+          )
+          
+          # Suppress par() warnings that commonly occur in Shiny reactive contexts
+          suppressWarnings({
+            gplots::venn(gll())
+          })
+        })
     
     # Add debounce to prevent excessive recomputation
     upset_debouncer <- reactiveVal(0)
@@ -395,15 +398,18 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
     })
     
     output$upsetLists <- renderPlot({
-      # Use debouncer to control frequency
-      upset_debouncer()
-      
-      shiny::validate(
-        need(sum(sapply(gll(),function(arg) length(arg)>0)) > 1,
-             message = "Make sure you provide at least two sets")
-      )
-      UpSetR::upset(fromList(gll()))
-    })
+          # Use debouncer to control frequency
+          upset_debouncer()
+          
+          shiny::validate(
+            need(sum(sapply(gll(),function(arg) length(arg)>0)) > 1,
+                 message = "Make sure you provide at least two sets")
+          )
+          # Suppress par() warnings that commonly occur in Shiny reactive contexts
+          suppressWarnings({
+            UpSetR::upset(fromList(gll()))
+          })
+        })
     
     
     output$printUPgenes <- renderPrint({
