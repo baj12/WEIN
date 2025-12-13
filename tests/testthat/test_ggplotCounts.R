@@ -2,9 +2,7 @@ library("testthat")
 library("DESeq2")
 library("ggplot2")
 library("ggrepel")
-
-# Source the functions directly instead of loading the package
-source("../../R/ggplotCounts.R")
+library("WEIN")
 
 context("Testing ggplotCounts function")
 
@@ -14,7 +12,7 @@ test_that("ggplotCounts function exists", {
 })
 
 test_that("ggplotCounts works with basic DESeqDataSet", {
-  # Create a small test dataset
+  # Create a small test dataset inside the test
   dds <- DESeq2::makeExampleDESeqDataSet(n=50, m=6)
   
   # Get a gene name to test with
@@ -28,7 +26,7 @@ test_that("ggplotCounts works with basic DESeqDataSet", {
 })
 
 test_that("ggplotCounts handles different parameters", {
-  # Create a small test dataset
+  # Create a small test dataset inside the test
   dds <- DESeq2::makeExampleDESeqDataSet(n=50, m=6)
   
   # Get a gene name to test with
@@ -44,7 +42,7 @@ test_that("ggplotCounts handles different parameters", {
 })
 
 test_that("ggplotCounts works with annotation object", {
-  # Create a small test dataset
+  # Create a small test dataset inside the test
   dds <- DESeq2::makeExampleDESeqDataSet(n=50, m=6)
   
   # Get a gene name to test with

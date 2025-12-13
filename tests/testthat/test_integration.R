@@ -1,16 +1,12 @@
 library("testthat")
 library("DESeq2")
 library("ggplot2")
-
-# Source the functions directly instead of loading the package
-source("../../R/WEIN.R")
-source("../../R/plot_ma.R")
-source("../../R/plot_volcano.R")
+library("WEIN")
 
 context("Integration Tests")
 
 test_that("Complete workflow functions correctly", {
-  # Create test data
+  # Create test data inside the test
   dds <- DESeq2::makeExampleDESeqDataSet(n=100, m=8)
   
   # Run DESeq analysis
@@ -33,7 +29,7 @@ test_that("Complete workflow functions correctly", {
 })
 
 test_that("Plotting functions work with test data", {
-  # Create test data
+  # Create test data inside the test
   dds <- DESeq2::makeExampleDESeqDataSet(n=100, m=8)
   dds <- DESeq(dds)
   res <- results(dds)

@@ -15,7 +15,8 @@ deseqresult2DEgenes(deseqresult, FDR = 0.05)
 A "tidy" data.frame with only genes marked as differentially expressed
 }
 \description{
-Generate a tidy table with the DE genes from the results of DESeq
+Generate a tidy table with the differentially expressed (DE) genes from the results of DESeq,
+filtering genes based on the specified False Discovery Rate (FDR) threshold and arranging by adjusted p-value.
 }
 \examples{
 

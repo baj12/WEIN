@@ -13,7 +13,13 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
     })
     
     output$plotma <- renderPlot({
-          # Suppress par() warnings that commonly occur in Shiny reactive contexts
+          # Validate that required data is available
+          shiny::validate(
+            need(!is.null(values$res_obj), "Results object is not available. Please generate results first."),
+            need(!is.null(values$annotation_obj), "Annotation object is not available. Please set annotation first.")
+          )
+          
+      cat(file = stderr(), "in plotma\n")
           p <- suppressWarnings({
             plot_ma(values$res_obj,annotation_obj = values$annotation_obj,FDR = values$FDR)
           })
@@ -112,7 +118,7 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
                     color = "steelblue",
                     size = 4,
                     fontface = "bold",
-                    max.overlaps = 30,
+                    max.overlaps = 50,
                     box.padding = 0.5,
                     point.padding = 0.3,
                     min.segment.length = 0
@@ -422,7 +428,7 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
                           color = "steelblue",
                           size = 4,
                           fontface = "bold",
-                          max.overlaps = 30,
+                          max.overlaps = 50,
                           box.padding = 0.5,
                           point.padding = 0.3,
                           min.segment.length = 0
@@ -486,7 +492,7 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
               })
               
               if(input$ylimZero_genes)
-                p <- p + ylim(0.1, NA)
+                p <- p + coord_cartesian(ylim = c(0.1, NA))
               
               exportPlots$plot_genefinder <- p
               p
@@ -519,24 +525,85 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
             "Select a species first in the Data Setup panel"
           )
         )
-        # browser()
-        selgene_entrez <- mapIds(get(annoSpecies_df[values$cur_species,]$pkg),
-                                 selectedGene, "ENTREZID", values$cur_type)
-        fullinfo <- geneinfo(selgene_entrez)
+        
+        # Handle the case where cur_type might be SYMBOL or other invalid keytype
+        annopkg <- get(annoSpecies_df[values$cur_species,]$pkg)
+        selgene_entrez <- NULL
+        
+        # If cur_type is SYMBOL, we need to convert it to a valid keytype
+        if (values$cur_type == "SYMBOL") {
+          # When cur_type is SYMBOL, the selectedGene is already a gene symbol
+          # We need to map from SYMBOL to ENTREZID using the annotation object
+          # First, try to find the ENTREZID in the annotation object
+          gene_idx <- match(selectedGene, values$annotation_obj$gene_name)
+          if (!is.na(gene_idx)) {
+            selgene_entrez <- rownames(values$annotation_obj)[gene_idx]
+          }
+          
+          # If that doesn't work, try to use mapIds with "SYMBOL" as column and keytype as rownames
+          if (is.null(selgene_entrez) || selgene_entrez == selectedGene) {
+            tryCatch({
+              selgene_entrez <- mapIds(annopkg, selectedGene, "ENTREZID", "SYMBOL", multiVals = "first")
+            }, error = function(e) {
+              # If that fails, try with the rownames as keytype
+              tryCatch({
+                selgene_entrez <- mapIds(annopkg, selectedGene, "ENTREZID", keytype = keytypes(annopkg)[1], multiVals = "first")
+              }, error = function(e2) {
+                # If all fails, use the selectedGene directly (might be an ENTREZID already)
+                selgene_entrez <- selectedGene
+              })
+            })
+          }
+        } else {
+          # For other keytypes, use mapIds normally
+          tryCatch({
+            selgene_entrez <- mapIds(annopkg, selectedGene, "ENTREZID", values$cur_type, multiVals = "first")
+          }, error = function(e) {
+            # If mapIds fails, try with the first available keytype
+            tryCatch({
+              selgene_entrez <- mapIds(annopkg, selectedGene, "ENTREZID", keytype = keytypes(annopkg)[1], multiVals = "first")
+            }, error = function(e2) {
+              # If all fails, use the selectedGene directly
+              selgene_entrez <- selectedGene
+            })
+          })
+        }
+        
+        # Get gene information from entrez
+        fullinfo <- NULL
+        if (!is.null(selgene_entrez) && selgene_entrez != "") {
+          tryCatch({
+            fullinfo <- geneinfo(selgene_entrez)
+          }, error = function(e) {
+            # If geneinfo fails, create a minimal info object
+            fullinfo <- list(
+              name = if (!is.null(selgene_entrez)) selgene_entrez else selectedGene,
+              description = "Gene information not available",
+              summary = ""
+            )
+          })
+        } else {
+          # Create minimal info if no entrez id
+          fullinfo <- list(
+            name = selectedGene,
+            description = "Gene information not available",
+            summary = ""
+          )
+        }
         
         # Build up link manually to paste under the info
         link_pubmed <- paste0('<a href="http://www.ncbi.nlm.nih.gov/gene/?term=',
-                              selgene_entrez,
+                              if (!is.null(selgene_entrez)) selgene_entrez else selectedGene,
                               '" target="_blank" >Click here to see more at NCBI</a>')
         
-        if(fullinfo$summary == "")
-          return(HTML(paste0("<b>",fullinfo$name, "</b><br/><br/>",
-                             fullinfo$description,"<br/><br/>",
+        if (is.null(fullinfo) || fullinfo$summary == "")
+          return(HTML(paste0("<b>", if (!is.null(fullinfo$name)) fullinfo$name else selectedGene, "</b><br/><br/>",
+                             if (!is.null(fullinfo$description)) fullinfo$description else "No description available", "<br/><br/>",
                              link_pubmed
           )))
         else
-          return(HTML(paste0("<b>",fullinfo$name, "</b><br/><br/>",
-                             fullinfo$description, "<br/><br/>",
+          return(HTML(paste0("<b>", if (!is.null(fullinfo$name)) fullinfo$name else selectedGene, "</b><br/><br/>",
+                             if (!is.null(fullinfo$description)) fullinfo$description else "No description available", "<br/><br/>",
                              fullinfo$summary, "<br/><br/>",
                              link_pubmed
           )))

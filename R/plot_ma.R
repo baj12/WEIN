@@ -129,6 +129,9 @@ plot_ma <- function(res_obj,
       df_intgenes <- res_df[rownames(res_df) %in% intgenes, ]
       df_intgenes$myids <- rownames(df_intgenes)
     }
+    
+    # Filter out rows with missing values to prevent warnings
+    df_intgenes <- df_intgenes[!is.na(df_intgenes$logmean) & !is.na(df_intgenes$log2FoldChange), ]
 
     # df_intgenes <- res_df[res_df$symbol %in% intgenes,]
     p <- p + geom_point(data = df_intgenes,aes(x = logmean, y = log2FoldChange), color = intgenes_color, size = 4)
@@ -136,7 +139,7 @@ plot_ma <- function(res_obj,
     if(labels_intgenes) {
       if(labels_repel) {
         p <- p + geom_text_repel(data = df_intgenes,aes(x = logmean, y = log2FoldChange, label = myids),
-                           color = intgenes_color, size=5)
+                           color = intgenes_color, size=5, max.overlaps = 50)
       } else {
         p <- p + geom_text(data = df_intgenes,aes(x = logmean, y = log2FoldChange, label = myids),
                          color = intgenes_color, size=5,hjust=0.25, vjust=-0.75)

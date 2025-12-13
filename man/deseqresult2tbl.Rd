@@ -13,7 +13,8 @@ deseqresult2tbl(deseqresult)
 A "tidy" data.frame with all genes
 }
 \description{
-Generate a tidy table with the results of DESeq
+Generate a tidy table with the results of DESeq, converting the DESeqResults object
+into a data frame with gene identifiers as a separate column and arranging by adjusted p-value.
 }
 \examples{
 

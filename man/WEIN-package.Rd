@@ -25,9 +25,12 @@ the Shiny App}
 of each sample. If not provided, it is possible to upload the data during the
 execution of the Shiny App}
 
-\item{gene_signatures}{A list of vectors, one for each pathway/signature. This 
+\item{gene_signatures}{A list of vectors, one for each pathway/signature. This
 is for example the output of the \code{\link{read_gmt}} function. The provided
 object can also be replaced during runtime in the dedicated upload widget.}
+
+\item{state_file}{An optional path to a .RData file containing saved application state.
+If provided, the application state will be restored from this file.}
 }
 \value{
 A Shiny App is launched for interactive data exploration and
@@ -61,6 +64,17 @@ dds_airway <- DESeq2::DESeq(dds_airway)
 res_airway <- DESeq2::results(dds_airway)
 WEIN(dds_airway, res_airway)
 }
+
+# Restore from a saved state file
+\dontrun{
+WEIN(state_file = "my_analysis_state.RData")
+}
+
+# Save current state from within the app:
+# 1. Click on "Save State as .RData" button in the header
+# 2. This creates a timestamped .RData file with your current analysis state
+# 3. Later, restore the session with:
+#    WEIN(state_file = "WEINState_2023-12-01_14-30-45.RData")
 
 
 }

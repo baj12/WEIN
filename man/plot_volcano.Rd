@@ -12,7 +12,8 @@ plot_volcano(
   title = NULL,
   intgenes = NULL,
   intgenes_color = "steelblue",
-  labels_intgenes = TRUE
+  labels_intgenes = TRUE,
+  annotation_obj = NULL
 )
 }
 \arguments{
@@ -35,6 +36,10 @@ row names}
 
 \item{labels_intgenes}{Logical, whether to add the gene identifiers/names close
 to the marked plots}
+
+\item{annotation_obj}{A \code{data.frame} object, with row.names as gene
+identifiers (e.g. ENSEMBL ids) and a column, \code{gene_name}, containing
+e.g. HGNC-based gene symbols. Optional}
 }
 \value{
 An object created by \code{ggplot}
@@ -45,7 +50,7 @@ additional support to annotate genes if provided.
 }
 \details{
 The genes of interest are to be provided as gene symbols if a \code{symbol}
-column is provided in \code{res_obj}, or else b< using  the identifiers specified
+column is provided in \code{res_obj}, or else by using the identifiers specified
 in the row names
 }
 \examples{

@@ -129,7 +129,7 @@ if(!is.null(values$res_obj)) {
   res_df <- as.data.frame(values$res_obj)
   res_df <- dplyr::filter(res_df, !is.na(pvalue))
 
-  p1 <- ggplot(res_df, aes_string("pvalue")) +
+  p1 <- ggplot(res_df, aes(x=.data[["pvalue"]])) +
     geom_histogram(binwidth = 0.01, boundary = 0) + theme_bw()
   # for visual estimation of the false discovery proportion in the first bin
   alpha <- binw <- input$FDR
@@ -151,8 +151,8 @@ if(!is.null(values$res_obj)) {
     stratum = cut(baseMean, include.lowest = TRUE, 
                   breaks = signif(quantile(baseMean, probs = seq(0,1, length.out = 10)),2)))
   
-  p2 <- ggplot(res_df, aes_string("pvalue")) +
-    geom_histogram(binwidth = 0.01, boundary = 0) + 
+  p2 <- ggplot(res_df, aes(x=.data[["pvalue"]])) +
+    geom_histogram(binwidth = 0.01, boundary = 0) +
     facet_wrap(~stratum) + 
     theme_bw()
       
@@ -176,7 +176,7 @@ if(!is.null(values$res_obj)) {
       "Intersection point at rank ", with(arrange(res_df,rank), last(which(pvalue <= phi * rank / m))))
     )
   
-  p4 <- ggplot(res_df, aes_string("log2FoldChange")) +
+  p4 <- ggplot(res_df, aes(x=.data[["log2FoldChange"]])) +
     geom_histogram(binwidth = 0.1) + theme_bw()
   p4 <- p4 + ggtitle("Histogram of the log2 fold changes")
   print(p4)
@@ -205,7 +205,7 @@ if(!is.null(values$res_obj)) {
         print(plot_ma(values$res_obj,annotation_obj = values$annotation_obj,FDR = input$FDR) +
         coord_cartesian(xlim = c(input$ma_brush$xmin,input$ma_brush$xmax),
                         ylim = c(input$ma_brush$ymin,input$ma_brush$ymax)) +
-        geom_text(aes_string(label="genename"),size=3,hjust=0.25, vjust=-0.75))
+        geom_text(aes(label=.data[["genename"]]),size=3,hjust=0.25, vjust=-0.75))
       else
         print(plot_ma(values$res_obj,annotation_obj = values$annotation_obj,FDR = input$FDR) +
         coord_cartesian(xlim = c(input$ma_brush$xmin,input$ma_brush$xmax),

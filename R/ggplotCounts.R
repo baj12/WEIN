@@ -58,18 +58,18 @@ ggplotCounts <- function(dds,gene,intgroup="condition",annotation_obj=NULL,
   #   }
   # }
   p <-
-      ggplot(df, aes_string(x="plotby",y="count",col="plotby")) +
+      ggplot(df, aes(x=.data[["plotby"]], y=.data[["count"]], col=.data[["plotby"]])) +
       geom_boxplot(outlier.shape = NA) +
       # geom_text(data = jittered_df,aes(x=conditionj,y=countj,label=sampleID)) +
       scale_x_discrete(name="") +
-      geom_jitter(aes_string(x="plotby",y="count"),
+      geom_jitter(aes(x=.data[["plotby"]], y=.data[["count"]]),
                   position = position_jitter(width = 0.1)) +
       scale_color_discrete(name="Experimental\nconditions")
     
     if(labels_repel){
-      p <- p + ggrepel::geom_text_repel(aes_string(label="sampleID"))
+      p <- p + ggrepel::geom_text_repel(aes(label=.data[["sampleID"]]), max.overlaps = 50)
     } else {
-      p <- p + geom_text(aes_string(label="sampleID"),hjust=-.1,vjust=0)
+      p <- p + geom_text(aes(label=.data[["sampleID"]]),hjust=-.1,vjust=0)
     }
     
     if(transform) {

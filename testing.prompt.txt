@@ -1,0 +1,381 @@
+# Comprehensive R Package + renv Diagnostic & Fix Protocol
+
+## Phase 1: Initial Assessment - Gather All Information
+
+Run these commands and share **ALL outputs**:
+  
+  ### 1.1 Package Structure Analysis
+  ```bash
+# Show package structure
+tree -L 2 -I 'renv|docs|man'
+
+# Show DESCRIPTION
+cat DESCRIPTION
+
+# List all R functions
+find R/ -name "*.R" -exec basename {} \;
+
+# List all test files
+find tests/ -type f 2>/dev/null || echo "No tests directory"
+```
+
+### 1.2 Test Coverage Verification
+```r
+# In R console
+# Check which functions have tests
+all_functions <- ls(getNamespace("YourPackageName"))
+test_files <- list.files("tests/testthat", pattern = "^test.*\\.R$", full.names = TRUE)
+
+# Parse test files to find tested functions
+tested_funcs <- character()
+for (f in test_files) {
+  content <- readLines(f)
+  # Extract function names from test_that() calls
+  print(paste("Test file:", basename(f)))
+  print(grep("test_that|expect_", content, value = TRUE))
+}
+
+# Report untested functions
+cat("\n=== UNTESTED FUNCTIONS ===\n")
+setdiff(all_functions[!startsWith(all_functions, ".")], tested_funcs)
+```
+
+### 1.3 Check for Actual Errors vs. Warnings
+```r
+# Run package checks locally
+devtools::check()
+
+# Capture output and categorize
+results <- devtools::check()
+if (length(results$errors) > 0) {
+  cat("\n🚨 REAL ERRORS (MUST FIX):\n")
+  print(results$errors)
+}
+if (length(results$warnings) > 0) {
+  cat("\n⚠️  WARNINGS (SHOULD FIX):\n")
+  print(results$warnings)
+}
+if (length(results$notes) > 0) {
+  cat("\n📝 NOTES (REVIEW):\n")
+  print(results$notes)
+}
+```
+
+### 1.4 renv Status Analysis
+```r
+# Complete renv diagnostics
+renv::status()
+renv::diagnostics()
+
+# Check Bioconductor version alignment
+if (requireNamespace("BiocManager", quietly = TRUE)) {
+  cat("\nBioconductor version:", as.character(BiocManager::version()), "\n")
+}
+
+# List all package sources
+locks <- jsonlite::read_json("renv.lock")
+cat("\n=== Package Sources ===\n")
+table(sapply(locks$Packages, function(x) x$Repository %||% "Unknown"))
+```
+
+### 1.5 GitHub Actions Analysis
+```bash
+# Show all workflow files
+ls -la .github/workflows/
+  
+  # Show each workflow
+  for f in .github/workflows/*.y*ml; do
+echo "=== $f ==="
+cat "$f"
+echo ""
+done
+```
+
+---
+  
+  ## Phase 2: Problem Classification
+  
+  Based on Phase 1 outputs, classify issues:
+  
+  ### ⛔ **CRITICAL ERRORS** (Must fix before proceeding)
+  - [ ] Package doesn't pass `devtools::check()` with ERRORS
+- [ ] Missing required dependencies in DESCRIPTION
+- [ ] Functions fail with actual runtime errors
+- [ ] Test failures indicating broken functionality
+
+### ⚠️ **BUILD FAILURES** (Infrastructure issues)
+- [ ] renv can't restore packages (version unavailable)
+- [ ] Bioconductor version mismatch (3.19 vs 3.20)
+- [ ] Package build failures (compilation errors)
+- [ ] GitHub Actions authentication issues
+
+### 📋 **QUALITY ISSUES** (Should fix but not blockers)
+- [ ] Missing tests for exported functions
+- [ ] R CMD check WARNINGS
+- [ ] Outdated package versions
+- [ ] Missing documentation
+
+---
+  
+  ## Phase 3: Systematic Resolution
+  
+  ### 3.1 Fix Critical Errors First
+  
+  **DO NOT PROCEED** until these are resolved:
+  
+  ```r
+# Test each function individually
+package_name <- "YourPackage"
+functions <- ls(paste0("package:", package_name))
+
+for (func in functions) {
+  cat("\n\nTesting:", func, "\n")
+  tryCatch({
+    # Get function arguments
+    args <- formals(get(func))
+    cat("Arguments:", paste(names(args), collapse = ", "), "\n")
+    
+    # Try to run with NULL/default args
+    test_result <- tryCatch(
+      do.call(func, lapply(args, function(x) NULL)),
+      error = function(e) e$message
+    )
+    cat("Result:", test_result, "\n")
+  }, error = function(e) {
+    cat("❌ CRITICAL ERROR:", e$message, "\n")
+  })
+}
+```
+
+**If critical errors exist:**
+  ```
+🚨 STOP: Your package has fundamental errors.
+
+Fix these FIRST before dealing with renv/CI:
+  1. [List specific errors from above]
+2. [How to reproduce each error]
+3. [Suggested fix or indicate if architecture change needed]
+
+Do not proceed until `devtools::check()` returns 0 errors.
+```
+
+### 3.2 Verify Test Coverage
+
+```r
+# Generate coverage report
+covr::package_coverage()
+report <- covr::coverage_to_cobertura(covr::package_coverage())
+
+# Identify untested functions
+coverage_data <- covr::package_coverage()
+zero_coverage <- coverage_data[covr::percent_coverage(coverage_data) == 0]
+
+if (length(zero_coverage) > 0) {
+  cat("\n⚠️  MISSING TESTS FOR:\n")
+  for (item in zero_coverage) {
+    cat("  -", item$filename, ":", item$functions, "\n")
+  }
+  cat("\n")
+  cat("ACTION REQUIRED: Add tests to tests/testthat/ for these functions\n")
+  cat("Template:\n")
+  cat('test_that("function_name works correctly", {\n')
+  cat('  result <- function_name(test_input)\n')
+  cat('  expect_equal(result, expected_output)\n')
+  cat('})\n')
+}
+```
+
+### 3.3 Resolve renv Issues (No Shortcuts)
+
+```r
+# Step 1: Identify incompatible packages
+renv::status()
+
+# Step 2: Check each problematic package
+problematic <- c("ggtree", "AnnotationDbi")  # From error logs
+
+for (pkg in problematic) {
+  cat("\n=== Analyzing", pkg, "===\n")
+  
+  # Check if actually needed
+  desc <- read.dcf("DESCRIPTION")
+  in_imports <- grepl(pkg, desc[,"Imports"])
+  in_suggests <- grepl(pkg, desc[,"Suggests"])
+  
+  if (!in_imports && !in_suggests) {
+    cat("⚠️  Package", pkg, "is NOT in DESCRIPTION but in lockfile\n")
+    cat("   -> Consider: renv::remove('", pkg, "')\n", sep="")
+  } else {
+    cat("✓ Package", pkg, "is required\n")
+    
+    # Check available versions
+    available <- available.packages()
+    if (pkg %in% rownames(available)) {
+      cat("   Latest available:", available[pkg, "Version"], "\n")
+    } else {
+      cat("   ❌ NOT AVAILABLE in current repositories\n")
+      cat("   Current repos:\n")
+      print(getOption("repos"))
+    }
+  }
+}
+
+# Step 3: Decision matrix
+cat("\n=== DECISION REQUIRED ===\n")
+cat("For each problematic package, choose:\n")
+cat("A) Remove from DESCRIPTION if not essential\n")
+cat("B) Find alternative package with same functionality\n")
+cat("C) Pin to older working version\n")
+cat("D) Fix underlying compatibility issue\n")
+cat("\nDo NOT proceed without making explicit choice for each package.\n")
+```
+
+### 3.4 Bioconductor Version Resolution
+
+```r
+# Determine correct Bioconductor version
+r_version <- getRversion()
+bioc_mapping <- list(
+  "4.4" = "3.19",
+  "4.5" = "3.20"
+)
+
+recommended_bioc <- bioc_mapping[[paste(R.version$major, R.version$minor, sep=".")]]
+
+cat("\nR version:", as.character(r_version), "\n")
+cat("Recommended Bioconductor:", recommended_bioc, "\n")
+
+if (requireNamespace("BiocManager", quietly = TRUE)) {
+  current_bioc <- as.character(BiocManager::version())
+  cat("Current Bioconductor:", current_bioc, "\n")
+  
+  if (current_bioc != recommended_bioc) {
+    cat("\n⚠️  BIOCONDUCTOR VERSION MISMATCH\n")
+    cat("You must choose ONE approach:\n\n")
+    cat("OPTION A: Use recommended version (", recommended_bioc, ")\n", sep="")
+    cat("  BiocManager::install(version='", recommended_bioc, "', ask=FALSE)\n", sep="")
+    cat("  renv::snapshot(force=TRUE)\n\n")
+    cat("OPTION B: Downgrade R to match Bioc ", current_bioc, "\n", sep="")
+    cat("  (Requires R reinstallation)\n\n")
+    cat("OPTION C: Keep current and document known issues\n")
+    cat("  (Not recommended for CI)\n\n")
+    cat("Choose one and execute. Do NOT skip this decision.\n")
+  }
+}
+```
+
+### 3.5 GitHub Actions Configuration
+
+```r
+# Validate workflow files
+workflows <- list.files(".github/workflows", pattern = "\\.ya?ml$", full.names = TRUE)
+
+for (wf in workflows) {
+  cat("\n=== Validating", basename(wf), "===\n")
+  
+  content <- readLines(wf)
+  
+  # Check for common issues
+  checks <- list(
+    checkout = any(grepl("actions/checkout", content)),
+    setup_r = any(grepl("setup-r", content)),
+    setup_renv = any(grepl("setup-renv", content)),
+    proper_renv_order = {
+      checkout_line <- which(grepl("actions/checkout", content))[1]
+      renv_line <- which(grepl("setup-renv", content))[1]
+      !is.na(checkout_line) && !is.na(renv_line) && checkout_line < renv_line
+    }
+  )
+  
+  for (check_name in names(checks)) {
+    status <- if(checks[[check_name]]) "✓" else "❌"
+    cat(status, check_name, "\n")
+  }
+  
+  if (!all(unlist(checks))) {
+    cat("\n⚠️  Workflow has configuration issues\n")
+  }
+}
+```
+
+---
+  
+  ## Phase 4: Final Validation
+  
+  Before considering the issue "fixed":
+  
+  ```bash
+#!/bin/bash
+echo "=== FINAL VALIDATION CHECKLIST ==="
+
+# 1. Local checks pass
+echo "1. Running R CMD check..."
+Rscript -e "devtools::check()" || { echo "❌ FAILED: Local check"; exit 1; }
+
+# 2. All tests pass
+echo "2. Running tests..."
+Rscript -e "devtools::test()" || { echo "❌ FAILED: Tests"; exit 1; }
+
+# 3. renv is consistent
+echo "3. Checking renv status..."
+Rscript -e "if(length(renv::status()) > 0) stop('renv out of sync')" || { echo "❌ FAILED: renv"; exit 1; }
+
+# 4. Can build package
+echo "4. Building package..."
+R CMD build . || { echo "❌ FAILED: Build"; exit 1; }
+
+# 5. Can install from built tarball
+echo "5. Installing built package..."
+PKG_TAR=$(ls -t *.tar.gz | head -1)
+R CMD INSTALL "$PKG_TAR" || { echo "❌ FAILED: Install"; exit 1; }
+
+echo ""
+echo "✓ All local validation passed"
+echo "Now safe to commit and push"
+```
+
+---
+  
+  ## Phase 5: Implementation
+  
+  Only after ALL above phases complete successfully:
+  
+  ```bash
+# Commit with detailed message
+git add .
+git commit -m "Fix package infrastructure
+
+- Resolved renv dependency conflicts
+- Updated to Bioconductor X.XX
+- Added tests for [list functions]
+- Fixed [specific errors]
+
+All local checks pass. Ready for CI."
+
+git push
+```
+
+---
+  
+  ## 🚨 When to STOP and Ask for Help
+  
+  **STOP if:**
+  - ✋ Package has architectural issues (not just dependency problems)
+- ✋ Critical functions have no tests AND you don't understand the code
+- ✋ Errors involve C/C++ compilation failures you can't resolve
+- ✋ Bioconductor packages require unavailable system dependencies
+- ✋ Multiple dependency conflicts form circular dependencies
+
+**Then report:**
+  ```
+BLOCKED: Cannot proceed automatically
+
+Issue: [Specific technical problem]
+Root cause: [Why shortcuts won't work]
+Requires: [Manual intervention/expertise needed]
+Evidence: [Paste relevant error messages]
+```
+
+---
+
+**Run Phase 1 first and share all outputs. No solutions until full diagnosis complete.**

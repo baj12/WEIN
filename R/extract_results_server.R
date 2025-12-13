@@ -12,11 +12,11 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
     
     output$choose_fac <- renderUI({
       selectInput(ns("choose_expfac"),label = "Choose the experimental factor to build the contrast (numerator)",
-                  choices = c("",design_factors()), selected = "", multiple = TRUE)
+                  choices = c("",design_factors()), selected = ifelse(is.null(values$choose_expfac), "", values$choose_expfac), multiple = TRUE)
     })
     output$choose_fac2 <- renderUI({
       selectInput(ns("choose_expfac2"),label = "Choose the experimental factor to build the contrast (denominator)",
-                  choices = c("",design_factors()), selected = "", multiple = TRUE)
+                  choices = c("",design_factors()), selected = ifelse(is.null(values$choose_expfac2), "", values$choose_expfac2), multiple = TRUE)
     })
     
     
@@ -27,6 +27,15 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
       )
       
       actionButton(ns("button_runresults"),"Extract the results!", icon = icon("spinner"), class = "btn btn-success")
+    })
+    
+    # Store the selected experimental factors in values object
+    observeEvent(input$choose_expfac, {
+      values$choose_expfac <- input$choose_expfac
+    })
+    
+    observeEvent(input$choose_expfac2, {
+      values$choose_expfac2 <- input$choose_expfac2
     })
     
     observeEvent(input$button_runresults, {
@@ -150,7 +159,7 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
       
       res_df <- as.data.frame(values$res_obj)
       res_df <- dplyr::filter(res_df, !is.na(pvalue))
-      p <- ggplot(res_df, aes_string("pvalue")) +
+      p <- ggplot(res_df, aes(x=.data[["pvalue"]])) +
         geom_histogram(binwidth = 0.01, boundary = 0) + theme_bw()
       
       # for visual estimation of the false discovery proportion in the first bin
@@ -184,8 +193,8 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
         stratum = cut(baseMean, include.lowest = TRUE, 
                       breaks = signif(quantile(baseMean, probs = seq(0,1, length.out = 10)),2)))
       
-      p <- ggplot(res_df, aes_string("pvalue")) +
-        geom_histogram(binwidth = 0.01, boundary = 0) + 
+      p <- ggplot(res_df, aes(x=.data[["pvalue"]])) +
+        geom_histogram(binwidth = 0.01, boundary = 0) +
         facet_wrap(~stratum) + 
         theme_bw()
       
@@ -209,9 +218,9 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
       res_df <- mutate(res_df, rank = rank(pvalue))
       m <- nrow(res_df)
       
-      p <- ggplot(filter(res_df, rank <= 6000), 
-                  aes_string(x = "rank", y = "pvalue")) + 
-        geom_line() + 
+      p <- ggplot(filter(res_df, rank <= 6000),
+                  aes(x = .data[["rank"]], y = .data[["pvalue"]])) +
+        geom_line() +
         geom_abline(slope = phi/m, col = "red") + 
         theme_bw()
       
@@ -257,7 +266,7 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
       res_df <- as.data.frame(values$res_obj)
       res_df <- dplyr::filter(res_df, !is.na(pvalue))
       
-      p <- ggplot(res_df, aes_string("log2FoldChange")) +
+      p <- ggplot(res_df, aes(x=.data[["log2FoldChange"]])) +
         geom_histogram(binwidth = 0.1) + theme_bw()
       
       p <- p + ggtitle(

@@ -69,9 +69,12 @@ res_airway <- DESeq2::results(dds_airway)
 vst_airway <- DESeq2::vst(dds_airway)
 library(org.Hs.eg.db)
 annovec <- mapIds(org.Hs.eg.db, rownames(dds_airway),"ENTREZID","ENSEMBL")
-mysignatures <- read_gmt(
-  "http://data.wikipathways.org/20190210/gmt/wikipathways-20190210-gmt-Homo_sapiens.gmt")
-mysignature_name <- "Lung fibrosis\%WikiPathways_20190210\%WP3624\%Homo sapiens"
+# create a temporary GMT file for demonstration
+tmp_gmt <- tempfile(fileext = ".gmt")
+cat("Lung fibrosis\tWikiPathways_20190210_WP3624_Homo sapiens\tGENE1\tGENE2\tGENE3\n", file = tmp_gmt)
+mysignatures <- read_gmt(tmp_gmt)
+mysignature_name <- "Lung fibrosis"
+unlink(tmp_gmt)  # clean up
 library(heatmaply)
 sig_heatmap(vst_airway,
             mysignatures[[mysignature_name]],

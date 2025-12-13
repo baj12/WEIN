@@ -1,15 +1,8 @@
 library("testthat")
 library("DESeq2")
-
-# Source the functions directly instead of loading the package
-source("../../R/WEIN.R")
-source("../../R/ui_components.R")
-source("../../R/server_components.R")
+library("WEIN")
 
 context("Testing UI and Server Components")
-
-# Create a small test dataset
-dds <- DESeq2::makeExampleDESeqDataSet(n=100, m=8)
 
 test_that("UI components can be loaded", {
   # Test that the UI function exists
@@ -29,6 +22,9 @@ test_that("Server components can be loaded", {
 })
 
 test_that("Main function generates Shiny app", {
+  # Create a small test dataset inside the test
+  dds <- DESeq2::makeExampleDESeqDataSet(n=100, m=8)
+  
   # Test the main function
   app <- WEIN()
   expect_is(app, "shiny.appobj")

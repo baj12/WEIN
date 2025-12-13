@@ -12,7 +12,8 @@ WEIN(
   expdesign = NULL,
   gene_signatures = NULL,
   cur_species = NULL,
-  cur_type = NULL
+  cur_type = NULL,
+  state_file = NULL
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ WEIN(
 \item{expdesign}{A data frame with experimental design}
 
 \item{gene_signatures}{A list of gene signatures}
+
+\item{state_file}{An optional path to a .RData file containing saved application state}
 }
 \value{
 A Shiny application

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotCoefficients.R
 \name{plotCoefficients}
 \alias{plotCoefficients}
-\title{plot coefficients of a gene given a DESeqDataSet (DESeq2 > v1.16)}
+\title{Plot coefficients of a gene given a DESeqDataSet (DESeq2 > v1.16)}
 \usage{
 plotCoefficients(dds, geneName, legend = TRUE)
 }
@@ -18,7 +18,7 @@ the position is chosen automatically based on the last coefficient to be plotted
 returns nothing
 }
 \description{
-\code{plotCoeficients} plot coefficients of a gene given a DESeqDataSet (DESeq2 > v1.16)
+Plots coefficients of a gene given a DESeqDataSet (DESeq2 > v1.16)
 }
 \examples{
 dds <- DESeq2::makeExampleDESeqDataSet()

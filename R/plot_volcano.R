@@ -109,6 +109,9 @@ plot_volcano <- function(res_obj,
       df_intgenes <- mydf[rownames(mydf) %in% intgenes, ]
       df_intgenes$myids <- rownames(df_intgenes)
     }
+    
+    # Filter out rows with missing values to prevent warnings
+    df_intgenes <- df_intgenes[!is.na(df_intgenes$log2FoldChange) & !is.na(df_intgenes$pvalue), ]
 
     # df_intgenes <- mydf[mydf$symbol %in% intgenes,]
 
@@ -117,7 +120,7 @@ plot_volcano <- function(res_obj,
     if(labels_intgenes) {
       p <- p + geom_text_repel(data = df_intgenes,aes(x = log2FoldChange, y = -log10(pvalue), label = myids),
                          color = intgenes_color, size=5, box.padding = 0.5, point.padding = 0.5,
-                         segment.color = intgenes_color, segment.size = 0.5, show.legend = FALSE)
+                         segment.color = intgenes_color, segment.size = 0.5, show.legend = FALSE, max.overlaps = 50)
     }
 
   }

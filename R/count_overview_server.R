@@ -34,7 +34,7 @@ count_overview_server <- function(id, values) {
     output$corrplot <- renderPlot({
       cat(file = stderr(), paste("corrplot\n"))
       
-      if(input$compute_pairwisecorr)
+      if(!is.null(current_countmat()))
         withProgress(
           pair_corr(current_countmat(),
                     method=input$corr_method,

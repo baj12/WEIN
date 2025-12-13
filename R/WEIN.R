@@ -22,6 +22,8 @@
 #' @param gene_signatures A list of vectors, one for each pathway/signature. This
 #' is for example the output of the \code{\link{read_gmt}} function. The provided
 #' object can also be replaced during runtime in the dedicated upload widget.
+#' @param dds_design A character vector specifying the design formula for DESeq2.
+#' This will be used when creating the DESeqDataSet object.
 #' @param state_file An optional path to a .RData file containing saved application state.
 #' If provided, the application state will be restored from this file.
 #'
@@ -177,6 +179,7 @@ WEIN<- function(dds_obj = NULL,
                          countmatrix = NULL,
                          expdesign = NULL,
                          gene_signatures = NULL,
+                         dds_design = NULL,
                          cur_species = NULL,
                          cur_type = NULL,
                          state_file = NULL){
@@ -207,6 +210,7 @@ WEIN<- function(dds_obj = NULL,
       countmatrix <- if (exists("r_data") && !is.null(r_data$countmatrix)) r_data$countmatrix else countmatrix
       expdesign <- if (exists("r_data") && !is.null(r_data$expdesign)) r_data$expdesign else expdesign
       gene_signatures <- if (exists("r_data") && !is.null(r_data$gene_signatures)) r_data$gene_signatures else gene_signatures
+      dds_design <- if (exists("r_data") && !is.null(r_data$dds_design)) r_data$dds_design else dds_design
       cur_species <- if (exists("r_data") && !is.null(r_data$cur_species)) r_data$cur_species else cur_species
       cur_type <- if (exists("r_data") && !is.null(r_data$cur_type)) r_data$cur_type else cur_type
     } else {
@@ -228,6 +232,7 @@ WEIN<- function(dds_obj = NULL,
     countmatrix = countmatrix,
     expdesign = expdesign,
     gene_signatures = gene_signatures,
+    dds_design = dds_design,
     cur_species = cur_species,
     cur_type = cur_type
   )

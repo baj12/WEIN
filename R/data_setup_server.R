@@ -125,9 +125,6 @@ data_setup_server <- function(id, values, annoSpecies_df) {
         need(!is.null(values$expdesign),
              "Please upload experimental design data to proceed with design selection")
       )
-      # if(is.null(values$expdesign))
-      #   return(NULL)
-      # browser()
       poss_covars <- colnames(values$expdesign)
       cat(file = stderr(), "selectINPUT dds_design\n")
       # browser()
@@ -515,32 +512,32 @@ data_setup_server <- function(id, values, annoSpecies_df) {
     
     
     output$upload_count_matrix <- renderUI({
-      # if (!is.null(values$dds_obj) | !is.null(values$countmatrix)) {
-      #   return(fluidRow(column(
-      #     width = 12,
-      #     tags$li("You already provided a count matrix or a DESeqDataSet object as input. You can check your input data in the collapsible box here below."), offset = 2)))
-      # } else {
+      if (!is.null(values$dds_obj) | !is.null(values$countmatrix)) {
+        return(fluidRow(column(
+          width = 12,
+          tags$li("You already provided a count matrix or a DESeqDataSet object as input. You can check your input data in the collapsible box here below."), offset = 2)))
+      } else {
         return(fileInput(inputId = ns("uploadcmfile"),
                          label = "Upload one or more count matrix file(s)",
                          accept = c("text/csv", "text/comma-separated-values",
                                     "text/tab-separated-values", "text/plain",
                                     ".csv", ".tsv", ".xls"), multiple = TRUE))
-      # }
+      }
     })
     
     output$upload_metadata <- renderUI({
-      # if (!is.null(values$dds_obj) | !is.null(values$expdesign)) {
-      #   return(fluidRow(column(
-      #     width = 12,
-      #     tags$li("You already provided a matrix/data.frame with the experimental covariates or a DESeqDataSet object as input. You can check your input data in the collapsible box here below."), offset = 2)))
-      #   
-      # } else {
+      if (!is.null(values$dds_obj) | !is.null(values$expdesign)) {
+        return(fluidRow(column(
+          width = 12,
+          tags$li("You already provided a matrix/data.frame with the experimental covariates or a DESeqDataSet object as input. You can check your input data in the collapsible box here below."), offset = 2)))
+
+      } else {
         return(fileInput(inputId = ns("uploadmetadatafile"),
                          label = "Upload a sample metadata matrix file",
                          accept = c("text/csv", "text/comma-separated-values",
                                     "text/tab-separated-values", "text/plain",
                                     ".csv", ".tsv"), multiple = FALSE))
-      # }
+      }
     })
     
     readCountmatrix <- reactive({

@@ -31,6 +31,7 @@ Imports:
     GenomicRanges,
     reshape2,
     IRanges,
+    ggtree,
     S4Vectors,
     ggplot2 (>= 2.0.0),
     pcaExplorer,
@@ -80,5 +81,5 @@ BugReports: https://github.com/baj12/WEIN/issues
 biocViews: ImmunoOncology, GeneExpression, DifferentialExpression, RNASeq, Sequencing,
     Visualization, QualityControl, GUI, GeneSetEnrichment, ReportWriting
 VignetteBuilder: knitr
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Encoding: UTF-8

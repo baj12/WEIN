@@ -27,6 +27,10 @@ WEIN_server(
 \item{expdesign}{Experimental design data frame}
 
 \item{gene_signatures}{Gene signatures list}
+
+\item{cur_species}{Current species for annotation}
+
+\item{cur_type}{Current ID type for annotation}
 }
 \value{
 A Shiny server definition

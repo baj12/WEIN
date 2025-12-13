@@ -17,9 +17,13 @@ A list of vectors, one for each pathway in the GMT file.
 Returns a list of pathways from a GMT file.
 }
 \examples{
-# this example reads in the freely available pathways from wikipathways
-mysigs <- read_gmt(
-  "http://data.wikipathways.org/20180910/gmt/wikipathways-20180910-gmt-Homo_sapiens.gmt")
+# this example shows how the function works with a simple example
+# create a temporary GMT file for demonstration
+tmp_gmt <- tempfile(fileext = ".gmt")
+cat("PATHWAY1\tsource1\tGENE1\tGENE2\tGENE3\n", file = tmp_gmt)
+cat("PATHWAY2\tsource2\tGENE4\tGENE5\n", file = tmp_gmt, append = TRUE)
+mysigs <- read_gmt(tmp_gmt)
 head(mysigs)
+unlink(tmp_gmt)  # clean up
 # see how the gene identifiers are encoded as ENTREZ id
 }

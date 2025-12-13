@@ -1,6 +1,7 @@
 library(testthat)
 library(WEIN)
 library(shinytest2)
+library(dplyr)
 
 context("End-to-End App Tests")
 
@@ -8,22 +9,47 @@ context("End-to-End App Tests")
 skip_if_not_installed("shinytest2")
 skip_on_cran()
 
+# Custom function to check if Chrome/chromote is available
+skip_if_no_chrome <- function() {
+  # Try to load chromote and check if Chrome is available
+  if (!requireNamespace("chromote", quietly = TRUE)) {
+    skip("chromote package not available")
+  }
+  
+  # Try to create a ChromoteSession to see if Chrome is available
+  tryCatch({
+    chromote::ChromoteSession$new(wait_ = FALSE)
+    # If we get here, Chrome is available
+  }, error = function(e) {
+    skip("Chrome/Chromium not available for testing")
+  })
+}
+
 # Test full user workflows through the GUI
 test_that("App initializes and loads correctly", {
   skip_on_ci()
   skip_if_no_chrome()
   
-  # Create a test app instance
-  app <- shinyApp(ui = WEIN_ui, server = function(input, output, session) {
-    # Minimal server implementation for testing
-    values <- reactiveValues()
-  })
+  # Create a minimal test dataset to speed up initialization
+  library(DESeq2)
+  dds <- DESeq2::makeExampleDESeqDataSet(n = 50, m = 4)
   
-  # Create a test driver
-  app_driver <- AppDriver$new(app, name = "app-initialization")
+  # Create a test app instance with actual WEIN components
+  app <- WEIN(dds_obj = dds)
+  
+  # Create a test driver with proper initialization
+  app_driver <- AppDriver$new(
+    app = app,
+    name = "app-initialization",
+    load_timeout = 45000,
+    timeout = 45000
+  )
   
   # Check that the app loads without error
   expect_true(app_driver$is_alive())
+  
+  # Wait for the app to be fully initialized
+  app_driver$wait_for_idle()
   
   # Take a screenshot for visual regression testing
   # app_driver$expect_screenshot()
@@ -36,17 +62,26 @@ test_that("Input interactions work", {
   skip_on_ci()
   skip_if_no_chrome()
   
-  # Create a test app instance
-  app <- shinyApp(ui = WEIN_ui, server = function(input, output, session) {
-    # Minimal server implementation for testing
-    values <- reactiveValues()
-  })
+  # Create a minimal test dataset to speed up initialization
+  library(DESeq2)
+  dds <- DESeq2::makeExampleDESeqDataSet(n = 50, m = 4)
   
-  # Create a test driver
-  app_driver <- AppDriver$new(app, name = "input-interactions")
+  # Create a test app instance with actual WEIN components
+  app <- WEIN(dds_obj = dds)
+  
+  # Create a test driver with proper initialization
+  app_driver <- AppDriver$new(
+    app = app,
+    name = "input-interactions",
+    load_timeout = 45000,
+    timeout = 45000
+  )
   
   # Check that the app loads without error
   expect_true(app_driver$is_alive())
+  
+  # Wait for the app to be fully initialized
+  app_driver$wait_for_idle()
   
   # We would test input interactions here if we had specific inputs to test
   

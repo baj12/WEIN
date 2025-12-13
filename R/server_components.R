@@ -21,6 +21,7 @@
 #' @param countmatrix Count matrix
 #' @param expdesign Experimental design data frame
 #' @param gene_signatures Gene signatures list
+#' @param dds_design Design formula for DESeq2
 #' @param cur_species Current species for annotation
 #' @param cur_type Current ID type for annotation
 #'
@@ -34,6 +35,7 @@ WEIN_server <- function(
       countmatrix = NULL,
       expdesign = NULL,
       gene_signatures = NULL,
+      dds_design = NULL,
       cur_species = NULL,
       cur_type = NULL))
 {
@@ -43,6 +45,7 @@ WEIN_server <- function(
   countmatrix <- app_data$countmatrix
   expdesign <- app_data$expdesign
   gene_signatures <- app_data$gene_signatures
+  dds_design <- app_data$dds_design
   cur_species <- app_data$cur_species
   cur_type <- app_data$cur_type
   
@@ -105,6 +108,7 @@ WEIN_server <- function(
       res_obj = res_obj,
       annotation_obj = annotation_obj,
       gene_signatures = gene_signatures,
+      dds_design = dds_design,
       cur_species = cur_species,
       cur_type = cur_type,
       color_by = "",
@@ -116,6 +120,8 @@ WEIN_server <- function(
       genelistUP = c(),
       genelistDOWN = c(),
       genelistUPDOWN = c(),
+      choose_expfac = NULL,
+      choose_expfac2 = NULL,
     )
     
     # Check if we're restoring from a saved state file
@@ -162,11 +168,45 @@ WEIN_server <- function(
       res_obj <<- values$res_obj
       annotation_obj <<- values$annotation_obj
       gene_signatures <<- values$gene_signatures
+      dds_design <<- values$dds_design
       
     })
     
     onRestored(function(state){
       # browser()
+      # Update UI inputs to match restored values
+      if (!is.null(values$cur_species)) {
+        updateSelectInput(session, "ui_outputs_manager-speciesSelect", selected = values$cur_species)
+      }
+      if (!is.null(values$cur_type)) {
+        updateSelectInput(session, "ui_outputs_manager-idtype", selected = values$cur_type)
+      }
+      if (!is.null(values$dds_intercept)) {
+        updateSelectInput(session, "ui_outputs_manager-dds_intercept", selected = values$dds_intercept)
+      }
+      if (!is.null(values$dds_design)) {
+        updateSelectInput(session, "ui_outputs_manager-dds_design", selected = values$dds_design)
+      }
+      if (!is.null(values$geneFilter)) {
+        updateTextInput(session, "ui_outputs_manager-geneFilter", value = values$geneFilter)
+      }
+      if (!is.null(values$FDR)) {
+        updateNumericInput(session, "FDR", value = values$FDR)
+      }
+      if (!is.null(values$export_width)) {
+        updateNumericInput(session, "export_width", value = values$export_width)
+      }
+      if (!is.null(values$export_height)) {
+        updateNumericInput(session, "export_height", value = values$export_height)
+      }
+      # Try to update color_by if it exists in values
+      if (!is.null(values$color_by) && length(values$color_by) > 0) {
+        tryCatch({
+          updateSelectInput(session, "color_by", selected = values$color_by)
+        }, error = function(e) {
+          # Ignore errors if the input doesn't exist or isn't ready yet
+        })
+      }
       values$restoreBookmark = FALSE
     })
     
