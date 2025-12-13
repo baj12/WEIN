@@ -88,3 +88,9 @@ test.Rdata
 # Test problem files
 tests/testthat/_problems/
 .Rproj.user
+
+# Additional large files discovered
+shiny_bookmarks/*/*.rds
+idealState_*.RData
+test.Rdata
+testData.RData

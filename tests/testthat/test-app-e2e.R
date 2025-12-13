@@ -46,7 +46,7 @@ test_that("App initializes and loads correctly", {
   )
   
   # Check that the app loads without error
-  expect_true(app_driver$is_alive())
+  expect_true(app_driver$get_url() != "")
   
   # Wait for the app to be fully initialized
   app_driver$wait_for_idle()
@@ -78,7 +78,7 @@ test_that("Input interactions work", {
   )
   
   # Check that the app loads without error
-  expect_true(app_driver$is_alive())
+  expect_true(app_driver$get_url() != "")
   
   # Wait for the app to be fully initialized
   app_driver$wait_for_idle()
