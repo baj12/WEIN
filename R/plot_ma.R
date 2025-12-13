@@ -89,8 +89,9 @@ plot_ma <- function(res_obj,
 
   ma_df$logmean <- log10(ma_df$mean) # TO ALLOW FOR BRUSHING!!
   # ma_df$DE <- ifelse(ma_df$isDE,"yes","no")
-  ma_df$DE <- ifelse(ma_df$isDE,"red","black")
-
+  # ma_df$DE <- ifelse(ma_df$isDE,"red","black")
+  ma_df$DE <- ifelse(ma_df$isDE, "DE", "nonDE")
+  ma_df$DE <- factor(ma_df$DE, levels = c("nonDE", "DE"))
   p <- ggplot(ma_df, aes(x = logmean, y = lfc, colour = DE))
 
   if(!is.null(hlines)) {
@@ -101,7 +102,7 @@ plot_ma <- function(res_obj,
 
   p <- p + xlab(xlab) + ylab("log fold change")
 
-  p <- p + geom_point(alpha = point_alpha)
+  p <- p + geom_point(data = ma_df, aes(x = logmean, y = lfc, colour = DE), alpha = point_alpha)
   p <- p + scale_colour_manual(
     name = paste0("FDR = ",FDR),
     values = c("black", sig_color),

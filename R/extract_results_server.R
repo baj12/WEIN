@@ -5,24 +5,25 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
     
     design_factors <- reactive({
       # rev(attributes(terms.formula(design(values$dds_obj)))$term.labels)
-      cat(file = stderr(), "design_factors triggered\n")
+      cat(file = stderr(), paste("design_factors triggered: ", resultsNames(values$dds_obj), "\n"))
       resultsNames(values$dds_obj)
       
     })
     
     output$choose_fac <- renderUI({
+      cat(file = stderr(), paste("choose_fac triggered: ", values$choose_expfac, "\n"))
       selectInput(ns("choose_expfac"),label = "Choose the experimental factor to build the contrast (numerator)",
-                  choices = c("",design_factors()), selected = ifelse(is.null(values$choose_expfac), "", values$choose_expfac), multiple = TRUE)
+                  choices = c("",design_factors()), selected = values$choose_expfac %||% "", multiple = TRUE)
     })
     output$choose_fac2 <- renderUI({
       selectInput(ns("choose_expfac2"),label = "Choose the experimental factor to build the contrast (denominator)",
-                  choices = c("",design_factors()), selected = ifelse(is.null(values$choose_expfac2), "", values$choose_expfac2), multiple = TRUE)
+                  choices = c("",design_factors()), selected = values$choose_expfac2 %||% "", multiple = TRUE)
     })
     
     
     output$runresults <- renderUI({
       shiny::validate(
-        need(input$choose_expfac!="",
+        need(values$choose_expfac!="",
              "Please select a factor for the contrast first")
       )
       
@@ -39,11 +40,11 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
     })
     
     observeEvent(input$button_runresults, {
-      choose_expfac2 <- input$choose_expfac2
+      choose_expfac2 <- values$choose_expfac2
       if (is.null(choose_expfac2)) 
         choose_expfac2 = character()
       resultsNames(values$dds_obj)
-      choose_expfac <- input$choose_expfac
+      choose_expfac <- values$choose_expfac
       # choose_expfac <- c("Intercept", "STIMULUS_LPS_vs_antiCD3CD28" )
       # choose_expfac2 = "STIMULUS_null_vs_antiCD3CD28"
       # browser()
@@ -81,12 +82,12 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
     })
     
     output$diyres_summary <- renderPrint({
-      c1  = input$choose_expfac
-      c2 = input$choose_expfac2
+      c1 = values$choose_expfac
+      c2 = values$choose_expfac2
       # browser()
       shiny::validate(
         # need(input$choose_expfac!="" & input$fac1_c1 != "" & input$fac1_c2 != "" & input$fac1_c1 != input$fac1_c2 ,
-        need(input$choose_expfac != ""  ,
+        need(values$choose_expfac != ""  ,
              "Please select a coefficient to build the contrast first"
         )
       )

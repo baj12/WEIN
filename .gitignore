@@ -94,3 +94,6 @@ shiny_bookmarks/*/*.rds
 idealState_*.RData
 test.Rdata
 testData.RData
+
+# Temporary/debug files
+test.png

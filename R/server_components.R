@@ -127,8 +127,8 @@ WEIN_server <- function(
       genelistUP = c(),
       genelistDOWN = c(),
       genelistUPDOWN = c(),
-      choose_expfac = NULL,
-      choose_expfac2 = NULL,
+      choose_expfac = choose_expfac,
+      choose_expfac2 = choose_expfac2,
     )
     
     # Check if we're restoring from a saved state file

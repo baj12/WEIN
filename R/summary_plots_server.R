@@ -13,20 +13,19 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
     })
     
     output$plotma <- renderPlot({
-          # Validate that required data is available
-          shiny::validate(
-            need(!is.null(values$res_obj), "Results object is not available. Please generate results first."),
-            need(!is.null(values$annotation_obj), "Annotation object is not available. Please set annotation first.")
-          )
-          
+      # Validate that required data is available
+      shiny::validate(
+        need(!is.null(values$res_obj), "Results object is not available. Please generate results first."),
+        need(!is.null(values$annotation_obj), "Annotation object is not available. Please set annotation first.")
+      )
+      
       cat(file = stderr(), "in plotma\n")
       # browser()
-          p <- suppressWarnings({
-            plot_ma(values$res_obj,annotation_obj = values$annotation_obj,FDR = values$FDR)
-          })
-          exportPlots$plot_ma <- p
-          p
-        })
+      p <-     plot_ma(res_obj = values$res_obj,annotation_obj = values$annotation_obj,FDR = values$FDR)
+      
+      exportPlots$plot_ma <- p
+      p
+    })
     
     # Throttling for brush events to prevent excessive re-rendering
     brush_throttle <- reactiveVal(0)

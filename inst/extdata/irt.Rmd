@@ -103,9 +103,9 @@ cat("Counts are ranging from", min(counts(values$dds_obj)),
 if(!is.null(values$res_obj)) {
   print(design_factors())
   
-  print(input$choose_expfac)
+  print(values$choose_expfac)
 
-  fac1 <- input$choose_expfac
+  fac1 <- values$choose_expfac
   nrl <- length(levels(colData(values$dds_obj)[,fac1]))
 
   print(input$fac1_c1)
