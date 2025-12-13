@@ -97,3 +97,11 @@ testData.RData
 
 # Temporary/debug files
 test.png
+debug_*.R
+teset.Rdata
+test.pdf
+TP2022.annot.csv
+TP2022.input.csv
+TP2025.input.csv
+TPimmuno2025_*.csv
+WEINState_*.RData
