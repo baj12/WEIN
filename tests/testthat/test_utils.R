@@ -16,11 +16,11 @@ test_that("multiAxPCA function works", {
   
   # Test with default parameters
   p <- multiAxPCA(dds)
-  expect_is(p, "ggplot")
+  expect_s3_class(p, "ggplot")
   
   # Test with custom parameters
   p2 <- multiAxPCA(dds, pc1=2, pc2=3)
-  expect_is(p2, "ggplot")
+  expect_s3_class(p2, "ggplot")
   
   # Test returnData parameter
   pct_var <- multiAxPCA(dds, returnData=TRUE)

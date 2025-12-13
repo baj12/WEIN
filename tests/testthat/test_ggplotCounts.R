@@ -22,7 +22,7 @@ test_that("ggplotCounts works with basic DESeqDataSet", {
   p <- ggplotCounts(dds, gene = gene_name, intgroup = "condition")
   
   # Check that it returns a ggplot object
-  expect_is(p, "ggplot")
+  expect_s3_class(p, "ggplot")
 })
 
 test_that("ggplotCounts handles different parameters", {
@@ -34,11 +34,11 @@ test_that("ggplotCounts handles different parameters", {
   
   # Test with transform = FALSE
   p1 <- ggplotCounts(dds, gene = gene_name, intgroup = "condition", transform = FALSE)
-  expect_is(p1, "ggplot")
+  expect_s3_class(p1, "ggplot")
   
   # Test with labels_repel = FALSE
   p2 <- ggplotCounts(dds, gene = gene_name, intgroup = "condition", labels_repel = FALSE)
-  expect_is(p2, "ggplot")
+  expect_s3_class(p2, "ggplot")
 })
 
 test_that("ggplotCounts works with annotation object", {
@@ -60,5 +60,5 @@ test_that("ggplotCounts works with annotation object", {
   p <- ggplotCounts(dds, gene = gene_name, intgroup = "condition", annotation_obj = annotation_obj)
   
   # Check that it returns a ggplot object
-  expect_is(p, "ggplot")
+  expect_s3_class(p, "ggplot")
 })

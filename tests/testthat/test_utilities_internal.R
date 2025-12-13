@@ -16,7 +16,7 @@ test_that("mat_rowscale function works", {
   scaled_matrix <- mat_rowscale(test_matrix)
   
   # Check that the result is a matrix
-  expect_is(scaled_matrix, "matrix")
+  expect_type(scaled_matrix, "double")
   
   # Check dimensions are preserved
   expect_equal(dim(scaled_matrix), dim(test_matrix))
@@ -37,7 +37,7 @@ test_that("mat_rowscale handles NA values", {
   scaled_matrix <- mat_rowscale(test_matrix)
   
   # Check that the result is a matrix
-  expect_is(scaled_matrix, "matrix")
+  expect_type(scaled_matrix, "double")
   
   # Check dimensions are preserved
   expect_equal(dim(scaled_matrix), dim(test_matrix))

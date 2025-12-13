@@ -27,9 +27,9 @@ test_that("Main function generates Shiny app", {
   
   # Test the main function
   app <- WEIN()
-  expect_is(app, "shiny.appobj")
+  expect_s3_class(app, "shiny.appobj")
   
   # Test with DDS object
   app_with_data <- WEIN(dds_obj = dds)
-  expect_is(app_with_data, "shiny.appobj")
+  expect_s3_class(app_with_data, "shiny.appobj")
 })

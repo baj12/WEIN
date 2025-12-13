@@ -26,7 +26,7 @@ test_that("deseqresult2tbl works with DESeqResults object", {
   result <- deseqresult2tbl(res)
   
   # Check that it returns a data frame
-  expect_is(result, "data.frame")
+  expect_s3_class(result, "data.frame")
   
   # Check that it has the expected columns
   expect_true("id" %in% colnames(result))
@@ -47,7 +47,7 @@ test_that("deseqresult2DEgenes works with DESeqResults object", {
   result <- deseqresult2DEgenes(res, FDR = 0.05)
   
   # Check that it returns a data frame
-  expect_is(result, "data.frame")
+  expect_s3_class(result, "data.frame")
   
   # Check that it has the expected columns
   expect_true("id" %in% colnames(result))

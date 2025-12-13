@@ -18,7 +18,7 @@ test_that("read_countmatrix function works", {
   
   # Test reading the count matrix
   cm <- read_countmatrix("test_countmatrix.txt")
-  expect_is(cm, "data.frame")
+  expect_s3_class(cm, "data.frame")
   expect_equal(nrow(cm), 2)
   expect_equal(ncol(cm), 2)
   expect_equal(rownames(cm), c("Gene1", "Gene2"))
@@ -37,7 +37,7 @@ test_that("read_metadata function works", {
   
   # Test reading the metadata
   md <- read_metadata("test_metadata.txt")
-  expect_is(md, "data.frame")
+  expect_s3_class(md, "data.frame")
   expect_equal(nrow(md), 2)
   expect_equal(ncol(md), 1)
   expect_equal(rownames(md), c("sample1", "sample2"))
@@ -54,7 +54,7 @@ test_that("read_metadata handles typical metadata files correctly", {
   
   # Test reading the metadata
   md <- read_metadata("test_typical_metadata.txt")
-  expect_is(md, "data.frame")
+  expect_s3_class(md, "data.frame")
   expect_equal(nrow(md), 2)
   # Should have 2 columns (condition, treatment) with row names from first column
   expect_equal(ncol(md), 2)
@@ -73,7 +73,7 @@ test_that("read_metadata handles header/data mismatch correctly", {
   
   # Test reading the metadata
   md <- read_metadata("test_header_mismatch.txt")
-  expect_is(md, "data.frame")
+  expect_s3_class(md, "data.frame")
   expect_equal(nrow(md), 2)
   # Should have 2 columns (condition, treatment) with row names from first column
   expect_equal(ncol(md), 2)
@@ -90,7 +90,7 @@ test_that("read_metadata handles files with n column headers and first column as
   
   # Test reading the metadata
   md <- read_metadata("test_metadata_n_columns.txt")
-  expect_is(md, "data.frame")
+  expect_s3_class(md, "data.frame")
   expect_equal(nrow(md), 2)
   # Should have 2 columns (condition, treatment) with row names from first column
   expect_equal(ncol(md), 2)

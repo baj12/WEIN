@@ -22,7 +22,7 @@ test_that("read_gmt works with basic GMT file", {
   result <- read_gmt(tmp_gmt)
   
   # Check that it returns a list
-  expect_is(result, "list")
+  expect_type(result, "list")
   
   # Check that it has the right number of elements
   expect_equal(length(result), 2)
