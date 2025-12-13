@@ -1,5 +1,7 @@
-library("WEIN")
 library("testthat")
+
+# Source the functions directly instead of loading the package
+source("../../R/genesignatures.R")
 
 context("Testing read_gmt function")
 

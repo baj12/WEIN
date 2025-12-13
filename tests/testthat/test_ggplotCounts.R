@@ -1,6 +1,10 @@
-library("WEIN")
 library("testthat")
 library("DESeq2")
+library("ggplot2")
+library("ggrepel")
+
+# Source the functions directly instead of loading the package
+source("../../R/ggplotCounts.R")
 
 context("Testing ggplotCounts function")
 

@@ -1,6 +1,8 @@
-library("WEIN")
 library("testthat")
 library("DESeq2")
+
+# Source the functions directly instead of loading the package
+source("../../R/iSEE_plug.R")
 
 context("Testing wrapup_for_iSEE function")
 

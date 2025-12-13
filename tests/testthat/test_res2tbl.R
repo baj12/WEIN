@@ -1,6 +1,8 @@
-library("WEIN")
 library("testthat")
 library("DESeq2")
+
+# Source the functions directly instead of loading the package
+source("../../R/res2tbl.R")
 
 context("Testing deseqresult2tbl and deseqresult2DEgenes functions")
 

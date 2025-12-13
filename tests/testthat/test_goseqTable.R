@@ -1,6 +1,8 @@
-library("WEIN")
 library("testthat")
 library("DESeq2")
+
+# Source the functions directly instead of loading the package
+source("../../R/goseqTable.R")
 
 context("Testing goseqTable function")
 
