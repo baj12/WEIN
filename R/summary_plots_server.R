@@ -20,6 +20,7 @@ summary_plots_server <- function(id, values, annoSpecies_df, exportPlots) {
           )
           
       cat(file = stderr(), "in plotma\n")
+      # browser()
           p <- suppressWarnings({
             plot_ma(values$res_obj,annotation_obj = values$annotation_obj,FDR = values$FDR)
           })

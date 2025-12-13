@@ -94,10 +94,10 @@ plot_ma <- function(res_obj,
   p <- ggplot(ma_df, aes(x = logmean, y = lfc, colour = DE))
 
   if(!is.null(hlines)) {
-    p <- p + geom_hline(aes(yintercept = hlines), col = "lightblue", alpha = 0.4) +
-      geom_hline(aes(yintercept = -hlines), col = "lightblue", alpha = 0.4)
+    p <- p + geom_hline(aes(yintercept = hlines), col = "lightblue", alpha = 0.4, linewidth = 0.5) +
+      geom_hline(aes(yintercept = -hlines), col = "lightblue", alpha = 0.4, linewidth = 0.5)
   }
-  p <- p + geom_hline(aes(yintercept = 0), col = "red", alpha = 0.4)
+  p <- p + geom_hline(aes(yintercept = 0), col = "red", alpha = 0.4, linewidth = 0.5)
 
   p <- p + xlab(xlab) + ylab("log fold change")
 
@@ -139,7 +139,7 @@ plot_ma <- function(res_obj,
     if(labels_intgenes) {
       if(labels_repel) {
         p <- p + geom_text_repel(data = df_intgenes,aes(x = logmean, y = log2FoldChange, label = myids),
-                           color = intgenes_color, size=5, max.overlaps = 50)
+                           color = intgenes_color, size=5, linewidth = 0.5, max.overlaps = 50)
       } else {
         p <- p + geom_text(data = df_intgenes,aes(x = logmean, y = log2FoldChange, label = myids),
                          color = intgenes_color, size=5,hjust=0.25, vjust=-0.75)

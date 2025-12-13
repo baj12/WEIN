@@ -21,7 +21,10 @@
 #' @param countmatrix Count matrix
 #' @param expdesign Experimental design data frame
 #' @param gene_signatures Gene signatures list
+#' @param gene_signatures Gene signatures list
 #' @param dds_design Design formula for DESeq2
+#' @param choose_expfac Experimental factor to build the contrast (numerator)
+#' @param choose_expfac2 Experimental factor to build the contrast (denominator)
 #' @param cur_species Current species for annotation
 #' @param cur_type Current ID type for annotation
 #'
@@ -36,6 +39,8 @@ WEIN_server <- function(
       expdesign = NULL,
       gene_signatures = NULL,
       dds_design = NULL,
+      choose_expfac = NULL,
+      choose_expfac2 = NULL,
       cur_species = NULL,
       cur_type = NULL))
 {
@@ -46,6 +51,8 @@ WEIN_server <- function(
   expdesign <- app_data$expdesign
   gene_signatures <- app_data$gene_signatures
   dds_design <- app_data$dds_design
+  choose_expfac <- app_data$choose_expfac
+  choose_expfac2 <- app_data$choose_expfac2
   cur_species <- app_data$cur_species
   cur_type <- app_data$cur_type
   
@@ -169,6 +176,8 @@ WEIN_server <- function(
       annotation_obj <<- values$annotation_obj
       gene_signatures <<- values$gene_signatures
       dds_design <<- values$dds_design
+      choose_expfac <<- values$choose_expfac
+      choose_expfac2 <<- values$choose_expfac2
       
     })
     
@@ -203,6 +212,22 @@ WEIN_server <- function(
       if (!is.null(values$color_by) && length(values$color_by) > 0) {
         tryCatch({
           updateSelectInput(session, "color_by", selected = values$color_by)
+        }, error = function(e) {
+          # Ignore errors if the input doesn't exist or isn't ready yet
+        })
+      }
+      # Try to update choose_expfac if it exists in values
+      if (!is.null(values$choose_expfac) && length(values$choose_expfac) > 0) {
+        tryCatch({
+          updateSelectInput(session, "extract_results_manager-choose_expfac", selected = values$choose_expfac)
+        }, error = function(e) {
+          # Ignore errors if the input doesn't exist or isn't ready yet
+        })
+      }
+      # Try to update choose_expfac2 if it exists in values
+      if (!is.null(values$choose_expfac2) && length(values$choose_expfac2) > 0) {
+        tryCatch({
+          updateSelectInput(session, "extract_results_manager-choose_expfac2", selected = values$choose_expfac2)
         }, error = function(e) {
           # Ignore errors if the input doesn't exist or isn't ready yet
         })

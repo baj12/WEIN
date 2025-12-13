@@ -120,7 +120,7 @@ plot_volcano <- function(res_obj,
     if(labels_intgenes) {
       p <- p + geom_text_repel(data = df_intgenes,aes(x = log2FoldChange, y = -log10(pvalue), label = myids),
                          color = intgenes_color, size=5, box.padding = 0.5, point.padding = 0.5,
-                         segment.color = intgenes_color, segment.size = 0.5, show.legend = FALSE, max.overlaps = 50)
+                         segment.color = intgenes_color, linewidth = 0.5, show.legend = FALSE, max.overlaps = 50)
     }
 
   }

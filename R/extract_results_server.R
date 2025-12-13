@@ -165,8 +165,8 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
       # for visual estimation of the false discovery proportion in the first bin
       alpha <- binw <- values$FDR
       pi0 <- 2*mean(res_df$pvalue > 0.5)
-      p <- p + geom_hline(yintercept = pi0 * binw * nrow(res_df), col = "steelblue") + 
-        geom_vline(xintercept = alpha, col = "red")
+      p <- p + geom_hline(yintercept = pi0 * binw * nrow(res_df), col = "steelblue", linewidth = 0.5) +
+        geom_vline(xintercept = alpha, col = "red", linewidth = 0.5)
       
       p <- p + ggtitle(
         label = "p-value histogram",

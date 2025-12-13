@@ -24,6 +24,8 @@
 #' object can also be replaced during runtime in the dedicated upload widget.
 #' @param dds_design A character vector specifying the design formula for DESeq2.
 #' This will be used when creating the DESeqDataSet object.
+#' @param choose_expfac A character vector specifying the experimental factor to build the contrast.
+#' This will be used when extracting results from the DESeqDataSet object.
 #' @param state_file An optional path to a .RData file containing saved application state.
 #' If provided, the application state will be restored from this file.
 #'
@@ -67,6 +69,8 @@
 #' # 2. This creates a timestamped .RData file with your current analysis state
 #' # 3. Later, restore the session with:
 #' #    WEIN(state_file = "WEINState_2023-12-01_14-30-45.RData")
+#' #    or with a pre-selected experimental factor:
+#' #    WEIN(state_file = "WEINState_2023-12-01_14-30-45.RData", choose_expfac = "condition")
 #'
 #' 
 
@@ -170,6 +174,10 @@ multiAxPCA = function (object, intgroup = "condition", ntop = 500, returnData = 
 #' @param countmatrix A count matrix
 #' @param expdesign A data frame with experimental design
 #' @param gene_signatures A list of gene signatures
+#' @param gene_signatures A list of gene signatures
+#' @param dds_design A character vector specifying the design formula for DESeq2
+#' @param choose_expfac A character vector specifying the experimental factor to build the contrast (numerator)
+#' @param choose_expfac2 A character vector specifying the experimental factor to build the contrast (denominator)
 #' @param state_file An optional path to a .RData file containing saved application state
 #' @return A Shiny application
 #' @export
@@ -180,6 +188,8 @@ WEIN<- function(dds_obj = NULL,
                          expdesign = NULL,
                          gene_signatures = NULL,
                          dds_design = NULL,
+                         choose_expfac = NULL,
+                         choose_expfac2 = NULL,
                          cur_species = NULL,
                          cur_type = NULL,
                          state_file = NULL){
@@ -211,6 +221,9 @@ WEIN<- function(dds_obj = NULL,
       expdesign <- if (exists("r_data") && !is.null(r_data$expdesign)) r_data$expdesign else expdesign
       gene_signatures <- if (exists("r_data") && !is.null(r_data$gene_signatures)) r_data$gene_signatures else gene_signatures
       dds_design <- if (exists("r_data") && !is.null(r_data$dds_design)) r_data$dds_design else dds_design
+      dds_design <- if (exists("r_data") && !is.null(r_data$dds_design)) r_data$dds_design else dds_design
+      choose_expfac <- if (exists("r_data") && !is.null(r_data$choose_expfac)) r_data$choose_expfac else choose_expfac
+      choose_expfac2 <- if (exists("r_data") && !is.null(r_data$choose_expfac2)) r_data$choose_expfac2 else choose_expfac2
       cur_species <- if (exists("r_data") && !is.null(r_data$cur_species)) r_data$cur_species else cur_species
       cur_type <- if (exists("r_data") && !is.null(r_data$cur_type)) r_data$cur_type else cur_type
     } else {
@@ -233,6 +246,8 @@ WEIN<- function(dds_obj = NULL,
     expdesign = expdesign,
     gene_signatures = gene_signatures,
     dds_design = dds_design,
+    choose_expfac = choose_expfac,
+    choose_expfac2 = choose_expfac2,
     cur_species = cur_species,
     cur_type = cur_type
   )

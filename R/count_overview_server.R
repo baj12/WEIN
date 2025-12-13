@@ -46,7 +46,7 @@ count_overview_server <- function(id, values) {
     })
     # HEATCORR ======
     output$heatcorr <- renderPlotly({
-      if(input$compute_pairwisecorr){
+      if(!is.null(current_countmat())) {
         input$compute_pairwisecorr
         values$avail_symbols
         values$dds_obj
