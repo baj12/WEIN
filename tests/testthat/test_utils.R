@@ -1,5 +1,9 @@
-library("WEIN")
 library("testthat")
+library("DESeq2")
+
+# Source the functions directly instead of loading the package
+source("../../R/WEIN.R")
+source("../../R/helpers.R")
 
 context("Testing Utility Functions")
 

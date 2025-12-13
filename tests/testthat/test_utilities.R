@@ -1,6 +1,10 @@
-library("WEIN")
 library("testthat")
 library("DESeq2")
+library("ggplot2")
+
+# Source the functions directly instead of loading the package
+source("../../R/helpers.R")
+source("../../R/utilities.R")
 
 context("Testing New Utility Functions")
 

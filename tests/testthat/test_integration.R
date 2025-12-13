@@ -1,6 +1,11 @@
-library("WEIN")
 library("testthat")
 library("DESeq2")
+library("ggplot2")
+
+# Source the functions directly instead of loading the package
+source("../../R/WEIN.R")
+source("../../R/plot_ma.R")
+source("../../R/plot_volcano.R")
 
 context("Integration Tests")
 

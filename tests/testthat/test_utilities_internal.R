@@ -1,5 +1,7 @@
-library("WEIN")
 library("testthat")
+
+# Source the functions directly instead of loading the package
+source("../../R/utilities_internal.R")
 
 context("Testing Internal Utility Functions")
 

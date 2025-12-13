@@ -1,5 +1,10 @@
-library("WEIN")
 library("testthat")
+library("DESeq2")
+
+# Source the functions directly instead of loading the package
+source("../../R/WEIN.R")
+source("../../R/ui_components.R")
+source("../../R/server_components.R")
 
 context("Testing UI and Server Components")
 
