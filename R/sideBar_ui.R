@@ -8,7 +8,7 @@ sideBar_ui <- function(){
                 menuItem("App settings",
                          icon = icon("cogs", verify_fa = FALSE),
                          startExpanded = TRUE,
-                         uiOutput("color_by"),
+                         uiOutput("color_by_ui"),
                          shinyBS::bsTooltip(
                            "color_by", 
                            paste0("Select the group(s) of samples to stratify the analysis, and ideally match the contrast of interest. Can also assume multiple values, in this case the interaction of the factors is used."),

@@ -21,6 +21,24 @@ jobs:
 
       - uses: r-lib/actions/setup-pandoc@v2
 
+      # ADD THIS: Configure Bioconductor repositories
+      - name: Install and configure BiocManager
+        run: |
+          install.packages("BiocManager")
+          BiocManager::install(version = "3.20", ask = FALSE, update = FALSE)
+          writeLines(
+            sprintf("options(repos = c(%s))", 
+              paste(sprintf('"%s" = "%s"', 
+                names(BiocManager::repositories()), 
+                BiocManager::repositories()), 
+              collapse = ", ")
+            ),
+            "~/.Rprofile"
+          )
+          cat("Configured repositories:\n")
+          print(BiocManager::repositories())
+        shell: Rscript {0}
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: |
@@ -58,3 +76,4 @@ jobs:
         run: |
           find . -name "*.Rout*" -exec cat '{}' \; || true
         shell: bash
+        

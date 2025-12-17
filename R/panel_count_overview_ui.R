@@ -1,6 +1,7 @@
 
 panel_count_overview_ui <- function(){
   nsCO <- NS("count_overview_manager")
+  nsTR <- NS("tour_manager")
   tabPanel(
     "Counts Overview",
     icon = icon("eye"),
@@ -13,13 +14,13 @@ panel_count_overview_ui <- function(){
           shinyBS::bsCollapse(
             id = "help_countsoverview",open = NULL, 
             shinyBS::bsCollapsePanel(
-              "Help",
+              nsTR("Help"),
               includeMarkdown(system.file("extdata", "help_overview.md",package = "WEIN")))
           )
         )
       ),
       
-      actionButton("tour_countsoverview", "Click me for a quick tour of the section", 
+      actionButton(nsTR("tour_countsoverview"), "Click me for a quick tour of the section", 
                    icon("info"),
                    style="color: #ffffff; background-color: #0092AC; border-color: #2e6da4"),
       br(),

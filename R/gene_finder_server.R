@@ -4,7 +4,9 @@ gene_finder_server <- function(id, values, annoSpecies_df, exportPlots) {
     ns <- session$ns
     # Helper function (define at top of server)
     has_valid_genes <- function(x) {
-      if (is.null(x)) return(FALSE)
+      shiny::validate(
+        need(!is.null(x), "Gene list is null.")
+      )
       if (length(x) == 0) return(FALSE)
       if (all(is.na(x))) return(FALSE)
       if (all(x == "")) return(FALSE)
@@ -54,27 +56,27 @@ gene_finder_server <- function(id, values, annoSpecies_df, exportPlots) {
       return(myid)
     }
     create_gene_plot <- function(values, input, index) {
-          validate_color_by(values)
-          validate_gene_at_index(values, index)
-          
-          myid <- get_gene_id_at_index(values, index)
-          
-          # Suppress par() warnings that commonly occur in Shiny reactive contexts
-          p <- suppressWarnings({
-            ggplotCounts(
-              values$dds_obj,
-              myid,
-              intgroup = values$color_by,
-              annotation_obj = values$annotation_obj
-            )
-          })
-          
-          if (input$ylimZero_genefinder) {
-            p <- p + ylim(0.1, NA)
-          }
-          
-          return(p)
-        }
+      validate_color_by(values)
+      validate_gene_at_index(values, index)
+      
+      myid <- get_gene_id_at_index(values, index)
+      
+      # Suppress par() warnings that commonly occur in Shiny reactive contexts
+      p <- suppressWarnings({
+        ggplotCounts(
+          values$dds_obj,
+          myid,
+          intgroup = values$color_by,
+          annotation_obj = values$annotation_obj
+        )
+      })
+      
+      if (input$ylimZero_genefinder) {
+        p <- p + ylim(0.1, NA)
+      }
+      
+      return(p)
+    }
     
     # Create all 4 plot outputs using loop
     lapply(1:4, function(i) {
@@ -89,9 +91,11 @@ gene_finder_server <- function(id, values, annoSpecies_df, exportPlots) {
     })
     
     
+    # output cur_combires_list ----
     cur_combires_list <- reactive({
-      if(is.null(values$res_obj))
-        return(NULL)
+      shiny::validate(
+        need(!is.null(values$res_obj), "Results object is not available. Please generate results first.")
+      )
       
       normCounts <- as.data.frame(counts(estimateSizeFactors(values$dds_obj),normalized=TRUE))
       normCounts$id <- rownames(normCounts)
@@ -115,114 +119,109 @@ gene_finder_server <- function(id, values, annoSpecies_df, exportPlots) {
       }
     })
     
-
-    output$plotCoefficients<- renderPlot({
-          shiny::validate(
-            need(
-              length(values$color_by)>0,
-              "Select an experimental factor in the Group/color by element in the sidebar"
-            )
-          )
-          shiny::validate(
-            need(
-              (length(values$avail_symbols)>0 | length(values$avail_ids)>0),
-              "Select at least a gene to plot"
-            )
-          )
-          # browser()
-          mysym <- values$avail_symbols[1]
-          myid <- values$annotation_obj$gene_id[match(mysym, values$annotation_obj$gene_name)]
-          # Suppress par() warnings that commonly occur in Shiny reactive contexts
-          suppressWarnings({
-            plotCoefficients(values$dds_obj, myid, legend = T)
-          })
-          
-          
-        })
     
-    # server report editor --------------------------------------------------------
-    ### yaml generation
-    rmd_yaml <- reactive({
-      paste0("---",
-             "\ntitle: '", input$report_title,
-             "'\nauthor: '", input$report_author,
-             "'\ndate: '", Sys.Date(),
-             "'\noutput:\n  html_document:\n    toc: ", input$report_toc, "\n    number_sections: ", input$report_ns, "\n    theme: ", input$report_theme, "\n---\n\n",collapse = "\n")
+    # output plotCoefficients ----
+    output$plotCoefficients<- renderPlot({
+      shiny::validate(
+        need(
+          length(values$color_by)>0,
+          "Select an experimental factor in the Group/color by element in the sidebar"
+        )
+      )
+      shiny::validate(
+        need(
+          (length(values$avail_symbols)>0 | length(values$avail_ids)>0),
+          "Select at least a gene to plot"
+        )
+      )
+      # browser()
+      mysym <- values$avail_symbols[1]
+      myid <- values$annotation_obj$gene_id[match(mysym, values$annotation_obj$gene_name)]
+      # Suppress par() warnings that commonly occur in Shiny reactive contexts
+      suppressWarnings({
+        plotCoefficients(values$dds_obj, myid, legend = T)
+      })
+      
+      
     })
     
+    # output ma_highlight ----
     output$ma_highlight <- renderPlot({
-          shiny::validate(
-            need(!is.null(values$res_obj),message = "Please generate the results object in the Extract Results panel to display the plot and show the combined tables")
-          )
-          
-          # Suppress par() warnings that commonly occur in Shiny reactive contexts
-          suppressWarnings({
-            if("symbol" %in% names(values$res_obj)) {
-              p <- plot_ma(values$res_obj,
-                           intgenes = values$avail_symbols,annotation_obj = values$annotation_obj,FDR = values$FDR)
-            } else {
-              p <- plot_ma(values$res_obj,
-                           intgenes = values$avail_ids,annotation_obj = values$annotation_obj,FDR = values$FDR)
-            }
-          })
-          
-          exportPlots$plot_mahighlight <- p
-          p
-        })
+      shiny::validate(
+        need(!is.null(values$res_obj),message = "Please generate the results object in the Extract Results panel to display the plot and show the combined tables")
+      )
+      
+      # Suppress par() warnings that commonly occur in Shiny reactive contexts
+      suppressWarnings({
+        if("symbol" %in% names(values$res_obj)) {
+          p <- plot_ma(values$res_obj,
+                       intgenes = values$avail_symbols,annotation_obj = values$annotation_obj,FDR = values$FDR)
+        } else {
+          p <- plot_ma(values$res_obj,
+                       intgenes = values$avail_ids,annotation_obj = values$annotation_obj,FDR = values$FDR)
+        }
+      })
+      
+      exportPlots$plot_mahighlight <- p
+      p
+    })
     
+    # output ma_hl_list ----
     output$ma_hl_list <- renderPlot({
-          shiny::validate(
-            need(!is.null(values$genelist_ma),message = "Please select genes in the MA plot to generate a list to plot here")
-          )
-          shiny::validate(
-            need("symbol" %in% names(values$res_obj),
-                 message = "Please ensure your results object has gene symbol annotation. This requires setting up annotation in the Data Setup panel.")
-          )
-          if(is.null(values$genelist_ma))
-            return(NULL)
-          
-          # Suppress par() warnings that commonly occur in Shiny reactive contexts
-          suppressWarnings({
-            if("symbol" %in% names(values$res_obj)) {
-              p <- plot_ma(values$res_obj,
-                           intgenes = values$genelist_ma$`Gene Symbol`,annotation_obj = values$annotation_obj,FDR = values$FDR)
-            } else {
-              # plot_ma(values$res_obj,
-              # intgenes = values$genelist_ma,annotation_obj = values$annotation_obj)
-              return(NULL)
-            }
-          })
-          exportPlots$plot_mahllist <- p
-          p
-        })
-    
-    observeEvent(input$gl_ma,
-                     {
-                       gl = gl_ma()
-                       if(is.null(gl)) {values$genelist_ma = data.frame(); return(NULL)}
-                       if(nrow(gl)<1) {values$genelist_ma = data.frame(); return(NULL)}
-                       # If gl is already a data frame with gene_id column, convert to Gene Symbol
-                       if("gene_id" %in% names(gl)) {
-                         mydf <- data.frame("Gene Symbol" = gl$gene_id, stringsAsFactors=FALSE)
-                       } else {
-                         mydf <- as.data.frame(gl,stringsAsFactors=FALSE)
-                         names(mydf) <- "Gene Symbol"
-                       }
-                       values$genelist_ma <- mydf
-                     })
-    
-    
+      shiny::validate(
+        need("symbol" %in% names(values$res_obj),
+             message = "Please ensure your results object has gene symbol annotation. This requires setting up annotation in the Data Setup panel.")
+      )
+      shiny::validate(
+        need(!is.null(values$genelist_ma), "Gene list is not available. Please upload a gene list file.")
+      )
+      
+      # Suppress par() warnings that commonly occur in Shiny reactive contexts
+      suppressWarnings({
+        p <- plot_ma(values$res_obj,
+                     intgenes = values$genelist_ma$`Gene Symbol`,annotation_obj = values$annotation_obj,FDR = values$FDR)
+      })
+      exportPlots$plot_mahllist <- p
+      p
+    })
     
     gl_ma <- reactive({
-      if (is.null(input$gl_ma)) {
-        # User has not uploaded a file yet
-        return(data.frame())
-      } else {
-        gl_ma <- read1stCol(input$gl_ma$datapath, values$dds_obj)
-        # browser()
-        return(gl_ma)
-      }
+      shiny::validate(
+        need(!is.null(input$gl_ma), "No gene list file has been uploaded.")
+      )
+      gl_ma <- read1stCol(input$gl_ma$datapath, values$dds_obj)
+      # browser()
+      return(gl_ma)
     })
+    observeEvent(input$gl_ma,
+                 {
+                   gl = gl_ma()
+                   shiny::validate(
+                     need(!is.null(gl) && nrow(gl) >= 1, "Gene list is empty or invalid.")
+                   )
+                   mydf <- as.data.frame(gl,stringsAsFactors=FALSE)
+                   names(mydf) <- "Gene Symbol"
+                   values$genelist_ma <- mydf
+                 })
+    
+    # output download_plotbp1 ----
+    output$download_plotbp1 <- downloadHandler(filename = function() {
+      
+      gl = gl_ma()
+      shiny::validate(
+        need(!is.null(gl) && nrow(gl) >= 1, "Gene list is empty or invalid.")
+      )
+      # If gl is already a data frame with gene_id column, convert to Gene Symbol
+      if("gene_id" %in% names(gl)) {
+        mydf <- data.frame("Gene Symbol" = gl$gene_id, stringsAsFactors=FALSE)
+      } else {
+        mydf <- as.data.frame(gl,stringsAsFactors=FALSE)
+        names(mydf) <- "Gene Symbol"
+      }
+      values$genelist_ma <- mydf
+    })
+    
+    
     
     output$download_plotbp1 <- downloadHandler(filename = function() {
       input$filename_plotbp1
@@ -231,6 +230,7 @@ gene_finder_server <- function(id, values, annoSpecies_df, exportPlots) {
              height = values$export_height, units = "cm")
     })
     
+    # output download_plotbp2 ----
     output$download_plotbp2 <- downloadHandler(filename = function() {
       input$filename_plotbp2
     }, content = function(file) {
@@ -238,6 +238,7 @@ gene_finder_server <- function(id, values, annoSpecies_df, exportPlots) {
              height = values$export_height, units = "cm")
     })
     
+    # output download_plotbp3 ----
     output$download_plotbp3 <- downloadHandler(filename = function() {
       input$filename_plotbp3
     }, content = function(file) {
@@ -245,6 +246,7 @@ gene_finder_server <- function(id, values, annoSpecies_df, exportPlots) {
              height = values$export_height, units = "cm")
     })
     
+    # output download_plotbp4 ----
     output$download_plotbp4 <- downloadHandler(filename = function() {
       input$filename_plotbp4
     }, content = function(file) {
@@ -252,6 +254,7 @@ gene_finder_server <- function(id, values, annoSpecies_df, exportPlots) {
              height = values$export_height, units = "cm")
     })
     
+    # output downloadTblCombi ----
     output$downloadTblCombi <- downloadHandler(
       filename = function() {
         "table_combi.csv"
@@ -260,6 +263,7 @@ gene_finder_server <- function(id, values, annoSpecies_df, exportPlots) {
         write.csv(cur_combires(), file)
       }
     )
+    # output downloadTblCombiList ----
     output$downloadTblCombiList <- downloadHandler(
       filename = function() {
         "table_combilist.csv"
@@ -268,6 +272,7 @@ gene_finder_server <- function(id, values, annoSpecies_df, exportPlots) {
         write.csv(cur_combires_list(), file)
       }
     )
+    # output download_plot_mahighlight ----
     output$download_plot_mahighlight <- downloadHandler(filename = function() {
       input$filename_plot_mahighlight
     }, content = function(file) {
@@ -276,15 +281,18 @@ gene_finder_server <- function(id, values, annoSpecies_df, exportPlots) {
     })
     
     
+    # output download_plot_mahllist ----
     output$download_plot_mahllist <- downloadHandler(filename = function() {
       input$filename_plot_mahllist
     }, content = function(file) {
       ggsave(file, exportPlots$plot_mahllist, width = values$export_width,
              height = values$export_height, units = "cm")
     })
+    # output table_combi_list ----
     output$table_combi_list <- DT::renderDataTable({
-      if(is.null(values$genelist_ma))
-        return(NULL)
+      shiny::validate(
+        need(!is.null(values$genelist_ma), "Gene list is not available. Please upload a gene list file.")
+      )
       datatable(cur_combires_list(),options = list(scrollX=TRUE))
     })
     

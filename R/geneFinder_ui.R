@@ -1,5 +1,6 @@
 geneFinder_ui <- function(){
   nsGF <- NS("gene_finder")
+  nsTR <- NS("tour_manager")
   tabPanel(
     "Gene Finder", icon = icon("crosshairs"),
     conditionalPanel(
@@ -9,14 +10,14 @@ geneFinder_ui <- function(){
         column(
           width = 8,
           shinyBS::bsCollapse(
-            id = "help_genefinder",open = NULL,
+            id = nsTR("help_genefinder"),open = NULL,
             shinyBS::bsCollapsePanel(
               "Help",
               includeMarkdown(system.file("extdata", "help_genefinder.md",package = "WEIN")))
           )
         )
       ),
-      actionButton("tour_genefinder", "Click me for a quick tour of the section", icon("info"),
+      actionButton(nsTR("tour_genefinder"), "Click me for a quick tour of the section", icon("info"),
                    style="color: #ffffff; background-color: #0092AC; border-color: #2e6da4"),
       br(),
       fluidRow(

@@ -70,7 +70,7 @@ Moreover, for some relevant UI widgets, the user can receive additional informat
 
 For the user which is either new with the app UI/functionality, or not extensively familiar with the topic of differential expression, it is possible to obtain a small *guided tour* of the App by clicking on the respective help buttons, marked in the app like this.
 
-<button id="btn" type="button" class="btn btn-default action-button" style="color: #ffffff; background-color: #0092AC; border-color: #2e6da4">
+<button id="btn_instructions" type="button" class="btn btn-default action-button" style="color: #ffffff; background-color: #0092AC; border-color: #2e6da4">
   <i class="fa fa-info"></i>
   Click me for a quick tour
 </button>

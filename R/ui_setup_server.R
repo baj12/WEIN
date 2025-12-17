@@ -3,6 +3,7 @@ ui_setup_server <- function(id, values) {
     
     ns <- session$ns
     # server info boxes -----------------------------------------------------------
+    # output box_ddsobj ----
     output$box_ddsobj <- renderUI({
       if(!is.null(values$dds_obj))
         return(valueBox("dds object",
@@ -17,6 +18,7 @@ ui_setup_server <- function(id, values) {
       
     })
     
+    # output box_annobj ----
     output$box_annobj <- renderUI({
       if(!is.null(values$annotation_obj))
         return(valueBox("Annotation",
@@ -30,6 +32,7 @@ ui_setup_server <- function(id, values) {
                         color = "red",width = NULL))
     })
     
+    # output box_resobj ----
     output$box_resobj <- renderUI({
       if(!is.null(values$res_obj)){
         DEregu <- sum(values$res_obj$padj < input$FDR & values$res_obj$log2FoldChange != 0, na.rm = TRUE)
@@ -46,43 +49,55 @@ ui_setup_server <- function(id, values) {
     
     
     # server ok objects -----------------------------------------------------------
+    # output ok_cm ----
     output$ok_cm <- renderUI({
-      if (is.null(values$countmatrix))
-        return(NULL)
+      shiny::validate(
+        need(!is.null(values$countmatrix), "Count matrix is not available. Please upload count matrix data.")
+      )
       # icon("check",class = "icon-done") # this does not allow to set the size? go manually with..
       tags$div(HTML('<i class="fa fa-check fa-3x icon-done"></i>'))
     })
+    # output ok_ed ----
     output$ok_ed <- renderUI({
-      if (is.null(values$dds_obj))
-        return(NULL)
+      shiny::validate(
+        need(!is.null(values$dds_obj), "DESeq object is not available. Please run DESeq analysis first.")
+      )
       # icon("check",class = "icon-done") # this does not allow to set the size? go manually with..
       tags$div(HTML('<i class="fa fa-check fa-3x icon-done"></i>'))
     })
+    # output ok_dds ----
     output$ok_dds <- renderUI({
-      if (is.null(values$dds_obj))
-        return(NULL)
+      shiny::validate(
+        need(!is.null(values$dds_obj), "DESeq object is not available. Please run DESeq analysis first.")
+      )
       # icon("check",class = "icon-done") # this does not allow to set the size? go manually with..
       tags$div(HTML('<i class="fa fa-check fa-3x icon-done"></i>'))
     })
+    # output ok_anno ----
     output$ok_anno <- renderUI({
-      if (is.null(values$annotation_obj))
-        return(NULL)
+      shiny::validate(
+        need(!is.null(values$annotation_obj), "Annotation object is not available. Please set annotation first.")
+      )
       # icon("check",class = "icon-done") # this does not allow to set the size? go manually with..
       tags$div(HTML('<i class="fa fa-check fa-3x icon-done"></i>'))
     })
+    # output ok_ddsRun ----
     output$ok_ddsRun <- renderUI({
-      if(is.null(values$dds_obj))
-        return(NULL)
-      if (!"results" %in% mcols(mcols(values$dds_obj))$type) #
-        return(NULL)
+      shiny::validate(
+        need(!is.null(values$dds_obj), "DESeq object is not available. Please run DESeq analysis first."),
+        need("results" %in% mcols(mcols(values$dds_obj))$type, "DESeq analysis results are not available. Please run DESeq analysis first.")
+      )
       tags$div(HTML('<i class="fa fa-check fa-3x icon-done"></i>'))
     })
+    # output ok_resu ----
     output$ok_resu <- renderUI({
-      if (is.null(values$res_obj))
-        return(NULL)
+      shiny::validate(
+        need(!is.null(values$res_obj), "Results object is not available. Please generate results first.")
+      )
       # icon("check",class = "icon-done") # this does not allow to set the size? go manually with..
       tags$div(HTML('<i class="fa fa-check fa-3x icon-done"></i>'))
     })
+    # output nonZeroCountsPlot ----
     output$nonZeroCountsPlot <- renderPlot({
           # browser()
           shiny::validate(
@@ -108,6 +123,7 @@ ui_setup_server <- function(id, values) {
             )
           })
         })
+    # output alignedSequencesPlot ----
     output$alignedSequencesPlot <- renderPlot({
           shiny::validate(
             need(!is.null(values$dds_obj),

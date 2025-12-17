@@ -70,7 +70,14 @@ deseqresult2DEgenes <- function(deseqresult,
   # else
   #   deseqresult <- dplyr::select(deseqresult, id, baseMean, log2FoldChange:padj)
   tmp <- dplyr::arrange(deseqresult, padj)
-  res <- tmp[!(is.na(tmp$padj)) & tmp$padj <= FDR,]
+  # Ensure we're filtering correctly
+  filtered_indices <- !(is.na(tmp$padj)) & tmp$padj <= FDR
+  if (any(filtered_indices)) {
+    res <- tmp[filtered_indices, , drop = FALSE]
+  } else {
+    # Return an empty data frame with the same structure
+    res <- tmp[numeric(0), , drop = FALSE]
+  }
   res
 }
 

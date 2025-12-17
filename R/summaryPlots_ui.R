@@ -1,5 +1,6 @@
 summaryPlots_ui <-  function(){
   nsSP <- NS("summary_plots")
+  nsTR <- NS("tour_manager")
   tabPanel(
     "Summary Plots", icon = icon("camera", verify_fa = FALSE),
     conditionalPanel(
@@ -9,7 +10,7 @@ summaryPlots_ui <-  function(){
         column(
           width = 8,
           shinyBS::bsCollapse(
-            id = "help_summaryplots",open = NULL, 
+            id = nsTR("help_summaryplots"),open = NULL, 
             shinyBS::bsCollapsePanel(
               "Help",
               includeMarkdown(system.file("extdata", "help_plots.md",package = "WEIN")))
@@ -17,14 +18,24 @@ summaryPlots_ui <-  function(){
         )
       ),
       
-      actionButton("tour_plots", "Click me for a quick tour of the section", icon("info"),
+      actionButton(nsSP("tour_plots"), "Click me for a quick tour of the section", icon("info"),
                    style="color: #ffffff; background-color: #0092AC; border-color: #2e6da4"),
       
+      br(),
+      fluidRow(
+        column(12,
+               sliderInput(nsSP("max_points"), 
+                           "Maximum points to display (for performance):",
+                           min = 1000, max = 20000, value = 5000, step = 1000,
+                           width = "100%")
+        )
+      ),
       br(),
       fluidRow(
         column(6,
                h4("MA plot - Interactive!"),
                plotOutput(nsSP('plotma'), brush = nsSP('ma_brush')),
+               # plotOutput(nsSP('plotma')),
                div(align = "right", style = "margin-right:15px; margin-bottom:10px",
                    downloadButton(nsSP("download_plot_ma"), "Download Plot"),
                    textInput(nsSP("filename_plot_ma"),label = "Save as...",value = "plot_ma.pdf"))),
@@ -56,7 +67,7 @@ summaryPlots_ui <-  function(){
       fluidRow(
         column(6,
                h4("volcano plot"),
-               plotly::plotlyOutput(nsSP("volcanoplot")),
+               plotOutput(nsSP("volcanoplot")),
                checkboxInput(nsSP("show_gene_names"), "Show gene names", value = TRUE),
                div(align = "right", style = "margin-right:15px; margin-bottom:10px",
                    downloadButton(nsSP("download_plot_volcanoplot"), "Download Plot"),

@@ -80,6 +80,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
     
     # GOSEQ enrichment
     perform_goseq_enrichment <- function(genelist, backgroundgenes, annopkg, list_name) {
+      save(file = "testgoseq.RData", list = )
       assayed.genes.ids <- rownames(values$dds_obj)
       assayed.genes <- mapIds(
         get(annopkg),
@@ -139,13 +140,14 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
         return(NULL)
       }
       
-      result <- pcaExplorer::topGOtable(
-        genelist, 
-        bg_symbols,
+      result <- mosdef::run_topGO(
+        de_genes = genelist,
+        bg_genes = bg_symbols,
         ontology = input$go_cats[1],
         mapping = annopkg,
-        geneID = "symbol",
-        addGeneToTerms = TRUE
+        gene_id = "symbol",
+        add_gene_to_terms = TRUE,
+        de_type = "up_and_down"
       )
       
       incProgress(0.89)
@@ -177,6 +179,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
           
           observeEvent(input[[btn]], {
             msg <- paste(toupper(mn), "- Performing Gene Set Enrichment on", lt, "genes...")
+            cat(file = stderr(), paste("GO: value :", vn, "\n"))
             withProgress(message = msg, value = 0, {
               values[[vn]] <- perform_enrichment(lt, mn)
             })
@@ -184,7 +187,6 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
         })
       }
     }
-    
     
     
     # Generate all UI and DataTable outputs
@@ -227,6 +229,8 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
     
     
     
+
+    # output debuglists ----
     output$debuglists <- renderText({
       # length(gll_nonempty)
       # length(gll())
@@ -334,7 +338,8 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
           create_goterm_heatmap(topgo_data, s, values, annoSpecies_df)
         })
       })
-    }    
+    }
+    # output debugTable ----
     output$debugTable <- DT::renderDataTable(server =  TRUE,{
       gll <- gll()
       txt = ""
@@ -346,6 +351,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
       datatable(upGll, 
                 filter = list(position = 'top', clear = FALSE))
     })
+    # output debugTableSelected ----
     output$debugTableSelected <- renderText({
       if(is.null(input$debugTable_rows_all)){
         return("noting")
@@ -369,6 +375,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
       venn_debouncer(isolate(venn_debouncer()) + 1)
     })
     
+    # output vennlists ----
     output$vennlists <- renderPlot({
           # Use debouncer to control frequency
           venn_debouncer()
@@ -397,6 +404,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
       upset_debouncer(isolate(upset_debouncer()) + 1)
     })
     
+    # output upsetLists ----
     output$upsetLists <- renderPlot({
           # Use debouncer to control frequency
           upset_debouncer()
@@ -412,6 +420,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
         })
     
     
+    # output printUPgenes ----
     output$printUPgenes <- renderPrint({
       print(head(values$genelistUP()))
       print(str(values$genelistUP()))
@@ -435,6 +444,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
       
     })
     
+    # output download_plot_vennlists ----
     output$download_plot_vennlists <- downloadHandler(filename = function() {
       input$filename_plot_vennlists
     }, content = function(file) {
@@ -443,6 +453,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
       dev.off()
     })
     
+    # output download_plot_upsetlists ----
     output$download_plot_upsetlists <- downloadHandler(filename = function() {
       input$filename_plot_upsetlists
     }, content = function(file) {
@@ -452,6 +463,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
     })
     
     ## GO tbls topGO
+    # output downloadGOTbl_up ----
     output$downloadGOTbl_up <- downloadHandler(
       filename = function() {
         "table_GOresults_up.csv"
@@ -460,6 +472,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
         write.csv(values$topgo_up, file)
       }
     )
+    # output downloadGOTbl_down ----
     output$downloadGOTbl_down <- downloadHandler(
       filename = function() {
         "table_GOresults_down.csv"
@@ -468,6 +481,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
         write.csv(values$topgo_down, file)
       }
     )
+    # output downloadGOTbl_updown ----
     output$downloadGOTbl_updown <- downloadHandler(
       filename = function() {
         "table_GOresults_updown.csv"
@@ -476,6 +490,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
         write.csv(values$topgo_updown, file)
       }
     )
+    # output downloadGOTbl_l1 ----
     output$downloadGOTbl_l1 <- downloadHandler(
       filename = function() {
         "table_GOresults_list1.csv"
@@ -484,6 +499,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
         write.csv(values$topgo_list1, file)
       }
     )
+    # output downloadGOTbl_l2 ----
     output$downloadGOTbl_l2 <- downloadHandler(
       filename = function() {
         "table_GOresults_list2.csv"
@@ -492,6 +508,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
         write.csv(values$topgo_list2, file)
       }
     )
+    # output downloadGOTbl_l3 ----
     output$downloadGOTbl_l3 <- downloadHandler(
       filename = function() {
         "table_GOresults_list3.csv"
@@ -500,6 +517,7 @@ functional_analysis_server <- function(id, values, annoSpecies_df, exportPlots) 
         write.csv(values$topgo_list3, file)
       }
     )
+    # output downloadGOTbl_l4 ----
     output$downloadGOTbl_l4 <- downloadHandler(
       filename = function() {
         "table_GOresults_list4.csv"

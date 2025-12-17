@@ -1,7 +1,7 @@
 dash_Header_ui <- function(){
   shinydashboard::dashboardHeader(
     title = tags$span(
-      img(src = "WEIN/WEIN_logo_v2.png", height = "50px"),
+      img(src = "WEIN_logo_v2.png", height = "50px"),
       paste0("WEIN - Web-based Engine for Interactive Next-generation sequencing analysis ",
              packageVersion("WEIN"))),
     titleWidth = 600,

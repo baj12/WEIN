@@ -13,16 +13,18 @@
 #' @importFrom S4Vectors DataFrame List
 #' @import ggplot2
 #' @importFrom ggrepel geom_text_repel
-#' @import shiny
-#' @importFrom DT datatable
+#' @importFrom shiny actionButton bookmarkButton conditionalPanel downloadButton fileInput
+#' @importFrom shiny fluidRow h2 h3 h4 hr p selectInput tags textInput updateSelectInput
+#' @importFrom shiny updateSelectizeInput updateTextInput verbatimTextOutput wellPanel withProgress
+#' @importFrom DT datatable dataTableOutput renderDataTable
 #' @import shinydashboard
-#' @importFrom AnnotationDbi mapIds select keytypes
-#' @importFrom shinyAce aceAutocomplete aceEditor getAceModes getAceThemes 
+#' @importFrom AnnotationDbi mapIds keytypes
+#' @importFrom shinyAce aceAutocomplete aceEditor getAceModes getAceThemes
 #' updateAceEditor
 #' @import BiocParallel
 #' @import knitr
 #' @import rmarkdown
-#' @importFrom dplyr inner_join tbl_df filter mutate arrange last 
+#' @importFrom dplyr inner_join tbl_df filter mutate arrange last select
 #' @importMethodsFrom GOstats hyperGTest summary
 #' @import GO.db
 #' @importFrom UpSetR upset fromList
@@ -43,7 +45,7 @@
 #' @import methods
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom plotly plotlyOutput ggplotly renderPlotly
-#' 
+#'
 #' @author
 #' Bernd Jagla \email{bernd.jagla@@pasteur.fr}, 2025
 #'

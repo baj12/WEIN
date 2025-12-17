@@ -49,6 +49,18 @@ The WEIN app can be launched in different modes:
 - `WEIN(countmatrix = countmatrix, expdesign = expdesign)`, where instead of passing the defined `DESeqDataSet` object, its components are given, namely the count matrix (e.g. generated after a run of featureCounts or HTSeq-count) and a data frame with the experimental covariates. The design formula can be constructed interactively at runtime
 - `WEIN()`, where the count matrix and experimental design can simply be uploaded at runtime, where all the derived objects can be extracted and computed live. These files have to be formatted as tabular text files, and a function in the package tries to guess the separator, based on heuristics of occurrencies per line of commonly used characters
 
+## Debugging Options
+
+The application includes debugging output that can be enabled/disabled using the global option `wein.debug`. By default, debugging output is disabled to reduce console clutter.
+
+To enable debugging output, set the option before launching the app:
+```r
+options(wein.debug = TRUE)
+WEIN()
+```
+
+When enabled, detailed timing information and debug messages will be printed to the console during application execution.
+
 ## Large Files Notice
 
 This repository excludes large data files that exceed GitHub's file size limits. These files include:

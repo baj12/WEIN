@@ -59,7 +59,7 @@ library(topGO)
 
 cp = load(file = "idealState_20231118_123859.RData")
 # WEIN(dds_obj = dds_airway, annotation_obj = annotation_airway, res_obj = res_airway)
-WEIN(state_file = "idealState_20231118_123859.RData")
+WEIN(state_file = "WEINState_20251213_151949.801709.RData")
   # WEIN()
 # cp = load(file = "test.Rdata")
 # dds_obj = ideal_env$ideal_values_20210526_152858$dds_obj 

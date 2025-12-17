@@ -1,6 +1,7 @@
 
 tourModuleServer <- function(id, input, session) {
   moduleServer(id, function(input, output, session) {
+    ns <- session$ns
     # Tour configurations: input_id -> filename
     tour_configs <- list(
       btn = "intro_firsttour.txt",
@@ -40,6 +41,15 @@ tourModuleServer <- function(id, input, session) {
     output$ui_instructions <- renderUI({
       box(width = 12, 
           title = "Instructions", status = "info", solidHeader = TRUE, 
+          collapsible = TRUE, collapsed = TRUE,
+          includeMarkdown(system.file("extdata", "instructions.md",package = "WEIN"))
+      )
+    })
+    
+    # output ui_instructions ----
+    output$ui_instructions <- renderUI({
+      box(width = 12,
+          title = "Instructions", status = "info", solidHeader = TRUE,
           collapsible = TRUE, collapsed = TRUE,
           includeMarkdown(system.file("extdata", "instructions.md",package = "WEIN"))
       )

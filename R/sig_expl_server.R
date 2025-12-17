@@ -4,13 +4,15 @@ signature_explorer_server <- function(id, values, annoSpecies_df, exportPlots) {
     ns <- session$ns
     
     # server signature explorer ------------------------------------------------------
+    # output sig_ui_gmtin ----
     output$sig_ui_gmtin <- renderUI({
       fileInput(ns("sig_gmtin"),"gmt input file")
     })
     
     loaded_gmt <- reactive({
-      if (is.null(input$sig_gmtin))
-        return(NULL)
+      shiny::validate(
+        need(!is.null(input$sig_gmtin), "Please upload a GMT file first.")
+      )
       mysigs <- read_gmt(input$sig_gmtin$datapath)
       return(mysigs)
     })
@@ -43,36 +45,43 @@ signature_explorer_server <- function(id, values, annoSpecies_df, exportPlots) {
                  })
     
     output$sig_ui_selectsig <- renderUI({
-      if(!is.null(values$gene_signatures))
-        return(selectizeInput(ns("sig_selectsig"), label = "Select the gene signature",
-                              choices = NULL, selected = NULL, multiple = FALSE))
-      else
-        return(NULL)
+      shiny::validate(
+        need(!is.null(values$gene_signatures), "Please upload gene signatures in GMT format first.")
+      )
+      return(selectizeInput(ns("sig_selectsig"), label = "Select the gene signature",
+                            choices = NULL, selected = NULL, multiple = FALSE))
     })
+    
+    # output sig_ui_annocoldata ----
+    output$sig_ui_annocoldata <- renderUI({
+      shiny::validate(
+        need(!is.null(values$dds_obj), "DESeqDataSet object is not available. Please create it first.")
+      )
+      return(selectizeInput(ns("sig_annocoldata"), label = "Select the colData to decorate",
+                            choices = names(colData(values$dds_obj)),
+                            selected = NULL, multiple = TRUE))
+    })
+    
     
     observe({
-      updateSelectizeInput(session = session, inputId = 'sig_selectsig', choices = c(Choose = '', names(values$gene_signatures)), server = TRUE)
+      if (!is.null(values$gene_signatures)) {
+        updateSelectizeInput(session = session, inputId = 'sig_selectsig', choices = c(Choose = '', names(values$gene_signatures)), server = TRUE)
+      }
     })
-    
+  
+    # output sig_sigmembers ----
     output$sig_sigmembers <- renderPrint({
+      shiny::validate(
+        need(!is.null(values$gene_signatures), "Please upload gene signatures in GMT format first.")
+      )
       values$gene_signatures[[input$sig_selectsig]]
     })
     
-    output$sig_ui_annocoldata <- renderUI({
-      if(!is.null(values$dds_obj))
-        return(selectizeInput(ns("sig_annocoldata"), label = "Select the colData to decorate",
-                              choices = names(colData(values$dds_obj)),
-                              selected = NULL, multiple = TRUE))
-      else
-        return(NULL)
-    })
-    
-    
+    # output sig_ui_id_data ----
     output$sig_ui_id_data <- renderUI({
-      if (is.null(values$dds_obj)) #
-        return(NULL)
-      validate(
-        need(!is.null(values$cur_species), message = "Please specify the species in the Data Setup panel")
+      shiny::validate(
+        need(!is.null(values$dds_obj), "DESeqDataSet object is not available. Please create it first."),
+        need(!is.null(values$cur_species), "Please specify the species in the Data Setup panel")
       )
       
       std_choices <- c("SYMBOL", "ENSEMBL","ENTREZID","REFSEQ")
@@ -84,11 +93,11 @@ signature_explorer_server <- function(id, values, annoSpecies_df, exportPlots) {
       selectInput(ns("sig_id_data"), "select the id type in your dds data", choices=std_choices)
     })
     
+    # output sig_ui_id_sigs ----
     output$sig_ui_id_sigs <- renderUI({
-      if (is.null(values$gene_signatures)) #
-        return(NULL)
-      validate(
-        need(!is.null(values$cur_species), message = "Please specify the species in the Data Setup panel under Step 2")
+      shiny::validate(
+        need(!is.null(values$gene_signatures), "Please upload gene signatures in GMT format first."),
+        need(!is.null(values$cur_species), "Please specify the species in the Data Setup panel under Step 2")
       )
       
       std_choices <- c("SYMBOL", "ENSEMBL","ENTREZID","REFSEQ")
@@ -103,12 +112,13 @@ signature_explorer_server <- function(id, values, annoSpecies_df, exportPlots) {
     available_orgdb <- rownames(installed.packages())[
       grep(pattern = "^org.*db$",rownames(installed.packages()))]
     
+    # output sig_ui_orgdbpkg ----
     output$sig_ui_orgdbpkg <- renderUI({
       
       suggested_orgdb <- tryCatch(
         annoSpecies_df$pkg[annoSpecies_df$species==values$cur_species],
         error = function(e){return("")})
-      selectInput(ns("sig_orgdbpkg"), "Select the organism package for matching", 
+      selectInput(ns("sig_orgdbpkg"), "Select the organism package for matching",
                   choices=c("",available_orgdb),selected = suggested_orgdb)
     })
     
@@ -129,10 +139,9 @@ signature_explorer_server <- function(id, values, annoSpecies_df, exportPlots) {
                                   
                                   x <- get(input$sig_orgdbpkg)
                                   # browser()
-                                  if(any(is.null(input$sig_id_sigs), is.null(input$sig_id_data))){
-                                    cat(file = stderr(), paste("\n\ndid you specifvy the annotations?\n\n"))
-                                    return(NULL)
-                                  }
+                                  shiny::validate(
+                                    need(!is.null(input$sig_id_sigs) & !is.null(input$sig_id_data), "Please specify the annotations for both data and signatures.")
+                                  )
                                   if (input$sig_id_sigs == "SYMBOL" & input$sig_id_data == "SYMBOL") {
                                     anno_vec = rownames(values$dds_obj)
                                     names(anno_vec) = rownames(values$dds_obj)
@@ -145,10 +154,12 @@ signature_explorer_server <- function(id, values, annoSpecies_df, exportPlots) {
                                 })
                  })
     
+    # output sig_convcheck ----
     output$sig_convcheck <- renderPrint({
       head(values$anno_vec)
     })
     
+    # output sig_heat ----
     output$sig_heat <- renderPlotly({
       validate(
         need(!is.null(values$gene_signatures), message = "Please provide gene signatures in GMT format using the upload button above"),
@@ -177,6 +188,7 @@ signature_explorer_server <- function(id, values, annoSpecies_df, exportPlots) {
       
     })
     
+    # output sig_heat_genes ----
     output$sig_heat_genes <- renderPrint({
       validate(
         need(!is.null(values$gene_signatures), message = "Please provide some gene signatures in gmt format"),

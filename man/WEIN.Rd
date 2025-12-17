@@ -11,6 +11,9 @@ WEIN(
   countmatrix = NULL,
   expdesign = NULL,
   gene_signatures = NULL,
+  dds_design = NULL,
+  choose_expfac = NULL,
+  choose_expfac2 = NULL,
   cur_species = NULL,
   cur_type = NULL,
   state_file = NULL
@@ -28,6 +31,12 @@ WEIN(
 \item{expdesign}{A data frame with experimental design}
 
 \item{gene_signatures}{A list of gene signatures}
+
+\item{dds_design}{A character vector specifying the design formula for DESeq2}
+
+\item{choose_expfac}{A character vector specifying the experimental factor to build the contrast (numerator)}
+
+\item{choose_expfac2}{A character vector specifying the experimental factor to build the contrast (denominator)}
 
 \item{state_file}{An optional path to a .RData file containing saved application state}
 }

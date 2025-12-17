@@ -1,6 +1,7 @@
 data_setup_ui <- function(){
   nsOM    <- NS("ui_outputs_manager")
   nsSetup <- NS("ui_setup")
+  nsTR <- NS("tour_manager")
   
   tabPanel(
     "Data Setup",icon = icon("upload"), # value="tab-ds",
@@ -10,7 +11,7 @@ data_setup_ui <- function(){
       column(
         width = 8,
         shinyBS::bsCollapse(
-          id = "help_datasetup",open = NULL, 
+          id = nsTR("help_datasetup"),open = NULL, 
           shinyBS::bsCollapsePanel(
             "Help",
             includeMarkdown(system.file("extdata", "help_datasetup.md",package = "WEIN"))
@@ -19,7 +20,7 @@ data_setup_ui <- function(){
       )
     ),
     
-    actionButton("tour_datasetup", "Click me for a quick tour of the section", icon("info"),
+    actionButton(nsTR("tour_datasetup"), "Click me for a quick tour of the section", icon("info"),
                  style="color: #ffffff; background-color: #0092AC; border-color: #2e6da4"), br(),
     
     box(
@@ -29,7 +30,7 @@ data_setup_ui <- function(){
       
       fluidRow(
         column(
-          width = 4, uiOutput(nsOM("upload_count_matrix")),uiOutput(nsOM("upload_metadata"))
+          width = 4, uiOutput(nsOM("upload_count_matrix")),uiOutput(nsOM("upload_metadata_ui"))
         ),
         column(
           width = 4,

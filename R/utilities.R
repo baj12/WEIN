@@ -259,7 +259,7 @@ generate_gene_lists <- function(res_obj, FDR = 0.05, annotation_obj = NULL) {
   res_tbl_DOWN <- res_tbl[res_tbl$log2FoldChange < 0 & !is.na(res_tbl$padj), ]
   
   # Handle annotation if provided
-  if (!is.null(annotation_obj) && "symbol" %in% colnames(res_obj)) {
+  if (!is.null(annotation_obj) && "symbol" %in% colnames(res_tbl)) {
     # Add symbols for UP genes
     if (nrow(res_tbl_UP) > 0) {
       res_tbl_UP$symbol <- annotation_obj$gene_name[
@@ -287,9 +287,36 @@ generate_gene_lists <- function(res_obj, FDR = 0.05, annotation_obj = NULL) {
       listUPDOWN <- NULL
     }
   } else {
-    listUP <- res_tbl_UP$symbol
-    listDOWN <- res_tbl_DOWN$symbol
-    listUPDOWN <- res_tbl$symbol
+    # Handle case where symbol column doesn't exist
+    if (nrow(res_tbl_UP) > 0) {
+      if ("symbol" %in% colnames(res_tbl_UP)) {
+        listUP <- res_tbl_UP$symbol
+      } else {
+        listUP <- res_tbl_UP$id
+      }
+    } else {
+      listUP <- NULL
+    }
+    
+    if (nrow(res_tbl_DOWN) > 0) {
+      if ("symbol" %in% colnames(res_tbl_DOWN)) {
+        listDOWN <- res_tbl_DOWN$symbol
+      } else {
+        listDOWN <- res_tbl_DOWN$id
+      }
+    } else {
+      listDOWN <- NULL
+    }
+    
+    if (nrow(res_tbl) > 0) {
+      if ("symbol" %in% colnames(res_tbl)) {
+        listUPDOWN <- res_tbl$symbol
+      } else {
+        listUPDOWN <- res_tbl$id
+      }
+    } else {
+      listUPDOWN <- NULL
+    }
   }
   
   return(list(UP = listUP, DOWN = listDOWN, UPDOWN = listUPDOWN))

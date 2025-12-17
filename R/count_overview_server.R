@@ -19,9 +19,11 @@ count_overview_server <- function(id, values) {
       
     })
     
+    # output showcountmat ----
     output$showcountmat <- DT::renderDataTable({
       datatable(current_countmat())
     })
+    # output downloadData ----
     output$downloadData <- downloadHandler(
       filename = function() {
         paste0(input$countstable_unit,"table.csv")
@@ -31,6 +33,7 @@ count_overview_server <- function(id, values) {
       }
     )
     
+    # output corrplot ----
     output$corrplot <- renderPlot({
       cat(file = stderr(), paste("corrplot\n"))
       
@@ -45,6 +48,7 @@ count_overview_server <- function(id, values) {
         )
     })
     # HEATCORR ======
+    # output heatcorr ----
     output$heatcorr <- renderPlotly({
       if(!is.null(current_countmat())) {
         input$compute_pairwisecorr
@@ -55,6 +59,7 @@ count_overview_server <- function(id, values) {
       }
     })
     
+    # output pcaPlot ----
     output$pcaPlot <- renderPlotly({
       shiny::validate(
         need(!is.null(values$dds_obj),
@@ -70,6 +75,7 @@ count_overview_server <- function(id, values) {
       ggplotly(p2, tooltip = "text")
     })
     
+    # output pcaEVPlot ----
     output$pcaEVPlot <- renderPlotly({
       shiny::validate(
         need(!is.null(values$dds_obj),
@@ -86,6 +92,7 @@ count_overview_server <- function(id, values) {
         geom_bar(stat="identity")
       p
     })
+    # output pcaPlot34 ----
     output$pcaPlot34 <- renderPlotly({
       shiny::validate(
         need(!is.null(values$dds_obj),
@@ -100,6 +107,7 @@ count_overview_server <- function(id, values) {
       p2 = p +aes(text=colnames(rld))
       ggplotly(p2, tooltip = "text")
     })
+    # output pcaPlot56 ----
     output$pcaPlot56 <- renderPlotly({
       shiny::validate(
         need(!is.null(values$dds_obj),
@@ -115,14 +123,14 @@ count_overview_server <- function(id, values) {
       ggplotly(p2, tooltip = "text")
     })
     
+    # output sizeFactorsPlot ----
     output$sizeFactorsPlot <- renderPlot({
           # Suppress par() warnings that commonly occur in Shiny reactive contexts
           suppressWarnings({
             col <- RColorBrewer::brewer.pal(min(8,unique(colData(values$dds_obj)[, values$color_by[1]]) %>% length()), "Dark2")
-            if(is.null(values$color_by)) {
-              #TODO message about color_by
-              return(NULL)
-            }
+            shiny::validate(
+              need(!is.null(values$color_by), "Please select a color grouping variable in the sidebar.")
+            )
             barplot(sizeFactors(values$dds_obj),
                     main = "Size factors ",
                     col = col[as.integer(colData(values$dds_obj)[, values$color_by[1]])],
@@ -131,6 +139,7 @@ count_overview_server <- function(id, values) {
           })
           
         })
+    # output pairwise_plotUI ----
     output$pairwise_plotUI <- renderUI({
       shiny::validate(
         need(!is.null(input$compute_pairwisecorr),
@@ -141,14 +150,15 @@ count_overview_server <- function(id, values) {
 
     })
     
+    # output heatcorr_plotUI ----
     output$heatcorr_plotUI <- renderUI({
       input$compute_pairwisecorr
-      # Check that values$color_by is set and show message otherwise
-      if (is.null(values$color_by) || length(values$color_by) == 0) {
-        return(tags$p("Please select a color grouping variable in the sidebar."))
-      }
+      shiny::validate(
+        need(!is.null(values$color_by) && length(values$color_by) > 0, "Please select a color grouping variable in the sidebar.")
+      )
       plotlyOutput(ns("heatcorr"))
     })
+    # output pca_Dim1 ----
     output$pca_Dim1 <-renderUI({
       shiny::validate(
         need(!is.null(input$compute_pairwisecorr),
@@ -157,6 +167,7 @@ count_overview_server <- function(id, values) {
       selectizeInput(ns("pcaDim1"), label = "Which PCA on X",
                      choices = c(1:20), selected = 1, multiple = F)
     })
+    # output pca_Dim2 ----
     output$pca_Dim2 <-renderUI({
       shiny::validate(
         need(!is.null(input$compute_pairwisecorr),
@@ -165,6 +176,7 @@ count_overview_server <- function(id, values) {
       selectizeInput(ns("pcaDim2"), label = "Which PCA on Y",
                      choices = c(1:20), selected = 2, multiple = F)
     })
+    # output pca_plotUI ----
     output$pca_plotUI <- renderUI({
       shiny::validate(
         need(!is.null(input$compute_pairwisecorr),
@@ -179,6 +191,7 @@ count_overview_server <- function(id, values) {
       )
       plotlyOutput(ns("pcaEVPlot"))
     })
+    # output pca_plotUI34 ----
     output$pca_plotUI34 <- renderUI({
       shiny::validate(
         need(!is.null(input$compute_pairwisecorr),
@@ -186,6 +199,7 @@ count_overview_server <- function(id, values) {
       )
       plotlyOutput(ns("pcaPlot34"))
     })
+    # output pca_plotUI56 ----
     output$pca_plotUI56 <- renderUI({
       shiny::validate(
         need(!is.null(input$compute_pairwisecorr),
@@ -193,24 +207,31 @@ count_overview_server <- function(id, values) {
       )
       plotlyOutput(ns("pcaPlot56"))
     })
+    # output sizeFactors_plotUI ----
     output$sizeFactors_plotUI    <- renderUI({
       shiny::validate(
         need(!is.null(input$compute_pairwisecorr),
              "Please compute pairwise correlations first")
       )
       plotOutput(ns("sizeFactorsPlot"))
-    }) 
+    })
+    # output geneHeatmap_plotUI ----
     output$geneHeatmap_plotUI <- renderUI({
       cat(file =stderr(), paste("geneHeatmap: ",input$compute_pairwisecorr, "\n"))
-      if(input$compute_pairwisecorr<1) return()
+      shiny::validate(
+        need(input$compute_pairwisecorr >= 1, "Please compute pairwise correlations first")
+      )
       plotlyOutput(ns("geneHeatmap"))
     })
     output$geneHeatmap_genesUI <- renderUI({
       cat(file =stderr(), paste("geneHeatmap: ",input$compute_pairwisecorr, "\n"))
-      if(input$compute_pairwisecorr<1) return()
+      shiny::validate(
+        need(input$compute_pairwisecorr >= 1, "Please compute pairwise correlations first")
+      )
       verbatimTextOutput(ns("geneHeatmapgenes"))
     })
     
+    # output geneHeatmap ----
     output$geneHeatmap <- renderPlotly({
       cat(file =stderr(), paste("geneHeatmap renderPlot: ", input$compute_pairwisecorr,"\n"))
       # We define how many genes we want to look at
@@ -235,6 +256,7 @@ count_overview_server <- function(id, values) {
       heatmaply(heatmapcounts, cluster_rows = T, show_rownames = TRUE, cluster_cols = T)
     })
     
+    # output geneHeatmapgenes ----
     output$geneHeatmapgenes <- renderPrint({
       cat(file =stderr(), paste("geneHeatmapgenes renderPlot: ", input$compute_pairwisecorr,"\n"))
       # We define how many genes we want to look at
@@ -248,6 +270,7 @@ count_overview_server <- function(id, values) {
     })
     
     # overview on number of detected genes on different threshold types
+    # output detected_genes ----
     output$detected_genes <- renderPrint({
       t1 <- rowSums(counts(values$dds_obj))
       t2 <- rowMeans(counts(values$dds_obj,normalized=TRUE))

@@ -29,6 +29,12 @@ execution of the Shiny App}
 is for example the output of the \code{\link{read_gmt}} function. The provided
 object can also be replaced during runtime in the dedicated upload widget.}
 
+\item{dds_design}{A character vector specifying the design formula for DESeq2.
+This will be used when creating the DESeqDataSet object.}
+
+\item{choose_expfac}{A character vector specifying the experimental factor to build the contrast.
+This will be used when extracting results from the DESeqDataSet object.}
+
 \item{state_file}{An optional path to a .RData file containing saved application state.
 If provided, the application state will be restored from this file.}
 }
@@ -40,6 +46,19 @@ differential expression analysis
 WEIN makes bulk RNAseq data analysis interactive, easy and reproducible.
 This function launches the main application included in the package.
 }
+\section{Debugging Options}{
+
+The application includes debugging output that can be enabled/disabled
+using the global option \code{wein.debug}. By default, debugging output
+is disabled to reduce console clutter.
+
+To enable debugging output, set the option before launching the app:
+\code{options(wein.debug = TRUE)}
+
+When enabled, detailed timing information and debug messages will be
+printed to the console during application execution.
+}
+
 \examples{
 # with simulated data...
 library(DESeq2)
@@ -75,6 +94,8 @@ WEIN(state_file = "my_analysis_state.RData")
 # 2. This creates a timestamped .RData file with your current analysis state
 # 3. Later, restore the session with:
 #    WEIN(state_file = "WEINState_2023-12-01_14-30-45.RData")
+#    or with a pre-selected experimental factor:
+#    WEIN(state_file = "WEINState_2023-12-01_14-30-45.RData", choose_expfac = "condition")
 
 
 }

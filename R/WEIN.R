@@ -32,6 +32,17 @@
 #' @return A Shiny App is launched for interactive data exploration and
 #' differential expression analysis
 #'
+#' @section Debugging Options:
+#' The application includes debugging output that can be enabled/disabled
+#' using the global option \code{wein.debug}. By default, debugging output
+#' is disabled to reduce console clutter.
+#'
+#' To enable debugging output, set the option before launching the app:
+#' \code{options(wein.debug = TRUE)}
+#'
+#' When enabled, detailed timing information and debug messages will be
+#' printed to the console during application execution.
+#'
 #' @export WEIN
 #' 
 #' @examples
@@ -77,7 +88,7 @@
 # Import necessary functions from other files
 #' @importFrom shinydashboard dashboardPage dashboardHeader dashboardSidebar dashboardBody dropdownMenu menuItem notificationItem
 #' @importFrom shiny actionButton bookmarkButton conditionalPanel downloadButton fileInput
-#' fluidRow h2 h3 h4 hr p selectInput tags textInput updateSelectInput updateSelectizeInput
+#' fluidRow h2 h3 h4 hr p selectInput shinyApp tags textInput updateSelectInput updateSelectizeInput
 #' updateTextInput verbatimTextOutput wellPanel withProgress
 #' @importFrom shinyAce aceEditor
 #' @importFrom shinyBS bsCollapse bsCollapsePanel bsTooltip
@@ -203,8 +214,11 @@ WEIN<- function(dds_obj = NULL,
          install.packages('tidyr')")
   }
   require(tidyr)
-  require(shiny)
-  require(shinydashboard)
+  # Load specific packages that are needed but not imported
+  # We use requireNamespace to avoid loading the entire namespace
+  if (!requireNamespace("shinydashboard", quietly = TRUE)) {
+    stop("Package 'shinydashboard' is required but not available.")
+  }
   
   # If a state file is provided, load the saved state
   if (!is.null(state_file) && file.exists(state_file)) {

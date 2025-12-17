@@ -79,19 +79,21 @@ goseqTable <- function(de.genes,                  # Differentially expressed gen
   
   pwf <- tryCatch({
     nullp(DEgenes=gene.vector,genome = genome, id= id,plot.fit=FALSE)
-  }, 
+  },
   error = function(e) {
     if (!is.null(getDefaultReactiveDomain())) {
       
       if (is.null(e)) e = "error in nullp"
       showNotification(as.character(e), id = "goseqTableError", duration = NULL, type='error')
     }
-    return(NULL)
+    shiny::validate(
+      need(!is.null(pwf), "Failed to compute probability weighting function. Please check your input data and parameters.")
+    )
   }
   )
-  if (is.null(pwf)) {
-    return(NULL)
-  }
+  shiny::validate(
+    need(!is.null(pwf), "Failed to compute probability weighting function. Please check your input data and parameters.")
+  )
   goseq_out <-  goseq(pwf,genome=genome,id=id,test.cats=testCats)
   
   
@@ -108,9 +110,11 @@ goseqTable <- function(de.genes,                  # Differentially expressed gen
       if (!is.null(getDefaultReactiveDomain())) {
         showNotification("no genes/go terms found", id = "goseqTableError", duration = NULL, type='error')
       }
-      return(NULL)
+      shiny::validate(
+        need(FALSE, "No genes or GO terms found. Please check your input data.")
+      )
       
-    } 
+    }
     names(gene2cat) = de.genes
     
     reversemap <- function(map) # as in goseq
@@ -139,7 +143,11 @@ goseqTable <- function(de.genes,                  # Differentially expressed gen
     
     }
   goseq_out
-   }, error =function(e){return(NULL)})
+   }, error =function(e){
+     shiny::validate(
+       need(FALSE, "An error occurred during GO enrichment analysis. Please check your input data and parameters.")
+     )
+   })
   
   # Clear any large objects from memory
   if (exists("gene2cat")) rm(gene2cat)

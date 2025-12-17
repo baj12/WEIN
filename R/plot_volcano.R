@@ -70,8 +70,8 @@ plot_volcano <- function(res_obj,
     mydf$symbol = rownames(mydf)
     pasteText <- "paste('gene:',symbol)"
   }
-  p <- ggplot(mydf, aes(x = log2FoldChange, y = -log10(pvalue),
-                               text = pasteText)) + geom_point(aes(color = isDE), alpha = 0.4)
+  p <- ggplot(mydf, aes(x = log2FoldChange, y = -log10(padj),
+                                 text = pasteText)) + geom_point(aes(color = isDE), alpha = 0.4)
 
   if(!is.null(ylim_up))
     p <- p + coord_cartesian(ylim = c(0, ylim_up))
@@ -111,18 +111,26 @@ plot_volcano <- function(res_obj,
     }
     
     # Filter out rows with missing values to prevent warnings
-    df_intgenes <- df_intgenes[!is.na(df_intgenes$log2FoldChange) & !is.na(df_intgenes$pvalue), ]
+    df_intgenes <- df_intgenes[!is.na(df_intgenes$log2FoldChange) & !is.na(df_intgenes$padj), ]
 
     # df_intgenes <- mydf[mydf$symbol %in% intgenes,]
 
-    p <- p + geom_point(data = df_intgenes,aes(x = log2FoldChange, y = -log10(pvalue)), color = intgenes_color, size = 4)
+    p <- p + geom_point(data = df_intgenes,aes(x = log2FoldChange, y = -log10(padj)), color = intgenes_color, size = 4)
 
     if(labels_intgenes) {
-      p <- p + geom_text_repel(data = df_intgenes,aes(x = log2FoldChange, y = -log10(pvalue), label = myids),
+      p <- p + geom_text_repel(data = df_intgenes,aes(x = log2FoldChange, y = -log10(padj), label = myids),
                          color = intgenes_color, size=5, box.padding = 0.5, point.padding = 0.5,
                          segment.color = intgenes_color, linewidth = 0.5, show.legend = FALSE, max.overlaps = 50)
     }
-
+    # DEBUG: Check if values match
+    # browser()
+    test_gene <- df_intgenes$myids[1]
+    main_values <- mydf[mydf$symbol == test_gene | rownames(mydf) == test_gene,
+                        c("log2FoldChange", "padj")]
+    cat("Main df values:\n", file = stderr())
+    cat(capture.output(print(main_values)), sep = "\n", file = stderr())
+    cat("\ndf_intgenes values:\n", file = stderr())
+    cat(capture.output(print(df_intgenes[1, c("log2FoldChange", "padj")])), sep = "\n", file = stderr())
   }
 #   save(file = "~/SCHNAPPsDebug/ideal.volcano.RData", list = ls())
 # load("~/SCHNAPPsDebug/ideal.volcano.RData")

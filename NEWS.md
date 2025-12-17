@@ -12,6 +12,7 @@
 * Enhanced immunology-focused functionality
 * Updated documentation and vignettes for WEIN
 * Improved package metadata to reflect new focus and ownership
+* Added debug output control via `wein.debug` option to reduce console clutter during normal operation
 
 ## Bug fixes
 

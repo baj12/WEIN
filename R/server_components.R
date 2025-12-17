@@ -129,6 +129,7 @@ WEIN_server <- function(
       genelistUPDOWN = c(),
       choose_expfac = choose_expfac,
       choose_expfac2 = choose_expfac2,
+      input_provided = ifelse(is.null(dds_obj), FALSE, TRUE)
     )
     
     # Check if we're restoring from a saved state file
@@ -278,6 +279,7 @@ WEIN_server <- function(
     
     
     # not implemented
+    # output diagno_dispests ----
     output$diagno_dispests <- renderPlot({
           # Suppress par() warnings that commonly occur in Shiny reactive contexts
           suppressWarnings({
@@ -286,9 +288,11 @@ WEIN_server <- function(
         })
     
     
+    # output checkdds ----
     output$checkdds <- reactive({
       is.null(values$dds_obj)
     })
+    # output checkresu ----
     output$checkresu<-reactive({
       is.null(values$res_obj)
     })
@@ -342,10 +346,12 @@ WEIN_server <- function(
     
     
     # server ui update/observers --------------------------------------------------------
-    output$color_by <- renderUI({
+    # output color_by ----
+    output$color_by_ui <- renderUI({
       # browser()
-      if(is.null(values$dds_obj))
-        return(NULL)
+      shiny::validate(
+        need(!is.null(values$dds_obj), "DESeqDataSet object is not available. Please create it first.")
+      )
       poss_covars <- names(colData(values$dds_obj))
       selectInput('color_by', label = 'Group/color by: ',
                   choices = c(NULL, poss_covars), selected = "STIMULUS",multiple = TRUE)
@@ -372,8 +378,12 @@ WEIN_server <- function(
         server = TRUE)
     })
     
+    # output available_genes ----
     output$available_genes <- renderUI({
       # browser()
+      shiny::validate(
+        need(!is.null(values$dds_obj), "DESeqDataSet object is not available. Please create it first.")
+      )
       if(!is.null(values$annotation_obj)) {
         avVals = values$annotation_obj$gene_name[match(rownames(values$dds_obj), values$annotation_obj$gene_id)]
         # oldSelected = oldSelected[oldSelected %in% avVals]
@@ -389,10 +399,12 @@ WEIN_server <- function(
     
     
     
+    # output dds_design ----
     output$dds_design <- renderPrint({
       design(values$dds_obj)
     })
     
+    # output res_names ----
     output$res_names <- renderPrint({
       resultsNames(values$dds_obj)
     })
@@ -418,10 +430,11 @@ WEIN_server <- function(
     
     
     
+    # output ui_iSEEexport ----
     output$ui_iSEEexport <- renderUI({
-      validate(
-        need(((!is.null(values$dds_obj)) & (!is.null(values$res_obj))),
-             message = "Please build and compute the dds and res object to export as 
+      shiny::validate(
+        need(!is.null(values$dds_obj) & !is.null(values$res_obj),
+             "Please build and compute the dds and res object to export as
              SummarizedExperiment for use in iSEE")
       )
       return(
@@ -437,6 +450,7 @@ WEIN_server <- function(
       )
     })
     
+    # output button_iSEEexport ----
     output$button_iSEEexport <- downloadHandler(
       filename = function() {
         # paste0("se_WEIN_toiSEE_",gsub(" ","_",gsub("-","",gsub(":","-",as.character(Sys.time())))),".rds")
@@ -450,7 +464,9 @@ WEIN_server <- function(
     # server state saving --------------------------------------------------------
     ### to environment
     observe({
-      if(is.null(input$task_exit_and_save) || input$task_exit_and_save ==0 ) return()
+      shiny::validate(
+        need(!is.null(input$task_exit_and_save) && input$task_exit_and_save != 0, "Task exit and save not triggered.")
+      )
       
       # quit R, unless you are running an interactive session
       if(interactive()) {
@@ -483,10 +499,13 @@ WEIN_server <- function(
         LiveInputs <- reactiveValuesToList(input)
         # values[names(LiveInputs)] <- LiveInputs
         r_data <- reactiveValuesToList(values)
+        # Add annoSpecies_df to the saved state to ensure functional analysis works after restore
+        r_data$annoSpecies_df <- annoSpecies_df
         save(LiveInputs, r_data , file = filename)
       })
     }
     
+    # output task_state_save ----
     output$task_state_save <- downloadHandler(
       filename = function() {
         paste0("WEINState_",gsub(" ","_",gsub("-","",gsub(":","-",as.character(Sys.time())))),".RData")
@@ -496,6 +515,7 @@ WEIN_server <- function(
       }
     )
     
+    # output sessioninfo ----
     output$sessioninfo <- renderPrint({
       sessionInfo()
     })

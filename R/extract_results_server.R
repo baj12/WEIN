@@ -10,17 +10,20 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
       
     })
     
+    # output choose_fac ----
     output$choose_fac <- renderUI({
       cat(file = stderr(), paste("choose_fac triggered: ", values$choose_expfac, "\n"))
       selectInput(ns("choose_expfac"),label = "Choose the experimental factor to build the contrast (numerator)",
                   choices = c("",design_factors()), selected = values$choose_expfac %||% "", multiple = TRUE)
     })
+    # output choose_fac2 ----
     output$choose_fac2 <- renderUI({
       selectInput(ns("choose_expfac2"),label = "Choose the experimental factor to build the contrast (denominator)",
                   choices = c("",design_factors()), selected = values$choose_expfac2 %||% "", multiple = TRUE)
     })
     
     
+    # output runresults ----
     output$runresults <- renderUI({
       shiny::validate(
         need(values$choose_expfac!="",
@@ -41,7 +44,10 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
     
     observeEvent(input$button_runresults, {
       choose_expfac2 <- values$choose_expfac2
-      if (is.null(choose_expfac2)) 
+      shiny::validate(
+        need(!is.null(choose_expfac2), "Please select a denominator factor for the contrast")
+      )
+      if (is.null(choose_expfac2))
         choose_expfac2 = character()
       resultsNames(values$dds_obj)
       choose_expfac <- values$choose_expfac
@@ -81,6 +87,7 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
                    })
     })
     
+    # output diyres_summary ----
     output$diyres_summary <- renderPrint({
       c1 = values$choose_expfac
       c2 = values$choose_expfac2
@@ -98,6 +105,7 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
       summary(values$res_obj,alpha = values$FDR)
     })
     
+    # output printdds ----
     output$printdds <- renderPrint({
       shiny::validate(
         need(!is.null(values$dds_obj),
@@ -109,6 +117,7 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
       design(values$dds_obj)
     })
     
+    # output printres ----
     output$printres <- renderPrint({
       shiny::validate(
         need(!is.null(values$res_obj),
@@ -120,9 +129,11 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
     })
     
     
+    # output store_result ----
     output$store_result <- renderUI({
-      if(is.null(values$res_obj))
-        return(NULL)
+      shiny::validate(
+        need(!is.null(values$res_obj), "Results object is not available. Please generate results first.")
+      )
       actionButton(ns("button_store_result"), "Store current results",class = "btn btn-primary")
     })
     
@@ -132,9 +143,11 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
                    # this is in such a way to store & compare later if some parameters are edited
                  })
     
+    # output table_res ----
     output$table_res <- DT::renderDataTable(server=T,{
-      if(is.null(values$res_obj))
-        return(NULL)
+      shiny::validate(
+        need(!is.null(values$res_obj), "Results object is not available. Please generate results first.")
+      )
       mydf <- as.data.frame(values$res_obj[order(values$res_obj$padj),])#[1:500,]
       # Check if species is selected and available in Ensembl
       if (!is.null(values$cur_species) && values$cur_species %in% annoSpecies_df$species) {
@@ -153,6 +166,7 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
     })
     
     # server resu diagnostics --------------------------------------------------------
+    # output pvals_hist ----
     output$pvals_hist <- renderPlot({
       shiny::validate(
         need(!is.null(values$res_obj),message = "")
@@ -181,6 +195,7 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
       
     })
     
+    # output pvals_hist_strat ----
     output$pvals_hist_strat <- renderPlot({
       shiny::validate(
         need(!is.null(values$res_obj),message = "")
@@ -207,6 +222,7 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
       p
     })
     
+    # output pvals_ss ----
     output$pvals_ss <- renderPlot({
       shiny::validate(
         need(!is.null(values$res_obj),message = "")
@@ -234,32 +250,50 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
       p
     })
     # DE genes lists ----------------------------------------------------------
+    # output genelistUP ----
     values$genelistUP <- reactive({
-      listUP <- tryCatch({
+      req(values$res_obj)
+      tryCatch({
         # browser()
         # Use the new utility function
         gene_lists <- generate_gene_lists(values$res_obj, values$FDR, values$annotation_obj)
-        gene_lists$UP},
-        error=function(e)cat(file = stderr(), paste("genelistUP error ; ", e))
-      )
-      return(listUP)
+        gene_lists$UP
+      }, error = function(e) {
+        cat(file = stderr(), paste("genelistUP error:", e$message, "\n"))
+        return(NULL)
+      })
     })
     
+    # output genelistDOWN ----
     values$genelistDOWN <- reactive({
-      # browser()
-      # Use the new utility function
-      gene_lists <- generate_gene_lists(values$res_obj, values$FDR, values$annotation_obj)
-      gene_lists$DOWN
+      req(values$res_obj)
+      tryCatch({
+        # browser()
+        # Use the new utility function
+        gene_lists <- generate_gene_lists(values$res_obj, values$FDR, values$annotation_obj)
+        gene_lists$DOWN
+      }, error = function(e) {
+        cat(file = stderr(), paste("genelistDOWN error:", e$message, "\n"))
+        return(NULL)
+      })
     })
     
+    # output genelistUPDOWN ----
     values$genelistUPDOWN <- reactive({
-      # browser()
-      # Use the new utility function
-      gene_lists <- generate_gene_lists(values$res_obj, values$FDR, values$annotation_obj)
-      gene_lists$UPDOWN
+      req(values$res_obj)
+      tryCatch({
+        # browser()
+        # Use the new utility function
+        gene_lists <- generate_gene_lists(values$res_obj, values$FDR, values$annotation_obj)
+        gene_lists$UPDOWN
+      }, error = function(e) {
+        cat(file = stderr(), paste("genelistUPDOWN error:", e$message, "\n"))
+        return(NULL)
+      })
     })
     
     
+    # output logfc_hist ----
     output$logfc_hist <- renderPlot({
       shiny::validate(
         need(!is.null(values$res_obj),message = "")
@@ -277,6 +311,7 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
       exportPlots$plot_logfc_hist <- p
       p
     })
+    # output downloadTblResu ----
     output$downloadTblResu <- downloadHandler(
       filename = function() {
         "table_results.csv"
@@ -286,12 +321,14 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
         write.csv(mydf, file)
       }
     )
+    # output download_plot_pvals_hist ----
     output$download_plot_pvals_hist <- downloadHandler(filename = function() {
       input$filename_plot_pvals_hist
     }, content = function(file) {
       ggsave(file, exportPlots$plot_pvals_hist, width = values$export_width,
              height = values$export_height, units = "cm")
     })
+    # output download_plot_logfc_hist ----
     output$download_plot_logfc_hist <- downloadHandler(filename = function() {
       input$filename_plot_logfc_hist
     }, content = function(file) {

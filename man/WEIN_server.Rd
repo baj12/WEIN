@@ -6,7 +6,8 @@
 \usage{
 WEIN_server(
   app_data = list(dds_obj = NULL, res_obj = NULL, annotation_obj = NULL, countmatrix =
-    NULL, expdesign = NULL, gene_signatures = NULL, cur_species = NULL, cur_type = NULL)
+    NULL, expdesign = NULL, gene_signatures = NULL, dds_design = NULL, choose_expfac =
+    NULL, choose_expfac2 = NULL, cur_species = NULL, cur_type = NULL)
 )
 }
 \arguments{
@@ -27,6 +28,12 @@ WEIN_server(
 \item{expdesign}{Experimental design data frame}
 
 \item{gene_signatures}{Gene signatures list}
+
+\item{dds_design}{Design formula for DESeq2}
+
+\item{choose_expfac}{Experimental factor to build the contrast (numerator)}
+
+\item{choose_expfac2}{Experimental factor to build the contrast (denominator)}
 
 \item{cur_species}{Current species for annotation}
 

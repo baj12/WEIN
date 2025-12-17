@@ -21,19 +21,20 @@ createLinkGeneSymbol <- function(val) {
 
 geneinfo <- function(gene_id) {
   # the gene id has to be entrez_id
-
+  
   # Implementation using rentrez to fetch gene information
-  if (is.null(gene_id) || gene_id == "") {
-    warning("Empty gene ID provided")
-    return(NULL)
-  }
+  shiny::validate(
+    need(!is.null(gene_id) && gene_id != "", "Empty gene ID provided")
+  )
   
   tryCatch({
     entrezinfo <- rentrez::entrez_summary("gene", gene_id)
     return(entrezinfo)
   }, error = function(e) {
     warning("Failed to retrieve gene information for ID: ", gene_id, ". Error: ", e$message)
-    return(NULL)
+    shiny::validate(
+      need(FALSE, paste("Failed to retrieve gene information for ID:", gene_id, ". Error:", e$message))
+    )
   })
 }
 

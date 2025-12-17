@@ -1,6 +1,8 @@
 
 panalAnalysis_ui <- function(){
   nsFA <- NS("fun_ana")
+  nsTR <- NS("tour_manager")
+  
   tabPanel(
     "Functional Analysis", icon = icon("rectangle-list"),
     conditionalPanel(
@@ -10,14 +12,14 @@ panalAnalysis_ui <- function(){
         column(
           width = 8,
           shinyBS::bsCollapse(
-            id = "help_functionalanalysis", open = NULL,
+            id = nsTR("help_functionalanalysis"), open = NULL,
             shinyBS::bsCollapsePanel(
               "Help",
               includeMarkdown(system.file("extdata", "help_funcanalysis.md", package = "WEIN")))
           )
         )
       ),
-      actionButton(nsFA("tour_funcanalysis"), "Click me for a quick tour of the section", icon("info"),
+      actionButton(nsTR("tour_funcanalysis"), "Click me for a quick tour of the section", icon("info"),
                    style="color: #ffffff; background-color: #0092AC; border-color: #2e6da4"), br(),
       
       selectInput(nsFA("go_cats"), label = "Select the GO category(ies) of interest",

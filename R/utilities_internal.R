@@ -111,25 +111,23 @@ create_gene_list_handler <- function(list_num, input, values, ns, read1stCol) {
   
   # Create reactive
   gl_reactive <- reactive({
-    if (is.null(input[[gl_name]])) {
-      return(data.frame())
-    } else {
-      gl <- read1stCol(input[[gl_name]]$datapath, values$dds_obj)
-      shiny::validate(
-        need(!is.null(gl),
-             "Failed to read gene list file. Please ensure the file is properly formatted with gene identifiers in the first column.")
-      )
-      return(gl)
-    }
+    shiny::validate(
+      need(!is.null(input[[gl_name]]), "No gene list file has been uploaded.")
+    )
+    gl <- read1stCol(input[[gl_name]]$datapath, values$dds_obj)
+    shiny::validate(
+      need(!is.null(gl),
+           "Failed to read gene list file. Please ensure the file is properly formatted with gene identifiers in the first column.")
+    )
+    return(gl)
   })
   
   # Create observer
   observeEvent(input[[gl_name]], {
     gl <- gl_reactive()
-    if(is.null(gl) || nrow(gl) < 1) {
-      values[[genelist_name]] <- data.frame()
-      return(NULL)
-    }
+    shiny::validate(
+      need(!is.null(gl) && nrow(gl) >= 1, "Gene list is empty or invalid.")
+    )
     mydf <- as.data.frame(gl, stringsAsFactors = FALSE)
     names(mydf) <- "Gene Symbol"
     values[[genelist_name]] <- mydf

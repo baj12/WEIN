@@ -1,5 +1,7 @@
 extract_results_ui <-  function(){
   nsER <- NS("extract_results_manager")
+  nsTR <- NS("tour_manager")
+  
   tabPanel(
     "Extract Results", icon = icon("table"),
     # see: http://stackoverflow.com/questions/21609436/r-shiny-conditionalpanel-output-value?noredirect=1&lq=1
@@ -12,13 +14,13 @@ extract_results_ui <-  function(){
           shinyBS::bsCollapse(
             id = "help_extractresults",open = NULL,
             shinyBS::bsCollapsePanel(
-              "Help",
+              nsTR("Help"),
               includeMarkdown(system.file("extdata", "help_results.md",package = "WEIN")))
           )
         )
       ),
       
-      actionButton("tour_results", "Click me for a quick tour of the section", icon("info"),
+      actionButton(nsTR("tour_results"), "Click me for a quick tour of the section", icon("info"),
                    style="color: #ffffff; background-color: #0092AC; border-color: #2e6da4"),
       br(),
       fluidRow(

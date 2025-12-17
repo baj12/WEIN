@@ -105,3 +105,29 @@ TP2022.input.csv
 TP2025.input.csv
 TPimmuno2025_*.csv
 WEINState_*.RData
+
+# Very large files that should never be tracked
+*.tar.gz
+
+# Temporary script files
+temp_*.R
+temp_*.txt
+
+# Test and debug files
+test_*.R
+debug_*.R
+verify_*.R
+run_*.R
+capture_*.R
+detailed_*.R
+final_*.R
+fix_*.R
+mosdef_*.R
+goseq_*.R
+examine_*.R
+
+# Markdown reports
+*_report.md
+
+# PNG files
+*.png
