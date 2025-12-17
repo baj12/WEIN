@@ -33,7 +33,7 @@ Imports:
     IRanges,
     ggtree,
     S4Vectors,
-    ggplot2 (>= 2.0.0),
+    ggplot2 (>= 3.4.0),
     pcaExplorer,
     mosdef,
     IHW,
