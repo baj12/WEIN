@@ -26,8 +26,8 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
     # output runresults ----
     output$runresults <- renderUI({
       shiny::validate(
-        need(values$choose_expfac!="",
-             "Please select a factor for the contrast first")
+        need(length(values$choose_expfac) > 0 && !all(values$choose_expfac == ""),
+             "Please select at least one factor for the numerator (contrast)")
       )
       
       actionButton(ns("button_runresults"),"Extract the results!", icon = icon("spinner"), class = "btn btn-success")
@@ -44,10 +44,12 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
     
     observeEvent(input$button_runresults, {
       choose_expfac2 <- values$choose_expfac2
+      # Allow empty denominator but ensure numerator is provided
       shiny::validate(
-        need(!is.null(choose_expfac2), "Please select a denominator factor for the contrast")
+        need(length(values$choose_expfac) > 0 && !all(values$choose_expfac == ""),
+             "Please select at least one factor for the numerator (contrast)")
       )
-      if (is.null(choose_expfac2))
+      if (is.null(choose_expfac2) || all(choose_expfac2 == ""))
         choose_expfac2 = character()
       resultsNames(values$dds_obj)
       choose_expfac <- values$choose_expfac
@@ -60,20 +62,34 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
                      # handling the experimental covariate correctly to extract the results...
                      # if(is.factor(colData(values$dds_obj)[,input$choose_expfac])) {
                      if(input$resu_ihw) {
+                       # Handle empty denominator case
+                       contrast_list <- if (length(choose_expfac2) == 0) {
+                         list(c(choose_expfac))
+                       } else {
+                         list(c(choose_expfac), c(choose_expfac2))
+                       }
+                       
                        values$res_obj <- results(values$dds_obj,
                                                  # contrast = c(input$choose_expfac, input$fac1_c1, input$fac1_c2),
-                                                 contrast = list(c(choose_expfac),c(choose_expfac2)),
-                                                 independentFiltering = input$resu_indfil, 
+                                                 contrast = contrast_list,
+                                                 independentFiltering = input$resu_indfil,
                                                  alpha = values$FDR,
                                                  filterFun = ihw)
                        
                        incProgress(amount = 0.9,detail = "logFC left unshrunken, adding annotation info...")
                        # }
                      } else {
+                       # Handle empty denominator case
+                       contrast_list <- if (length(choose_expfac2) == 0) {
+                         list(c(choose_expfac))
+                       } else {
+                         list(c(choose_expfac), c(choose_expfac2))
+                       }
+                       
                        values$res_obj <- results(values$dds_obj,
                                                  # contrast = c(input$choose_expfac, input$fac1_c1, input$fac1_c2),
-                                                 contrast = list(c(choose_expfac),c(choose_expfac2)),
-                                                 independentFiltering = input$resu_indfil, 
+                                                 contrast = contrast_list,
+                                                 independentFiltering = input$resu_indfil,
                                                  alpha = values$FDR)
                        incProgress(amount = 0.9,detail = "logFC left unshrunken, adding annotation info...")
                        # }
@@ -94,8 +110,8 @@ extract_results_server <- function(id, values, annoSpecies_df, exportPlots) {
       # browser()
       shiny::validate(
         # need(input$choose_expfac!="" & input$fac1_c1 != "" & input$fac1_c2 != "" & input$fac1_c1 != input$fac1_c2 ,
-        need(values$choose_expfac != ""  ,
-             "Please select a coefficient to build the contrast first"
+        need(length(values$choose_expfac) > 0 && !all(values$choose_expfac == ""),
+             "Please select at least one factor for the numerator (contrast)"
         )
       )
       shiny::validate(
